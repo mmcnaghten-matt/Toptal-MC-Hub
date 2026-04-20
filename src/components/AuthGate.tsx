@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+
 import ToptalLogo from "./ToptalLogo";
 import { Loader2 } from "lucide-react";
 
@@ -47,24 +47,26 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const handleGoogleSignIn = async () => {
-    setSigningIn(true);
-    setError(null);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-        extraParams: { hd: "toptal.com", prompt: "select_account" },
-      });
-      if (result.error) {
-        setError("Sign-in failed. Please ensure you're using a @toptal.com account.");
-      }
-      if (result.redirected) return;
-    } catch {
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setSigningIn(false);
+const handleGoogleSignIn = async () => {
+  setSigningIn(true);
+  setError(null);
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+        queryParams: { hd: "toptal.com", prompt: "select_account" },
+      },
+    });
+    if (error) {
+      setError("Sign-in failed. Please ensure you're using a @toptal.com account.");
     }
-  };
+  } catch {
+    setError("An unexpected error occurred. Please try again.");
+  } finally {
+    setSigningIn(false);
+  }
+};
 
   if (!authReady) {
     return (
