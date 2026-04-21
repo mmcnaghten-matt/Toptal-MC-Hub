@@ -580,7 +580,7 @@ export default function MCServices() {
                         <td className="py-2 px-3 text-center">
                           {row.battlecardUrl ? (
                             <a href={row.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                              ✓
+                              Doc
                             </a>
                           ) : (
                             "—"
