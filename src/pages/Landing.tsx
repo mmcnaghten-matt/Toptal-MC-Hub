@@ -57,7 +57,7 @@ export default function Landing() {
       <main className="mx-auto max-w-7xl px-6 py-12">
         <div className="fade-in mb-12 max-w-2xl">
           <h2 className="mb-3 text-4xl font-bold tracking-tight text-foreground">
-            MC Service Offerings, Industry, and Client Insights
+            Management Consulting Service Offerings, Industry, and Client Insights
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
             Select a section to explore service offerings, our way of working, or industry-specific insights.
