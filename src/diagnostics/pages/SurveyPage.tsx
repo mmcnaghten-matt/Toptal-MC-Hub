@@ -43,7 +43,7 @@ export default function SurveyPage({ config }: Props) {
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-foreground">Assessment Survey</h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              Rate each statement on a scale of 1 (strongly disagree) to 5 (strongly agree).
+              Select the option that best describes your organization for each statement.
             </p>
           </div>
           <SurveyForm
