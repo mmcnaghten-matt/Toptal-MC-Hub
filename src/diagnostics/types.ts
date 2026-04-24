@@ -19,35 +19,22 @@ export interface DiagnosticConfig {
   questions: QuestionConfig[];
 }
 
+export interface StrategicRecommendation {
+  title: string;
+  rationale: string;
+  strategic_action: string;
+  expected_impact: string;
+}
+
 export interface RecommendationContent {
   maturity_level: 'Foundational' | 'Developing' | 'Integrated' | 'Predictive' | 'Optimized & Adaptive';
-  overall_score: number;
-  executive_summary: string;
-  dimension_insights: {
-    dimension: string;
-    score: number;
-    strength: string;
-    gap: string;
-    recommendation: string;
-  }[];
-  priority_actions: {
-    action: string;
-    rationale: string;
-    timeframe: string;
-    impact: string;
-  }[];
-  roadmap: {
-    phase: string;
-    label: string;
-    initiatives: string[];
-  }[];
+  recommendations: StrategicRecommendation[];
 }
 
 export interface DiagnosticRespondent {
   id: string;
   diagnostic_id: string;
   full_name: string;
-  enterprise: string;
   job_title: string;
   department: string;
   email: string;

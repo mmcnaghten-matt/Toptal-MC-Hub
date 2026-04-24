@@ -19,7 +19,6 @@ export function useRecommendation(responseId: string | undefined) {
     },
     enabled: !!responseId,
     refetchInterval: (query) => {
-      // Poll until we have a recommendation
       return query.state.data ? false : 3000;
     },
   });
@@ -38,8 +37,32 @@ export function useResponse(responseId: string | undefined) {
         .maybeSingle();
 
       if (error) throw error;
-      return data as { id: string; score_summary: Record<string, number> | null } | null;
+      return data as {
+        id: string;
+        respondent_id: string;
+        answers: Record<string, number>;
+        score_summary: Record<string, number> | null;
+      } | null;
     },
     enabled: !!responseId,
+  });
+}
+
+export function useRespondent(respondentId: string | undefined) {
+  return useQuery({
+    queryKey: ['diagnostic-respondent', respondentId],
+    queryFn: async () => {
+      if (!respondentId) return null;
+
+      const { data, error } = await supabase
+        .from('diagnostic_respondents' as never)
+        .select('id, full_name, job_title, department')
+        .eq('id', respondentId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as { id: string; full_name: string; job_title: string; department: string } | null;
+    },
+    enabled: !!respondentId,
   });
 }

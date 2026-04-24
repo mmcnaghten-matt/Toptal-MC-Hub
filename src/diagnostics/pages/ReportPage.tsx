@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import DiagnosticLayout from "../components/DiagnosticLayout";
 import ReportView from "../components/ReportView";
-import { useRecommendation, useResponse } from "../hooks/useRecommendation";
+import { useResponse, useRespondent } from "../hooks/useRecommendation";
 import { supabase } from "@/integrations/supabase/client";
-import type { DiagnosticConfig } from "../types";
+import type { DiagnosticConfig, RecommendationContent } from "../types";
 
 interface Props {
   config: DiagnosticConfig;
@@ -12,16 +12,20 @@ interface Props {
 
 export default function ReportPage({ config }: Props) {
   const { responseId } = useParams<{ responseId: string }>();
-  const { data: recommendation, isLoading: loadingRec } = useRecommendation(responseId);
-  const { data: response, isLoading: loadingResponse } = useResponse(responseId);
-  const triggered = useRef(false);
-  const [timedOut, setTimedOut] = useState(false);
-  const [genError, setGenError] = useState<string | null>(null);
+  const { data: responseData, isLoading: loadingResponse } = useResponse(responseId);
+  const respondentId = (responseData as any)?.respondent_id as string | undefined;
+  const { data: respondent } = useRespondent(respondentId);
 
-  // Trigger LLM generation once when the page loads and no recommendation exists yet
+  const triggered = useRef(false);
+  const [recommendation, setRecommendation] = useState<RecommendationContent | null>(null);
+  const [recLoading, setRecLoading] = useState(false);
+  const [recError, setRecError] = useState<string | null>(null);
+
+  // Trigger edge function once when response data loads; uses direct response (idempotent on edge fn side)
   useEffect(() => {
-    if (triggered.current || !responseId || !response || recommendation) return;
+    if (triggered.current || !responseId || !responseData) return;
     triggered.current = true;
+    setRecLoading(true);
 
     supabase.functions.invoke('generate-diagnostic-report', {
       body: {
@@ -29,60 +33,52 @@ export default function ReportPage({ config }: Props) {
         response_id: responseId,
         diagnostic_title: config.title,
         questions: config.questions,
-        answers: (response as any).answers,
-        score_summary: (response as any).score_summary,
+        answers: (responseData as any).answers,
+        score_summary: (responseData as any).score_summary,
       },
-    }).then(({ error }) => {
-      if (error) setGenError(error.message ?? 'Edge function error');
-    }).catch(err => setGenError(err?.message ?? 'Unknown error'));
-  }, [responseId, response, recommendation, config]);
+    }).then(({ data, error }) => {
+      if (error) { setRecError(error.message ?? 'Edge function error'); return; }
+      if (data) setRecommendation(data as RecommendationContent);
+      else setRecError('No response from edge function');
+    }).catch(err => setRecError(err?.message ?? 'Unknown error'))
+      .finally(() => setRecLoading(false));
+  }, [responseId, responseData, config]);
 
-  // Timeout after 90s
-  useEffect(() => {
-    if (recommendation) return;
-    const t = setTimeout(() => setTimedOut(true), 90_000);
-    return () => clearTimeout(t);
-  }, [recommendation]);
-
-  const isLoading = loadingResponse || loadingRec || !recommendation;
-
-  if (isLoading) {
-    const hasError = genError || timedOut;
+  if (loadingResponse) {
     return (
       <DiagnosticLayout title={config.title}>
-        <div className="flex flex-col items-center justify-center py-24 gap-4">
-          {hasError ? (
-            <>
-              <p className="text-destructive text-sm font-medium">Report generation failed.</p>
-              {genError && <p className="text-muted-foreground text-xs font-mono bg-muted px-3 py-2 rounded">{genError}</p>}
-              {timedOut && !genError && <p className="text-muted-foreground text-xs">The request timed out. Check edge function logs in Supabase dashboard.</p>}
-            </>
-          ) : (
-            <>
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground text-sm">Generating your personalized report…</p>
-              <p className="text-muted-foreground text-xs">This takes about 15–30 seconds.</p>
-            </>
-          )}
+        <div className="flex items-center justify-center py-24">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       </DiagnosticLayout>
     );
   }
 
-  const scoreSummary = (response as any)?.score_summary ?? {};
+  if (!responseData) {
+    return (
+      <DiagnosticLayout title={config.title}>
+        <p className="text-sm text-destructive">Report not found.</p>
+      </DiagnosticLayout>
+    );
+  }
+
+  const answers = (responseData as any).answers as Record<string, number>;
+  const scoreSummary = ((responseData as any).score_summary as Record<string, number>) ?? {};
 
   return (
     <DiagnosticLayout title={config.title}>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">Your AI Maturity Report</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Based on your responses, here is a personalized assessment and roadmap.
-        </p>
+        <p className="text-muted-foreground text-sm mt-1">Based on your survey responses.</p>
       </div>
       <ReportView
         config={config}
+        answers={answers}
         scoreSummary={scoreSummary}
-        recommendation={recommendation.content}
+        respondent={respondent ?? null}
+        recommendation={recommendation}
+        recLoading={recLoading}
+        recError={recError}
       />
     </DiagnosticLayout>
   );

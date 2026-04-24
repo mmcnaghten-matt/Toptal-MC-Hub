@@ -15,6 +15,7 @@ serve(async (req) => {
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not set");
       return new Response(
         JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -24,7 +25,6 @@ serve(async (req) => {
     const {
       diagnostic_id,
       response_id,
-      respondent,
       diagnostic_title,
       questions,
       answers,
@@ -57,47 +57,48 @@ serve(async (req) => {
       );
     }
 
-    // Build dimension summary for the prompt
+    // Compute overall score and maturity level
+    const totalScore = Object.values(answers as Record<string, number>).reduce(
+      (sum: number, v: unknown) => sum + (Number(v) || 0), 0
+    );
+    let maturityLevel: string;
+    if (totalScore <= 15) maturityLevel = "Foundational";
+    else if (totalScore <= 30) maturityLevel = "Developing";
+    else if (totalScore <= 45) maturityLevel = "Integrated";
+    else if (totalScore <= 60) maturityLevel = "Predictive";
+    else maturityLevel = "Optimized & Adaptive";
+
+    // Build dimension score summary
     const dimensionSummary = score_summary
       ? Object.entries(score_summary as Record<string, number>)
-          .map(([dim, score]) => `${dim}: ${score.toFixed(2)}/5.0`)
-          .join(", ")
-      : "N/A";
+          .map(([dim, score]) => `  ${dim}: ${(score as number).toFixed(1)}/5.0`)
+          .join("\n")
+      : "  N/A";
 
-    // Build answer detail for the prompt
+    // Build detailed answer narrative using option text
     const answerDetail = Array.isArray(questions)
       ? questions
-          .map((q: { id: string; text: string; dimension: string }) =>
-            `[${q.dimension}] ${q.text} → ${answers[q.id] ?? 'N/A'}/5`
-          )
-          .join("\n")
+          .map((q: { id: string; text: string; dimension: string; options?: string[] }) => {
+            const idx = (answers as Record<string, number>)[q.id] ?? 0;
+            const optionText = q.options?.[idx] ?? `Level ${idx}`;
+            return `[${q.dimension}] ${q.text}\n  → ${optionText}`;
+          })
+          .join("\n\n")
       : "N/A";
 
-    const respondentInfo = respondent
-      ? `${respondent.full_name}, ${respondent.job_title} (${respondent.department})`
-      : "Unknown respondent";
+    const prompt = `You are an expert AI transformation consultant. Analyze the following AI maturity assessment results for "${diagnostic_title}".
 
-    const prompt = `You are an expert AI strategy consultant. Analyze the following AI maturity assessment results and generate a comprehensive, actionable report.
+Overall maturity: ${maturityLevel} (score: ${totalScore}/72)
 
-Assessment: ${diagnostic_title}
-Respondent: ${respondentInfo}
-
-Dimension Scores:
+Pillar scores (1–5 scale):
 ${dimensionSummary}
 
-Individual Responses:
+Detailed responses:
 ${answerDetail}
 
-Generate a detailed maturity report following the exact JSON schema below. Be specific, actionable, and tailored to this respondent's actual scores.
+Based on the weakest pillars and biggest gaps, generate exactly 3 high-impact, specific strategic recommendations tailored to this organization's situation. Each recommendation must be actionable and clearly linked to the assessment data.`;
 
-Maturity levels (based on pillar radar scores averaged 1–5):
-- Foundational (1.0–1.9): AI efforts are ad-hoc and siloed, no formal strategy
-- Developing (2.0–2.9): AI awareness growing with experimental projects, lacks coordination
-- Integrated (3.0–3.4): AI integrated into defined processes with established governance
-- Predictive (3.5–4.4): AI is a strategic capability with strong MLOps and cross-functional collaboration
-- Optimized & Adaptive (4.5–5.0): AI deeply embedded, continuously improving, enterprise-wide leader`;
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -108,7 +109,7 @@ Maturity levels (based on pillar radar scores averaged 1–5):
         messages: [
           {
             role: "system",
-            content: "You are an expert AI transformation consultant generating structured maturity assessment reports.",
+            content: "You are an expert AI transformation consultant generating targeted strategic recommendations.",
           },
           { role: "user", content: prompt },
         ],
@@ -116,61 +117,30 @@ Maturity levels (based on pillar radar scores averaged 1–5):
           {
             type: "function",
             function: {
-              name: "produce_maturity_report",
-              description: "Return a structured AI maturity assessment report",
+              name: "produce_recommendations",
+              description: "Return 3 strategic recommendations for the AI maturity assessment",
               parameters: {
                 type: "object",
-                required: ["maturity_level", "overall_score", "executive_summary", "dimension_insights", "priority_actions", "roadmap"],
+                required: ["maturity_level", "recommendations"],
                 additionalProperties: false,
                 properties: {
                   maturity_level: {
                     type: "string",
                     enum: ["Foundational", "Developing", "Integrated", "Predictive", "Optimized & Adaptive"],
                   },
-                  overall_score: { type: "number", description: "Average score across all dimensions, 1–5" },
-                  executive_summary: { type: "string", description: "2-3 paragraph executive summary" },
-                  dimension_insights: {
+                  recommendations: {
                     type: "array",
+                    minItems: 3,
+                    maxItems: 3,
                     items: {
                       type: "object",
-                      required: ["dimension", "score", "strength", "gap", "recommendation"],
+                      required: ["title", "rationale", "strategic_action", "expected_impact"],
                       additionalProperties: false,
                       properties: {
-                        dimension: { type: "string" },
-                        score: { type: "number" },
-                        strength: { type: "string" },
-                        gap: { type: "string" },
-                        recommendation: { type: "string" },
-                      },
-                    },
-                  },
-                  priority_actions: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      required: ["action", "rationale", "timeframe", "impact"],
-                      additionalProperties: false,
-                      properties: {
-                        action: { type: "string" },
-                        rationale: { type: "string" },
-                        timeframe: {
-                          type: "string",
-                          enum: ["Quick Win", "Short-term", "Medium-term", "Long-term"],
-                        },
-                        impact: { type: "string" },
-                      },
-                    },
-                  },
-                  roadmap: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      required: ["phase", "label", "initiatives"],
-                      additionalProperties: false,
-                      properties: {
-                        phase: { type: "string", description: "e.g. 'Phase 1 (0–3 months)'" },
-                        label: { type: "string", description: "Short phase title" },
-                        initiatives: { type: "array", items: { type: "string" } },
+                        title: { type: "string", description: "Short, compelling recommendation title" },
+                        rationale: { type: "string", description: "Why this matters given the assessment results" },
+                        strategic_action: { type: "string", description: "Specific action steps to take" },
+                        expected_impact: { type: "string", description: "Business outcomes if implemented" },
                       },
                     },
                   },
@@ -179,23 +149,23 @@ Maturity levels (based on pillar radar scores averaged 1–5):
             },
           },
         ],
-        tool_choice: { type: "function", function: { name: "produce_maturity_report" } },
+        tool_choice: { type: "function", function: { name: "produce_recommendations" } },
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error("AI gateway error:", aiResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: `AI gateway error: ${response.status}` }),
+        JSON.stringify({ error: `AI gateway error: ${aiResponse.status}` }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const aiData = await aiResponse.json();
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
-      console.error("No tool call in response:", JSON.stringify(data));
+      console.error("No tool call in AI response:", JSON.stringify(aiData));
       return new Response(
         JSON.stringify({ error: "AI did not return structured output" }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }

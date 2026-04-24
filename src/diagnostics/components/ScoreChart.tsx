@@ -15,7 +15,7 @@ interface Props {
 
 export default function ScoreChart({ dimensions, scoreSummary }: Props) {
   const data = dimensions.map(dim => ({
-    dimension: dim.label,
+    dimension: dim.shortName,
     score: Number((scoreSummary[dim.id] ?? 0).toFixed(1)),
     fullMark: 5,
   }));

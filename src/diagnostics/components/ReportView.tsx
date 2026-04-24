@@ -1,13 +1,22 @@
+import { useRef } from "react";
+import { toPng } from "html-to-image";
+import jsPDF from "jspdf";
 import ScoreChart from "./ScoreChart";
 import type { DiagnosticConfig, RecommendationContent } from "../types";
 
 interface Props {
   config: DiagnosticConfig;
+  answers: Record<string, number>;
   scoreSummary: Record<string, number>;
-  recommendation: RecommendationContent;
+  respondent: { full_name: string; job_title: string; department: string } | null;
+  recommendation: RecommendationContent | null;
+  recLoading: boolean;
+  recError: string | null;
 }
 
-const MATURITY_COLORS: Record<string, string> = {
+const PILLAR_COLORS = ['#6366f1', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+
+const MATURITY_BADGE: Record<string, string> = {
   Foundational: 'bg-red-100 text-red-800',
   Developing: 'bg-orange-100 text-orange-800',
   Integrated: 'bg-yellow-100 text-yellow-800',
@@ -15,110 +24,156 @@ const MATURITY_COLORS: Record<string, string> = {
   'Optimized & Adaptive': 'bg-green-100 text-green-800',
 };
 
-const TIMEFRAME_COLORS: Record<string, string> = {
-  'Quick Win': 'bg-green-100 text-green-700',
-  'Short-term': 'bg-blue-100 text-blue-700',
-  'Medium-term': 'bg-yellow-100 text-yellow-700',
-  'Long-term': 'bg-purple-100 text-purple-700',
-};
+function computeRawScores(config: DiagnosticConfig, answers: Record<string, number>) {
+  const result: Record<string, number> = {};
+  for (const dim of config.dimensions) {
+    const qs = config.questions.filter(q => q.dimension === dim.id);
+    result[dim.id] = qs.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
+  }
+  return result;
+}
 
-export default function ReportView({ config, scoreSummary, recommendation }: Props) {
-  const maturityColor = MATURITY_COLORS[recommendation.maturity_level] ?? 'bg-muted text-foreground';
+function computeMaturityLevel(total: number): RecommendationContent['maturity_level'] {
+  if (total <= 15) return 'Foundational';
+  if (total <= 30) return 'Developing';
+  if (total <= 45) return 'Integrated';
+  if (total <= 60) return 'Predictive';
+  return 'Optimized & Adaptive';
+}
+
+export default function ReportView({ config, answers, scoreSummary, respondent, recommendation, recLoading, recError }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const rawScores = computeRawScores(config, answers);
+  const totalScore = Object.values(answers).reduce((sum, v) => sum + v, 0);
+  const maturityLevel = computeMaturityLevel(totalScore);
+  const badgeClass = MATURITY_BADGE[maturityLevel] ?? 'bg-muted text-foreground';
+
+  const handleExportPDF = async () => {
+    const el = reportRef.current;
+    if (!el) return;
+    try {
+      const dataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' });
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const props = pdf.getImageProperties(dataUrl);
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = (props.height * pdfW) / props.width;
+      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfW, pdfH);
+      pdf.save(`${config.slug}-report.pdf`);
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${maturityColor}`}>
-          {recommendation.maturity_level}
-        </span>
-        <h2 className="text-3xl font-bold text-foreground">
-          {recommendation.overall_score.toFixed(1)} / 5.0
-        </h2>
-        <p className="text-muted-foreground text-sm">Overall AI Maturity Score</p>
+    <div>
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleExportPDF}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium hover:bg-muted transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export PDF
+        </button>
       </div>
 
-      {/* Radar chart */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="font-semibold text-foreground mb-4">Dimension Scores</h3>
-        <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
-      </div>
+      <div ref={reportRef} className="space-y-6">
+        {/* Respondent header */}
+        {respondent && (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <p className="font-semibold text-foreground text-base">{respondent.full_name}</p>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {respondent.job_title} · {respondent.department}
+            </p>
+          </div>
+        )}
 
-      {/* Executive summary */}
-      <div className="bg-card border border-border rounded-xl p-6 space-y-2">
-        <h3 className="font-semibold text-foreground">Executive Summary</h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {recommendation.executive_summary}
-        </p>
-      </div>
+        {/* Overall score */}
+        <div className="bg-card border border-border rounded-xl p-6 text-center space-y-2">
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
+            {maturityLevel}
+          </span>
+          <p className="text-4xl font-bold text-foreground">
+            {totalScore}
+            <span className="text-xl text-muted-foreground font-normal"> / 72</span>
+          </p>
+          <p className="text-muted-foreground text-sm">Overall AI Maturity Score</p>
+        </div>
 
-      {/* Dimension insights */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-foreground">Dimension Insights</h3>
-        {recommendation.dimension_insights.map(insight => (
-          <div key={insight.dimension} className="bg-card border border-border rounded-xl p-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-foreground">{insight.dimension}</span>
-              <span className="text-sm font-semibold text-primary">{insight.score.toFixed(1)} / 5</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-green-700 uppercase tracking-wide">Strength</p>
-                <p className="text-muted-foreground">{insight.strength}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-orange-700 uppercase tracking-wide">Gap</p>
-                <p className="text-muted-foreground">{insight.gap}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-blue-700 uppercase tracking-wide">Recommendation</p>
-                <p className="text-muted-foreground">{insight.recommendation}</p>
-              </div>
+        {/* Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-3">Dimension Profile</h3>
+            <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-4">Pillar Scores</h3>
+            <div className="space-y-4">
+              {config.dimensions.map((dim, i) => {
+                const raw = rawScores[dim.id] ?? 0;
+                const pct = (raw / 12) * 100;
+                return (
+                  <div key={dim.id}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-foreground">{dim.shortName}</span>
+                      <span className="text-xs text-muted-foreground font-mono">{raw} / 12</span>
+                    </div>
+                    <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: PILLAR_COLORS[i] }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Priority actions */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-foreground">Priority Actions</h3>
-        {recommendation.priority_actions.map((action, i) => (
-          <div key={i} className="bg-card border border-border rounded-xl p-5 space-y-2">
-            <div className="flex items-start justify-between gap-4">
-              <p className="font-medium text-foreground text-sm">{action.action}</p>
-              <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full ${TIMEFRAME_COLORS[action.timeframe] ?? 'bg-muted text-foreground'}`}>
-                {action.timeframe}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">{action.rationale}</p>
-            <p className="text-xs text-primary font-medium">Impact: {action.impact}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Roadmap */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-foreground">Transformation Roadmap</h3>
+        {/* Strategic recommendations */}
         <div className="space-y-3">
-          {recommendation.roadmap.map((phase, i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+          <h3 className="font-semibold text-foreground">Strategic Recommendations</h3>
+
+          {recLoading && (
+            <div className="flex items-center gap-3 py-5 px-5 bg-card border border-border rounded-xl">
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />
+              <p className="text-sm text-muted-foreground">Generating personalized recommendations… (~15–30 seconds)</p>
+            </div>
+          )}
+
+          {recError && !recLoading && (
+            <div className="py-4 px-5 bg-card border border-destructive/40 rounded-xl space-y-1">
+              <p className="text-sm text-destructive font-medium">Could not generate recommendations</p>
+              <p className="text-xs text-muted-foreground font-mono">{recError}</p>
+            </div>
+          )}
+
+          {recommendation?.recommendations.map((rec, i) => (
+            <div key={i} className="bg-card border border-border rounded-xl p-5 space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                   {i + 1}
                 </span>
+                <h4 className="font-semibold text-foreground text-sm leading-snug">{rec.title}</h4>
+              </div>
+              <div className="pl-9 space-y-3 text-sm">
                 <div>
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide">{phase.phase}</span>
-                  <p className="font-medium text-foreground text-sm">{phase.label}</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Rationale</p>
+                  <p className="text-foreground leading-relaxed">{rec.rationale}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Strategic Action</p>
+                  <p className="text-foreground leading-relaxed">{rec.strategic_action}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Expected Impact</p>
+                  <p className="text-primary font-medium leading-relaxed">{rec.expected_impact}</p>
                 </div>
               </div>
-              <ul className="space-y-1">
-                {phase.initiatives.map((initiative, j) => (
-                  <li key={j} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-primary mt-0.5">•</span>
-                    {initiative}
-                  </li>
-                ))}
-              </ul>
             </div>
           ))}
         </div>
