@@ -9,20 +9,22 @@ interface SubmitPayload {
   config: DiagnosticConfig;
 }
 
+// Each question answered 0–3 (option index). Max per pillar = 4 questions × 3 = 12.
+// Scale each pillar to 1–5 for radar chart: 1 + (raw / maxRaw) * 4
 function computeScoreSummary(config: DiagnosticConfig, answers: Record<string, number>) {
-  const sums: Record<string, number> = {};
-  const counts: Record<string, number> = {};
+  const result: Record<string, number> = {};
 
-  for (const q of config.questions) {
-    if (answers[q.id] !== undefined) {
-      sums[q.dimension] = (sums[q.dimension] ?? 0) + answers[q.id];
-      counts[q.dimension] = (counts[q.dimension] ?? 0) + 1;
-    }
+  for (const dim of config.dimensions) {
+    const pillarQuestions = config.questions.filter(q => q.dimension === dim.id);
+    const rawScore = pillarQuestions.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
+    const maxRaw = pillarQuestions.length * 3;
+    const radarScore = maxRaw > 0
+      ? Math.round((1 + (rawScore / maxRaw) * 4) * 10) / 10
+      : 1;
+    result[dim.id] = radarScore;
   }
 
-  return Object.fromEntries(
-    Object.keys(sums).map(dim => [dim, sums[dim] / counts[dim]])
-  );
+  return result;
 }
 
 export function useSurveySubmit() {
@@ -36,7 +38,7 @@ export function useSurveySubmit() {
         .insert({
           diagnostic_id: config.slug,
           full_name: demographics.full_name,
-          job_title: demographics.job_title,
+          job_title: `${demographics.role} at ${demographics.enterprise}`,
           department: demographics.department,
           email: demographics.email,
         })
@@ -59,14 +61,17 @@ export function useSurveySubmit() {
 
       if (sErr) throw sErr;
 
-      // Trigger LLM report generation (fire-and-wait)
+      // Trigger LLM report generation
       const { data: recommendation, error: fnErr } = await supabase.functions.invoke(
         'generate-diagnostic-report',
         {
           body: {
             diagnostic_id: config.slug,
             response_id: (response as { id: string }).id,
-            respondent: demographics,
+            respondent: {
+              ...demographics,
+              full_name: demographics.full_name,
+            },
             diagnostic_title: config.title,
             questions: config.questions,
             answers,

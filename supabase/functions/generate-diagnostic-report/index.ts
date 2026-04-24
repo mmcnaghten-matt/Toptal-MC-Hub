@@ -90,12 +90,12 @@ ${answerDetail}
 
 Generate a detailed maturity report following the exact JSON schema below. Be specific, actionable, and tailored to this respondent's actual scores.
 
-Maturity levels:
-- Initial (avg score 1.0–1.9): Ad hoc, no formal AI practice
-- Developing (2.0–2.9): Some experimentation, limited scale
-- Defined (3.0–3.4): Documented processes, growing capability
-- Managed (3.5–4.4): Systematic, measured, scaling
-- Optimizing (4.5–5.0): Continuous improvement, industry-leading`;
+Maturity levels (based on pillar radar scores averaged 1–5):
+- Foundational (1.0–1.9): AI efforts are ad-hoc and siloed, no formal strategy
+- Developing (2.0–2.9): AI awareness growing with experimental projects, lacks coordination
+- Integrated (3.0–3.4): AI integrated into defined processes with established governance
+- Predictive (3.5–4.4): AI is a strategic capability with strong MLOps and cross-functional collaboration
+- Optimized & Adaptive (4.5–5.0): AI deeply embedded, continuously improving, enterprise-wide leader`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -125,7 +125,7 @@ Maturity levels:
                 properties: {
                   maturity_level: {
                     type: "string",
-                    enum: ["Initial", "Developing", "Defined", "Managed", "Optimizing"],
+                    enum: ["Foundational", "Developing", "Integrated", "Predictive", "Optimized & Adaptive"],
                   },
                   overall_score: { type: "number", description: "Average score across all dimensions, 1–5" },
                   executive_summary: { type: "string", description: "2-3 paragraph executive summary" },

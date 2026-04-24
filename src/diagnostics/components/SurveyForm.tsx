@@ -26,8 +26,10 @@ export default function SurveyForm({ questions, dimensions, onSubmit, isSubmitti
     questions: questions.filter(q => q.dimension === dim.id),
   }));
 
+  let questionNumber = 0;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-10">
       {/* Progress */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs text-muted-foreground">
@@ -42,44 +44,53 @@ export default function SurveyForm({ questions, dimensions, onSubmit, isSubmitti
         </div>
       </div>
 
-      {/* Questions grouped by dimension */}
+      {/* Questions grouped by pillar */}
       {questionsByDimension.map(({ dimension, questions: qs }) => (
-        <div key={dimension.id} className="space-y-5">
-          <h3 className="font-semibold text-foreground border-b border-border pb-2">
-            {dimension.label}
-          </h3>
-          {qs.map((q, idx) => (
-            <div key={q.id} className="space-y-3">
-              <p className="text-sm text-foreground">
-                <span className="text-muted-foreground mr-2 text-xs font-mono">
-                  {(questions.indexOf(q) + 1).toString().padStart(2, '0')}
-                </span>
-                {q.text}
-              </p>
-              <div className="space-y-1">
-                <div className="flex gap-2">
-                  {Array.from({ length: q.scale }, (_, i) => i + 1).map(val => (
+        <div key={dimension.id} className="space-y-6">
+          <div className="border-b border-border pb-2">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+              {dimension.shortName}
+            </p>
+            <h3 className="font-semibold text-foreground">{dimension.label}</h3>
+          </div>
+
+          {qs.map((q) => {
+            questionNumber += 1;
+            const num = questionNumber;
+            return (
+              <div key={q.id} className="space-y-3">
+                <p className="text-sm text-foreground font-medium">
+                  <span className="text-muted-foreground mr-2 text-xs font-mono tabular-nums">
+                    {num.toString().padStart(2, '0')}
+                  </span>
+                  {q.text}
+                </p>
+                <div className="space-y-2">
+                  {q.options.map((option, idx) => (
                     <button
-                      key={val}
+                      key={idx}
                       type="button"
-                      onClick={() => setAnswers(prev => ({ ...prev, [q.id]: val }))}
-                      className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                        answers[q.id] === val
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-card text-foreground border-border hover:border-primary/50'
+                      onClick={() => setAnswers(prev => ({ ...prev, [q.id]: idx }))}
+                      className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-colors ${
+                        answers[q.id] === idx
+                          ? 'bg-primary/10 border-primary text-foreground font-medium'
+                          : 'bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
                       }`}
                     >
-                      {val}
+                      <span className={`inline-block w-5 h-5 rounded-full border mr-3 text-xs font-bold text-center leading-5 shrink-0 ${
+                        answers[q.id] === idx
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'border-border'
+                      }`}>
+                        {String.fromCharCode(65 + idx)}
+                      </span>
+                      {option}
                     </button>
                   ))}
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground px-0.5">
-                  <span>{q.anchorLow}</span>
-                  <span>{q.anchorHigh}</span>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ))}
 

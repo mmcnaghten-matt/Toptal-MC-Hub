@@ -8,11 +8,11 @@ interface Props {
 }
 
 const MATURITY_COLORS: Record<string, string> = {
-  Initial: 'bg-red-100 text-red-800',
+  Foundational: 'bg-red-100 text-red-800',
   Developing: 'bg-orange-100 text-orange-800',
-  Defined: 'bg-yellow-100 text-yellow-800',
-  Managed: 'bg-blue-100 text-blue-800',
-  Optimizing: 'bg-green-100 text-green-800',
+  Integrated: 'bg-yellow-100 text-yellow-800',
+  Predictive: 'bg-blue-100 text-blue-800',
+  'Optimized & Adaptive': 'bg-green-100 text-green-800',
 };
 
 const TIMEFRAME_COLORS: Record<string, string> = {

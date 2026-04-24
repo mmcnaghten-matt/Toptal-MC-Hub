@@ -2,14 +2,13 @@ export interface QuestionConfig {
   id: string;
   dimension: string;
   text: string;
-  scale: number;
-  anchorLow: string;
-  anchorHigh: string;
+  options: string[];
 }
 
 export interface DimensionConfig {
   id: string;
   label: string;
+  shortName: string;
 }
 
 export interface DiagnosticConfig {
@@ -21,7 +20,7 @@ export interface DiagnosticConfig {
 }
 
 export interface RecommendationContent {
-  maturity_level: 'Initial' | 'Developing' | 'Defined' | 'Managed' | 'Optimizing';
+  maturity_level: 'Foundational' | 'Developing' | 'Integrated' | 'Predictive' | 'Optimized & Adaptive';
   overall_score: number;
   executive_summary: string;
   dimension_insights: {
@@ -48,6 +47,7 @@ export interface DiagnosticRespondent {
   id: string;
   diagnostic_id: string;
   full_name: string;
+  enterprise: string;
   job_title: string;
   department: string;
   email: string;

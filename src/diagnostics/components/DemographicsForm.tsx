@@ -4,7 +4,8 @@ import { z } from "zod";
 
 const schema = z.object({
   full_name: z.string().min(2, 'Name is required'),
-  job_title: z.string().min(2, 'Job title is required'),
+  enterprise: z.string().min(2, 'Organization name is required'),
+  role: z.string().min(2, 'Role is required'),
   department: z.string().min(2, 'Department is required'),
   email: z.string().email('Valid email is required'),
 });
@@ -32,7 +33,8 @@ export default function DemographicsForm({ onSubmit, isSubmitting }: Props) {
 
       {[
         { name: 'full_name' as const, label: 'Full Name', placeholder: 'Jane Smith' },
-        { name: 'job_title' as const, label: 'Job Title', placeholder: 'VP of Technology' },
+        { name: 'enterprise' as const, label: 'Organization', placeholder: 'Acme Corp' },
+        { name: 'role' as const, label: 'Role / Job Title', placeholder: 'VP of Technology' },
         { name: 'department' as const, label: 'Department', placeholder: 'Engineering' },
         { name: 'email' as const, label: 'Work Email', placeholder: 'jane@company.com' },
       ].map(({ name, label, placeholder }) => (
@@ -55,7 +57,7 @@ export default function DemographicsForm({ onSubmit, isSubmitting }: Props) {
         disabled={isSubmitting}
         className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
       >
-        {isSubmitting ? 'Saving…' : 'Start Survey'}
+        {isSubmitting ? 'Saving…' : 'Start Assessment'}
       </button>
     </form>
   );
