@@ -29,8 +29,10 @@ export default function SurveyPage({ config }: Props) {
     try {
       const { responseId } = await submit({ demographics, answers, config });
       navigate(`/diagnostics/${config.slug}/report/${responseId}`);
-    } catch {
-      toast.error('Something went wrong submitting your survey. Please try again.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
+      console.error('Survey submit error:', err);
+      toast.error(`Submission failed: ${msg}`);
     }
   };
 
