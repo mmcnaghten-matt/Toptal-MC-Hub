@@ -13,11 +13,11 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not set");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) {
+      console.error("GEMINI_API_KEY is not set");
       return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
+        JSON.stringify({ error: "GEMINI_API_KEY is not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -98,81 +98,59 @@ ${answerDetail}
 
 Based on the weakest pillars and biggest gaps, generate exactly 3 high-impact, specific strategic recommendations tailored to this organization's situation. Each recommendation must be actionable and clearly linked to the assessment data.`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+
+    const aiResponse = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert AI transformation consultant generating targeted strategic recommendations.",
-          },
-          { role: "user", content: prompt },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "produce_recommendations",
-              description: "Return 3 strategic recommendations for the AI maturity assessment",
-              parameters: {
-                type: "object",
-                required: ["maturity_level", "recommendations"],
-                additionalProperties: false,
-                properties: {
-                  maturity_level: {
-                    type: "string",
-                    enum: ["Foundational", "Developing", "Integrated", "Predictive", "Optimized & Adaptive"],
-                  },
-                  recommendations: {
-                    type: "array",
-                    minItems: 3,
-                    maxItems: 3,
-                    items: {
-                      type: "object",
-                      required: ["title", "rationale", "strategic_action", "expected_impact"],
-                      additionalProperties: false,
-                      properties: {
-                        title: { type: "string", description: "Short, compelling recommendation title" },
-                        rationale: { type: "string", description: "Why this matters given the assessment results" },
-                        strategic_action: { type: "string", description: "Specific action steps to take" },
-                        expected_impact: { type: "string", description: "Business outcomes if implemented" },
-                      },
-                    },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            required: ["maturity_level", "recommendations"],
+            properties: {
+              maturity_level: { type: "string" },
+              recommendations: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["title", "rationale", "strategic_action", "expected_impact"],
+                  properties: {
+                    title: { type: "string" },
+                    rationale: { type: "string" },
+                    strategic_action: { type: "string" },
+                    expected_impact: { type: "string" },
                   },
                 },
               },
             },
           },
-        ],
-        tool_choice: { type: "function", function: { name: "produce_recommendations" } },
+        },
       }),
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error("AI gateway error:", aiResponse.status, errorText);
+      console.error("Gemini API error:", aiResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: `AI gateway error: ${aiResponse.status}` }),
+        JSON.stringify({ error: `Gemini API error: ${aiResponse.status}` }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const aiData = await aiResponse.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      console.error("No tool call in AI response:", JSON.stringify(aiData));
+    const text = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      console.error("No text in Gemini response:", JSON.stringify(aiData));
       return new Response(
-        JSON.stringify({ error: "AI did not return structured output" }),
+        JSON.stringify({ error: "Gemini did not return content" }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const content = JSON.parse(toolCall.function.arguments);
+    const content = JSON.parse(text);
 
     // Store via service role (bypasses RLS)
     const { error: insertError } = await supabase
@@ -181,7 +159,7 @@ Based on the weakest pillars and biggest gaps, generate exactly 3 high-impact, s
         diagnostic_id,
         response_id,
         content,
-        model_used: "google/gemini-2.5-pro",
+        model_used: "gemini-2.5-pro",
       });
 
     if (insertError) {
