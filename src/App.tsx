@@ -11,6 +11,7 @@ import AccountMarketIntel from "./pages/AccountMarketIntel";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminIndustryInsights from "./pages/AdminIndustryInsights";
+import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 
 const queryClient = new QueryClient();
 
@@ -19,21 +20,29 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AuthGate>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/services" element={<MCServices />} />
-            <Route path="/way-of-working" element={<WayOfWorking />} />
-            <Route path="/industry-insights" element={<Index />} />
-            <Route path="/account-market-intel" element={<AccountMarketIntel />} />
-            <Route path="/client-insights" element={<AccountMarketIntel />} />
-            <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthGate>
+      <BrowserRouter>
+        <Routes>
+          {/* Diagnostic routes — no Google OAuth required */}
+          <Route path="/diagnostics/:slug/*" element={<DiagnosticShell />} />
+
+          {/* Hub routes — require Toptal Google auth */}
+          <Route path="/*" element={
+            <AuthGate>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/services" element={<MCServices />} />
+                <Route path="/way-of-working" element={<WayOfWorking />} />
+                <Route path="/industry-insights" element={<Index />} />
+                <Route path="/account-market-intel" element={<AccountMarketIntel />} />
+                <Route path="/client-insights" element={<AccountMarketIntel />} />
+                <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthGate>
+          } />
+        </Routes>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
