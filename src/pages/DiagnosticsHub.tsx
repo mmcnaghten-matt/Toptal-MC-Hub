@@ -13,7 +13,16 @@ const mcDiagnostics = [
   },
 ];
 
-const industryDiagnostics: typeof mcDiagnostics = [];
+const industryDiagnostics: typeof mcDiagnostics = [
+  {
+    slug: "me-platform",
+    title: "M&E Platform Maturity Diagnostic",
+    description:
+      "Assess your organization's readiness to transition from a linear media model to an optimized multi-sided platform across Ecosystem Strategy, Data Mastery, Content & AI, Monetization, Architecture, and Governance.",
+    pillars: ["Ecosystem Strategy", "Data Mastery", "Content & AI", "Monetization", "Architecture", "Governance"],
+    path: "/diagnostics/me-platform",
+  },
+];
 
 function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
   return (
