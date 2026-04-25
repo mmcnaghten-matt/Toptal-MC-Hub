@@ -3,7 +3,7 @@ import type { DiagnosticConfig } from '../types';
 const config: DiagnosticConfig = {
   slug: 'ai-maturity',
   scoreDisplay: 'normalized' as const,
-  title: 'AI Navigator Checkup',
+  title: 'AI Maturity Checkup',
   description: 'Assess your organization\'s AI readiness across six critical pillars and receive a personalized transformation roadmap.',
   dimensions: [
     { id: 'strategy', label: 'AI Strategy & Vision', shortName: 'Strategy' },

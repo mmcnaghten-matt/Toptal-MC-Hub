@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ArrowRight, Brain } from "lucide-react";
+import { ChevronLeft, ArrowRight, Brain, Layers } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 const mcDiagnostics = [
   {
     slug: "ai-maturity",
-    title: "AI Navigator Checkup",
+    title: "AI Maturity Checkup",
     description:
       "Assess your organization's AI readiness across six critical pillars — Strategy, Data & Technology, Development, Talent, Governance, and Change Management — and receive a personalized transformation roadmap.",
     pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
@@ -80,8 +80,11 @@ export default function DiagnosticsHub() {
 
         {/* Management Consulting Diagnostics */}
         <section>
-          <h3 className="text-lg font-semibold text-foreground mb-1">Management Consulting Diagnostics</h3>
-          <p className="text-sm text-muted-foreground mb-5">Cross-industry assessments supporting the MC engagement lifecycle.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <Layers className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="text-xl font-semibold text-foreground">Management Consulting Diagnostics</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5 ml-6">Cross-industry assessments supporting the MC engagement lifecycle.</p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {mcDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
           </div>
@@ -89,8 +92,11 @@ export default function DiagnosticsHub() {
 
         {/* Toptal Industry Solution Diagnostics */}
         <section>
-          <h3 className="text-lg font-semibold text-foreground mb-1">Toptal Industry Solution Diagnostics</h3>
-          <p className="text-sm text-muted-foreground mb-5">Sector-specific assessments aligned to Toptal's industry solution offerings.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <Layers className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="text-xl font-semibold text-foreground">Toptal Industry Solution Diagnostics</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5 ml-6">Sector-specific assessments aligned to Toptal's industry solution offerings.</p>
           {industryDiagnostics.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {industryDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
