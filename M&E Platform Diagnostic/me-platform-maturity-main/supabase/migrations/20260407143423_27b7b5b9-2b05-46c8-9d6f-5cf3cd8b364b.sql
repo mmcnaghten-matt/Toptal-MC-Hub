@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can update survey records" ON public.survey_records FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
