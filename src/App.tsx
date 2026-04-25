@@ -11,6 +11,7 @@ import AccountMarketIntel from "./pages/AccountMarketIntel";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminIndustryInsights from "./pages/AdminIndustryInsights";
+import DiagnosticsHub from "./pages/DiagnosticsHub";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/industry-insights" element={<Index />} />
                 <Route path="/account-market-intel" element={<AccountMarketIntel />} />
                 <Route path="/client-insights" element={<AccountMarketIntel />} />
+                <Route path="/diagnostics-hub" element={<DiagnosticsHub />} />
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

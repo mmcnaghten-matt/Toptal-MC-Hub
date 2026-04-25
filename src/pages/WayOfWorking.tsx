@@ -339,12 +339,22 @@ export default function WayOfWorking() {
               <span
                 key={level}
                 className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                
+
                   Level {i + 1}: {level}
                 </span>
               )}
             </div>
           </div>
+          <Link
+            to="/diagnostics-hub"
+            className="mt-4 flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 px-4 py-3 hover:bg-primary/10 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">Access to Toptal's Maturity Model Diagnostics</span>
+            </div>
+            <ArrowRight className="h-4 w-4 text-primary" />
+          </Link>
         </section>
 
         {/* Delivery Standards (slide 16) */}
