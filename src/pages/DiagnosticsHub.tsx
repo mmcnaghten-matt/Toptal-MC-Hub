@@ -9,7 +9,7 @@ const diagnostics = [
     description:
       "Assess your organization's AI readiness across six critical pillars — Strategy, Data & Technology, Development, Talent, Governance, and Change Management — and receive a personalized transformation roadmap.",
     pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
-    path: "/diagnostics/ai-maturity/survey",
+    path: "/diagnostics/ai-maturity",
   },
 ];
 

@@ -1,6 +1,7 @@
-import { useParams, Routes, Route, Navigate } from "react-router-dom";
+import { useParams, Routes, Route } from "react-router-dom";
 import { getDiagnosticConfig } from "../config";
 import DiagnosticPasswordGate from "../components/DiagnosticPasswordGate";
+import DiagnosticEntryGate from "../components/DiagnosticEntryGate";
 import SurveyPage from "./SurveyPage";
 import ReportPage from "./ReportPage";
 import AdminPage from "./AdminPage";
@@ -19,7 +20,7 @@ export default function DiagnosticShell() {
 
   return (
     <Routes>
-      <Route index element={<Navigate to="survey" replace />} />
+      <Route index element={<DiagnosticEntryGate slug={config.slug} />} />
 
       <Route
         path="survey"
