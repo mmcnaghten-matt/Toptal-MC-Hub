@@ -56,12 +56,12 @@ export function useRespondent(respondentId: string | undefined) {
 
       const { data, error } = await supabase
         .from('diagnostic_respondents' as never)
-        .select('id, full_name, job_title, department')
+        .select('id, full_name, enterprise, role, job_title, department')
         .eq('id', respondentId)
         .maybeSingle();
 
       if (error) throw error;
-      return data as { id: string; full_name: string; job_title: string; department: string } | null;
+      return data as { id: string; full_name: string; enterprise: string; role: string; job_title: string; department: string } | null;
     },
     enabled: !!respondentId,
   });

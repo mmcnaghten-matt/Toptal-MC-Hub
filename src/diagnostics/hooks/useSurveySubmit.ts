@@ -32,6 +32,8 @@ export function useSurveySubmit() {
         .insert({
           diagnostic_id: config.slug,
           full_name: demographics.full_name,
+          enterprise: demographics.enterprise,
+          role: demographics.role,
           job_title: `${demographics.role} at ${demographics.enterprise}`,
           department: demographics.department,
           email: demographics.email,

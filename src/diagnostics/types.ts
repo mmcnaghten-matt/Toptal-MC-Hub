@@ -36,6 +36,8 @@ export interface DiagnosticRespondent {
   id: string;
   diagnostic_id: string;
   full_name: string;
+  enterprise: string;
+  role: string;
   job_title: string;
   department: string;
   email: string;

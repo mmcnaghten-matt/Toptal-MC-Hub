@@ -8,7 +8,7 @@ interface Props {
   config: DiagnosticConfig;
   answers: Record<string, number>;
   scoreSummary: Record<string, number>;
-  respondent: { full_name: string; job_title: string; department: string } | null;
+  respondent: { full_name: string; enterprise: string; role: string; department: string } | null;
   recommendation: RecommendationContent | null;
   recLoading: boolean;
   recError: string | null;
@@ -97,7 +97,7 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
           <div className="bg-card border border-border rounded-xl p-5">
             <p className="font-semibold text-foreground text-base">{respondent.full_name}</p>
             <p className="text-muted-foreground text-sm mt-0.5">
-              {respondent.job_title} · {respondent.department}
+              {respondent.role} · {respondent.enterprise} · {respondent.department}
             </p>
           </div>
         )}
