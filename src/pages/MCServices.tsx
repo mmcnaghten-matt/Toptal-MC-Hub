@@ -528,10 +528,13 @@ export default function MCServices() {
             <Presentation className="h-4 w-4 text-primary" />
             <h2 className="text-xl font-bold text-card-foreground">Go-to-Market Materials</h2>
           </div>
-          <p className="mb-4 text-sm text-muted-foreground">
+          <p className="mb-1 text-sm text-muted-foreground">
             Overview decks, battlecards, maturity diagnostic models, and example client materials available per service.
             <br />
-            [click on blue check marks to access GTM material]
+            [Click on the blue links - Doc, PDF, Diagnostic, or Example Name - to access GTM material]
+          </p>
+          <p className="mb-4 text-xs text-primary">
+            [Note to Talent - Your access to overview decks is restricted to the PDF version. Contact MC leadership for a Google Slide copy as needed]
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
