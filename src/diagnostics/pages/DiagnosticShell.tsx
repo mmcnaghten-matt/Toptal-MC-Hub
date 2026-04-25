@@ -20,12 +20,12 @@ export default function DiagnosticShell() {
 
   return (
     <Routes>
-      <Route index element={<DiagnosticEntryGate slug={config.slug} />} />
+      <Route index element={<DiagnosticEntryGate slug={config.slug} title={config.title} />} />
 
       <Route
         path="survey"
         element={
-          <DiagnosticPasswordGate slug={config.slug} role="respondent">
+          <DiagnosticPasswordGate slug={config.slug} role="respondent" title={config.title}>
             <SurveyPage config={config} />
           </DiagnosticPasswordGate>
         }
@@ -37,7 +37,7 @@ export default function DiagnosticShell() {
       <Route
         path="admin"
         element={
-          <DiagnosticPasswordGate slug={config.slug} role="admin">
+          <DiagnosticPasswordGate slug={config.slug} role="admin" title={config.title}>
             <AdminPage config={config} />
           </DiagnosticPasswordGate>
         }

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Props {
   slug: string;
   role: 'respondent' | 'admin';
+  title: string;
   children: React.ReactNode;
 }
 
@@ -12,7 +13,7 @@ function storageKey(slug: string, role: string) {
   return `diagnostic-auth-${slug}-${role}`;
 }
 
-export default function DiagnosticPasswordGate({ slug, role, children }: Props) {
+export default function DiagnosticPasswordGate({ slug, role, title, children }: Props) {
   const [authenticated, setAuthenticated] = useState(
     () => sessionStorage.getItem(storageKey(slug, role)) === "true"
   );
@@ -63,6 +64,7 @@ export default function DiagnosticPasswordGate({ slug, role, children }: Props) 
           </div>
         </div>
         <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">{title}</p>
           <h1 className="text-xl font-semibold text-foreground">{label}</h1>
           <p className="text-sm text-muted-foreground mt-1">{hint}</p>
         </div>

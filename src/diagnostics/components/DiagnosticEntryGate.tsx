@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   slug: string;
+  title: string;
 }
 
 function storageKey(slug: string, role: string) {
   return `diagnostic-auth-${slug}-${role}`;
 }
 
-export default function DiagnosticEntryGate({ slug }: Props) {
+export default function DiagnosticEntryGate({ slug, title }: Props) {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export default function DiagnosticEntryGate({ slug }: Props) {
           </div>
         </div>
         <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">{title}</p>
           <h1 className="text-xl font-semibold text-foreground">Diagnostic Access</h1>
           <p className="text-sm text-muted-foreground mt-1">Enter your access code to continue</p>
         </div>
