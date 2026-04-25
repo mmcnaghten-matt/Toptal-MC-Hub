@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { DiagnosticConfig, DiagnosticRespondent, DiagnosticResponse, DiagnosticRecommendation } from "../types";
+import type { DiagnosticConfig, DiagnosticRespondent, DiagnosticResponse, DiagnosticRecommendation, RecommendationContent } from "../types";
+import ReportView from "./ReportView";
 
 interface AdminRow {
   respondent: DiagnosticRespondent;
@@ -77,9 +78,49 @@ function SurveyResponsesModal({ config, row, onClose }: { config: DiagnosticConf
   );
 }
 
+function ReportModal({ config, row, onClose }: { config: DiagnosticConfig; row: AdminRow; onClose: () => void }) {
+  const answers = (row.response.answers ?? {}) as Record<string, number>;
+  const scoreSummary = ((row.response.score_summary ?? {}) as Record<string, number>);
+  const recContent = row.recommendation?.content as RecommendationContent | null ?? null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-8 px-4 pb-8 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background rounded-2xl shadow-2xl w-full max-w-3xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+          <div>
+            <h2 className="font-bold text-foreground text-lg">Full Report</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {row.respondent.full_name} · {row.respondent.enterprise}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+        <div className="p-6">
+          <ReportView
+            config={config}
+            answers={answers}
+            scoreSummary={scoreSummary}
+            respondent={{ full_name: row.respondent.full_name, enterprise: row.respondent.enterprise, role: row.respondent.role, department: row.respondent.department }}
+            recommendation={recContent}
+            recLoading={false}
+            recError={recContent ? null : 'No recommendation on record for this submission.'}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard({ config, rows }: Props) {
   const [search, setSearch] = useState('');
   const [viewingRow, setViewingRow] = useState<AdminRow | null>(null);
+  const [reportRow, setReportRow] = useState<AdminRow | null>(null);
   const queryClient = useQueryClient();
 
   const filtered = rows.filter(row => {
@@ -130,6 +171,9 @@ export default function AdminDashboard({ config, rows }: Props) {
     <>
       {viewingRow && (
         <SurveyResponsesModal config={config} row={viewingRow} onClose={() => setViewingRow(null)} />
+      )}
+      {reportRow && (
+        <ReportModal config={config} row={reportRow} onClose={() => setReportRow(null)} />
       )}
 
       <div className="space-y-4">
@@ -212,6 +256,15 @@ export default function AdminDashboard({ config, rows }: Props) {
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setReportRow(row)}
+                              title="View full report"
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                               </svg>
                             </button>
                             <button
