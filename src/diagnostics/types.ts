@@ -17,6 +17,7 @@ export interface DiagnosticConfig {
   description: string;
   dimensions: DimensionConfig[];
   questions: QuestionConfig[];
+  scoreDisplay?: 'raw' | 'normalized'; // raw = X/max per pillar; normalized = X.X/5
 }
 
 export interface StrategicRecommendation {

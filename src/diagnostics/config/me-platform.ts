@@ -2,6 +2,7 @@ import type { DiagnosticConfig } from '../types';
 
 const config: DiagnosticConfig = {
   slug: 'me-platform',
+  scoreDisplay: 'normalized' as const,
   title: 'M&E Platform Maturity Diagnostic',
   description: 'Assess your organization\'s readiness to transition from a linear media model to an optimized multi-sided platform across six critical pillars.',
   dimensions: [

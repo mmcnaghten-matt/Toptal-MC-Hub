@@ -48,11 +48,18 @@ function computeMaturityLevel(raw: number, maxRaw: number): RecommendationConten
 export default function ReportView({ config, answers, scoreSummary, respondent, recommendation, recLoading, recError }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
 
+  const scoreDisplay = config.scoreDisplay ?? 'raw';
   const pillarStats = computePillarStats(config, answers);
-  const totalScore = Object.values(pillarStats).reduce((sum, s) => sum + s.raw, 0);
-  const maxScore = Object.values(pillarStats).reduce((sum, s) => sum + s.max, 0);
-  const maturityLevel = computeMaturityLevel(totalScore, maxScore);
+  const totalRaw = Object.values(pillarStats).reduce((sum, s) => sum + s.raw, 0);
+  const maxRaw = Object.values(pillarStats).reduce((sum, s) => sum + s.max, 0);
+  const maturityLevel = computeMaturityLevel(totalRaw, maxRaw);
   const badgeClass = MATURITY_BADGE[maturityLevel] ?? 'bg-muted text-foreground';
+
+  // Normalized display: show average 1–5 score across pillars
+  const pillarNorm = config.dimensions.map(d => scoreSummary[d.id] ?? 1);
+  const avgScore = pillarNorm.length > 0
+    ? pillarNorm.reduce((a, b) => a + b, 0) / pillarNorm.length
+    : 1;
 
   const handleExportPDF = async () => {
     const el = reportRef.current;
@@ -100,11 +107,18 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
             {maturityLevel}
           </span>
-          <p className="text-4xl font-bold text-foreground">
-            {totalScore}
-            <span className="text-xl text-muted-foreground font-normal"> / {maxScore}</span>
-          </p>
-          <p className="text-muted-foreground text-sm">Overall AI Maturity Score</p>
+          {scoreDisplay === 'normalized' ? (
+            <p className="text-4xl font-bold text-foreground">
+              {avgScore.toFixed(1)}
+              <span className="text-xl text-muted-foreground font-normal"> / 5</span>
+            </p>
+          ) : (
+            <p className="text-4xl font-bold text-foreground">
+              {totalRaw}
+              <span className="text-xl text-muted-foreground font-normal"> / {maxRaw}</span>
+            </p>
+          )}
+          <p className="text-muted-foreground text-sm">Overall Maturity Score</p>
         </div>
 
         {/* Charts */}
@@ -119,12 +133,18 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
             <div className="space-y-4">
               {config.dimensions.map((dim, i) => {
                 const { raw, max } = pillarStats[dim.id] ?? { raw: 0, max: 1 };
-                const pct = max > 0 ? (raw / max) * 100 : 0;
+                const normScore = scoreSummary[dim.id] ?? 1;
+                const pct = scoreDisplay === 'normalized'
+                  ? ((normScore - 1) / 4) * 100
+                  : max > 0 ? (raw / max) * 100 : 0;
                 return (
                   <div key={dim.id}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-medium text-foreground">{dim.shortName}</span>
-                      <span className="text-xs text-muted-foreground font-mono">{raw} / {max}</span>
+                      {scoreDisplay === 'normalized'
+                        ? <span className="text-xs text-muted-foreground font-mono">{normScore.toFixed(1)} / 5</span>
+                        : <span className="text-xs text-muted-foreground font-mono">{raw} / {max}</span>
+                      }
                     </div>
                     <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                       <div

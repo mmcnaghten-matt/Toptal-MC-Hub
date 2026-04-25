@@ -68,7 +68,7 @@ export default function ReportPage({ config }: Props) {
   return (
     <DiagnosticLayout title={config.title}>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Your AI Maturity Report</h1>
+        <h1 className="text-2xl font-bold text-foreground">{config.title}</h1>
         <p className="text-muted-foreground text-sm mt-1">Based on your survey responses.</p>
       </div>
       <ReportView
