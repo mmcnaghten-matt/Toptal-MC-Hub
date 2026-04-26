@@ -22,9 +22,19 @@ const industryDiagnostics: typeof mcDiagnostics = [
     pillars: ["Ecosystem Strategy", "Data Mastery", "Content & AI", "Monetization", "Architecture", "Governance"],
     path: "/diagnostics/me-platform",
   },
+  {
+    slug: "cannes-me-fan-audience",
+    title: "M&E Fan/Audience Platform Diagnostic — Cannes Edition",
+    description:
+      "A focused assessment of your organization's maturity in building direct, data-driven fan and audience relationships — covering data foundations, personalization, DTC channels, monetization, real-time engagement, AI, and ecosystem integration.",
+    pillars: ["Fan Data", "Personalization", "DTC Channels", "Monetization", "Real-Time Engagement", "AI & Analytics", "Ecosystem", "Org Readiness"],
+    path: "/cannes-diagnostic",
+  },
 ];
 
 function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
+  const navigate = useNavigate();
+  const isExternal = d.path.startsWith("http");
   return (
     <div className="card-hover group flex flex-col rounded-lg border border-border bg-card p-6">
       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/8 mb-4">
@@ -40,7 +50,7 @@ function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
         ))}
       </div>
       <button
-        onClick={() => window.open(d.path, "_blank")}
+        onClick={() => isExternal ? window.open(d.path, "_blank") : navigate(d.path)}
         className="flex items-center justify-between w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
       >
         Launch Diagnostic

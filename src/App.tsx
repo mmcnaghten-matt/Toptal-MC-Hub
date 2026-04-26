@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import AdminIndustryInsights from "./pages/AdminIndustryInsights";
 import DiagnosticsHub from "./pages/DiagnosticsHub";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
+import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
         <Routes>
           {/* Diagnostic routes — no Google OAuth required */}
           <Route path="/diagnostics/:slug/*" element={<DiagnosticShell />} />
+          <Route path="/cannes-diagnostic/*" element={<CannesDiagnosticShell />} />
 
           {/* Hub routes — require Toptal Google auth */}
           <Route path="/*" element={
