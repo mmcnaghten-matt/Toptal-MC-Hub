@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useSurvey } from "@/cannes-diagnostic/context/SurveyContext";
 import { surveyQuestions } from "@/cannes-diagnostic/data/cannesSurveyData";
 import { CheckCircle2 } from "lucide-react";
+import { ResultsModal } from "@/cannes-diagnostic/components/ResultsModal";
 
 export default function SurveyPage() {
   const { isAuthenticated, userInfo, answers, setAnswer } = useSurvey();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
@@ -16,6 +18,7 @@ export default function SurveyPage() {
   }, [mounted, isAuthenticated, userInfo, navigate]);
 
   if (!mounted || !isAuthenticated || !userInfo) return null;
+  if (showResults) return <ResultsModal />;
 
   const allAnswered = surveyQuestions.every((q) => answers[q.id] !== undefined);
   const answeredCount = surveyQuestions.filter((q) => answers[q.id] !== undefined).length;
@@ -93,7 +96,7 @@ export default function SurveyPage() {
         {/* Navigation */}
         <div className="flex items-center justify-center mt-10 pt-6 border-t border-border">
           <button
-            onClick={() => navigate("/cannes-diagnostic/results")}
+            onClick={() => setShowResults(true)}
             disabled={!allAnswered}
             className={`inline-flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-medium transition-all ${
               allAnswered
