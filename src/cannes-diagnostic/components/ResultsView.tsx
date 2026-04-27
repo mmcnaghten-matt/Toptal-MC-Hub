@@ -68,7 +68,7 @@ export function ResultsView({
   return (
     <div className="space-y-8">
       {/* Overall Score */}
-      <div className="bg-card rounded-xl border border-border p-8 text-center">
+      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
         <p className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Overall Maturity Score</p>
         <div
           className="inline-flex h-28 w-28 items-center justify-center rounded-full text-4xl font-bold mx-auto"
@@ -89,7 +89,7 @@ export function ResultsView({
       </div>
 
       {/* Per-Category Breakdown */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
           Score by Category
@@ -118,7 +118,7 @@ export function ResultsView({
       </div>
 
       {/* Benchmark Comparison */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">How You Compare to Industry Leaders</h2>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -150,7 +150,7 @@ export function ResultsView({
       </div>
 
       {/* AI Recommendations */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
           AI-Powered Strategic Recommendations
@@ -159,7 +159,7 @@ export function ResultsView({
         {aiRecs.length > 0 ? (
           <div className="space-y-6">
             {aiRecs.map((rec, i) => (
-              <div key={i} className="border border-border rounded-lg p-5 space-y-3">
+              <div key={i} className="border border-gray-200 rounded-lg p-5 space-y-3">
                 <div className="flex items-start gap-3">
                   <span
                     className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold"

@@ -99,7 +99,7 @@ export default function AdminPage() {
 
   const renderRecordDetail = (rec: CompletedRecord) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50 p-4" onClick={() => setSelectedRecord(null)}>
-      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-xl" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl border border-border bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-xl border-b border-border bg-card p-6">
           <div>
             <h2 className="text-lg font-semibold text-foreground">{rec.userInfo.name}</h2>
