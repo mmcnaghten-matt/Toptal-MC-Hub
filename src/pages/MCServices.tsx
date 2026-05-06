@@ -133,6 +133,7 @@ interface GTMRow {
   docUrl?: string;
   pdfUrl?: string;
   battlecardUrl?: string;
+  sellersSheetUrl?: string;
   maturityModelUrl?: string;
   maturityDiagnosticUrl?: string;
   exampleMaterials?: { label: string; url: string }[];
@@ -206,6 +207,7 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1Fg_9v11GJFglH76znXgNyY2Q4vlzbXSI/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
     maturityDiagnosticUrl: "/diagnostics/ai-maturity",
     exampleMaterials: [
@@ -543,6 +545,7 @@ export default function MCServices() {
                   <th className="pb-2 pr-4 text-left font-semibold text-foreground align-middle">Service</th>
                   <th colSpan={2} className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Overview Deck</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Battlecard</th>
+                  <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Sellers Sheet</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Maturity Model</th>
                   <th className="pb-2 pl-4 text-left font-semibold text-foreground align-middle">Example Materials</th>
                 </tr>
@@ -555,7 +558,7 @@ export default function MCServices() {
                   if (rows.length === 0) return [];
                   return [
                     <tr key={`hdr-${practice}`} className="bg-muted">
-                      <td colSpan={6} className="py-2 px-3 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <td colSpan={7} className="py-2 px-3 text-xs font-bold uppercase tracking-wider text-foreground">
                         {practice}
                       </td>
                     </tr>,
@@ -583,6 +586,15 @@ export default function MCServices() {
                         <td className="py-2 px-3 text-center">
                           {row.battlecardUrl ? (
                             <a href={row.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                              Doc
+                            </a>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          {row.sellersSheetUrl ? (
+                            <a href={row.sellersSheetUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                               Doc
                             </a>
                           ) : (
