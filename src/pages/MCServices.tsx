@@ -232,6 +232,7 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/19Bj0TbM74IX5jODeHOBb67gt1FJ4huZY/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
   },
   {
