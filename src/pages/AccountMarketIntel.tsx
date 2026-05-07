@@ -35,6 +35,45 @@ const toStr = (v: unknown): string => {
 const Markdown = ({ children, ...props }: React.ComponentProps<typeof ReactMarkdown> & { children: any }) => (
   <ReactMarkdown {...props}>{toStr(children)}</ReactMarkdown>
 );
+
+function WinLossColumns({ raw }: { raw: string }) {
+  try {
+    const parsed = JSON.parse(raw);
+    const wins: string[] = Array.isArray(parsed.wins) ? parsed.wins : [];
+    const losses: string[] = Array.isArray(parsed.losses) ? parsed.losses : [];
+    if (wins.length || losses.length) {
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+            <h5 className="text-xs font-bold uppercase tracking-widest text-green-700 mb-3">Wins</h5>
+            <ul className="space-y-2">
+              {wins.map((w, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-green-500" />
+                  {w}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <h5 className="text-xs font-bold uppercase tracking-widest text-red-700 mb-3">Losses</h5>
+            <ul className="space-y-2">
+              {losses.map((l, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
+                  {l}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+  } catch {
+    // not JSON
+  }
+  return <div className="prose prose-neutral text-sm text-foreground"><Markdown>{raw}</Markdown></div>;
+}
 import {
   ResponsiveContainer,
   Radar,
@@ -756,27 +795,21 @@ export default function AccountMarketIntel() {
                   </div>
                   <div className="p-8 space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-6">
-                        <div className="p-6 bg-secondary/30 rounded-lg border border-border">
-                          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Market Sentiment</h4>
-                          <div className="text-3xl font-bold text-foreground mb-2">{result.customerInsights.sentiment}</div>
-                          <p className="text-sm text-muted-foreground">Aggregated from reviews, social media, and industry reports.</p>
-                        </div>
-                        <div className="space-y-4">
-                          <h4 className="text-sm font-bold text-foreground">Win/Loss Reasons</h4>
-                          <div className="prose prose-neutral text-sm text-foreground">
-                            <Markdown>{result.customerInsights.winLossReasons}</Markdown>
-                          </div>
+                      <div className="p-6 bg-secondary/30 rounded-lg border border-border">
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Market Sentiment</h4>
+                        <div className="text-3xl font-bold text-foreground mb-2">{result.customerInsights.sentiment}</div>
+                        <p className="text-sm text-muted-foreground">Aggregated from reviews, social media, and industry reports.</p>
+                      </div>
+                      <div className="p-6 bg-primary/5 rounded-lg border border-primary/10">
+                        <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4">Unmet Customer Needs</h4>
+                        <div className="prose prose-neutral text-sm text-foreground">
+                          <Markdown>{result.customerInsights.unmetNeeds}</Markdown>
                         </div>
                       </div>
-                      <div className="space-y-6">
-                        <div className="p-6 bg-primary/5 rounded-lg border border-primary/10">
-                          <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4">Unmet Customer Needs</h4>
-                          <div className="prose prose-neutral text-sm text-foreground">
-                            <Markdown>{result.customerInsights.unmetNeeds}</Markdown>
-                          </div>
-                        </div>
-                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-bold text-foreground">Win/Loss Reasons</h4>
+                      <WinLossColumns raw={toStr(result.customerInsights.winLossReasons)} />
                     </div>
                   </div>
                 </section>

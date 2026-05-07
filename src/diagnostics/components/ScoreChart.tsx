@@ -2,6 +2,7 @@ import {
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
+  PolarRadiusAxis,
   Radar,
   ResponsiveContainer,
   Tooltip,
@@ -23,13 +24,15 @@ export default function ScoreChart({ dimensions, scoreSummary }: Props) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <RadarChart data={data}>
-        <PolarGrid />
+        <PolarGrid gridType="polygon" />
+        {/* Force fixed 0–5 domain so the scale is always consistent */}
+        <PolarRadiusAxis domain={[0, 5]} tickCount={6} tick={false} axisLine={false} />
         <PolarAngleAxis
           dataKey="dimension"
           tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
         />
         <Tooltip
-          formatter={(value: number) => [value.toFixed(1), 'Score']}
+          formatter={(value: number) => [value.toFixed(1), 'Score (1–5)']}
           contentStyle={{
             background: 'hsl(var(--card))',
             border: '1px solid hsl(var(--border))',

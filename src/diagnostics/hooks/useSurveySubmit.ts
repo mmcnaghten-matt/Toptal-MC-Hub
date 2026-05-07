@@ -14,7 +14,7 @@ function computeScoreSummary(config: DiagnosticConfig, answers: Record<string, n
   for (const dim of config.dimensions) {
     const pillarQuestions = config.questions.filter(q => q.dimension === dim.id);
     const rawScore = pillarQuestions.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
-    const maxRaw = pillarQuestions.length * 3;
+    const maxRaw = pillarQuestions.reduce((sum, q) => sum + (q.options.length - 1), 0);
     result[dim.id] = maxRaw > 0
       ? Math.round((1 + (rawScore / maxRaw) * 4) * 10) / 10
       : 1;
@@ -32,6 +32,8 @@ export function useSurveySubmit() {
         .insert({
           diagnostic_id: config.slug,
           full_name: demographics.full_name,
+          enterprise: demographics.enterprise,
+          role: demographics.role,
           job_title: `${demographics.role} at ${demographics.enterprise}`,
           department: demographics.department,
           email: demographics.email,

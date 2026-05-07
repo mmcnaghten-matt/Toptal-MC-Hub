@@ -12,7 +12,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminIndustryInsights from "./pages/AdminIndustryInsights";
 import DiagnosticsHub from "./pages/DiagnosticsHub";
+import MCServicesWeb from "./pages/MCServicesWeb";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
+import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,7 @@ const App = () => (
         <Routes>
           {/* Diagnostic routes — no Google OAuth required */}
           <Route path="/diagnostics/:slug/*" element={<DiagnosticShell />} />
+          <Route path="/cannes-diagnostic/*" element={<CannesDiagnosticShell />} />
 
           {/* Hub routes — require Toptal Google auth */}
           <Route path="/*" element={
@@ -32,6 +35,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/services" element={<MCServices />} />
+                <Route path="/services/web" element={<MCServicesWeb />} />
                 <Route path="/way-of-working" element={<WayOfWorking />} />
                 <Route path="/industry-insights" element={<Index />} />
                 <Route path="/account-market-intel" element={<AccountMarketIntel />} />

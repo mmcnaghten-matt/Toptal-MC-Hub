@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
+import ConstellationDiagram from "@/components/ConstellationDiagram";
 
 const definition = {
   title: "Management Consulting Services",
@@ -133,6 +134,7 @@ interface GTMRow {
   docUrl?: string;
   pdfUrl?: string;
   battlecardUrl?: string;
+  sellersSheetUrl?: string;
   maturityModelUrl?: string;
   maturityDiagnosticUrl?: string;
   exampleMaterials?: { label: string; url: string }[];
@@ -149,6 +151,7 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1Ilu2WNeBBXj-Y_yEDaipkIkV0cpXUbzh/view?usp=sharing",
     battlecardUrl: "https://docs.google.com/presentation/d/1KQ4jH3CHvMQJ4xYRyBbqsMOBMHaUmznl_20J003HyZc/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1N8J9ejIBZNJWDf8eYl8vwl1QZB2vLCcI2xCuClEkOsQ/edit",
     exampleMaterials: [
       { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
@@ -172,6 +175,7 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1DnZ419DYA2PvP7CYOPUsKM--SDtLuVmi/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/19AUSpdMRueIZR70q64dCo6U3IKKbkPHVod6D4t_bIbw/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1Eog-BhkRgRion8wH4jtoFq0TY4XB0LzkYpAu-tBU0_k/edit",
   },
   {
@@ -206,8 +210,9 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1Fg_9v11GJFglH76znXgNyY2Q4vlzbXSI/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
-    maturityDiagnosticUrl: "https://ai-navigator-checkup.lovable.app/",
+    maturityDiagnosticUrl: "/diagnostics/ai-maturity",
     exampleMaterials: [
       { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
       { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
@@ -228,6 +233,7 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/19Bj0TbM74IX5jODeHOBb67gt1FJ4huZY/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
   },
   {
@@ -522,16 +528,39 @@ export default function MCServices() {
           </section>
         </div>
 
+        {/* MC Services Web */}
+        <section className="fade-in rounded-lg border border-border bg-card p-6">
+          <div className="grid gap-6 lg:grid-cols-5 items-start">
+            <div className="lg:col-span-2">
+              <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Services Web
+              </p>
+              <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
+                Management Consulting Services Web
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web below depicts six of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution, as well as additional, or secondary, services that are often coupled with the Hub offering. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
+              </p>
+            </div>
+            <div className="lg:col-span-3">
+              <ConstellationDiagram compact />
+            </div>
+          </div>
+        </section>
+
         {/* GTM Materials (slide 7) */}
         <section className="fade-in rounded-lg border border-border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Presentation className="h-4 w-4 text-primary" />
             <h2 className="text-xl font-bold text-card-foreground">Go-to-Market Materials</h2>
           </div>
-          <p className="mb-4 text-sm text-muted-foreground">
+          <p className="mb-1 text-sm text-muted-foreground">
             Overview decks, battlecards, maturity diagnostic models, and example client materials available per service.
             <br />
-            [click on blue check marks to access GTM material]
+            [Click on the blue links - Doc, PDF, Diagnostic, or Example Name - to access GTM material]
+          </p>
+          <p className="mb-4 text-xs text-primary">
+            [Note to Talent - Your access to overview decks is restricted to the PDF version. Contact MC leadership for a Google Slide copy as needed]
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -540,6 +569,7 @@ export default function MCServices() {
                   <th className="pb-2 pr-4 text-left font-semibold text-foreground align-middle">Service</th>
                   <th colSpan={2} className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Overview Deck</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Battlecard</th>
+                  <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Sellers Sheet</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Maturity Model</th>
                   <th className="pb-2 pl-4 text-left font-semibold text-foreground align-middle">Example Materials</th>
                 </tr>
@@ -552,7 +582,7 @@ export default function MCServices() {
                   if (rows.length === 0) return [];
                   return [
                     <tr key={`hdr-${practice}`} className="bg-muted">
-                      <td colSpan={6} className="py-2 px-3 text-xs font-bold uppercase tracking-wider text-foreground">
+                      <td colSpan={7} className="py-2 px-3 text-xs font-bold uppercase tracking-wider text-foreground">
                         {practice}
                       </td>
                     </tr>,
@@ -580,6 +610,15 @@ export default function MCServices() {
                         <td className="py-2 px-3 text-center">
                           {row.battlecardUrl ? (
                             <a href={row.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                              Doc
+                            </a>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          {row.sellersSheetUrl ? (
+                            <a href={row.sellersSheetUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
                               Doc
                             </a>
                           ) : (

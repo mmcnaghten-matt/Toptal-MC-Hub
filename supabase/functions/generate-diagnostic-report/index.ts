@@ -57,15 +57,19 @@ serve(async (req) => {
       );
     }
 
-    // Compute overall score and maturity level
+    // Compute overall score and maturity level using percentage thresholds (works for any diagnostic)
     const totalScore = Object.values(answers as Record<string, number>).reduce(
       (sum: number, v: unknown) => sum + (Number(v) || 0), 0
     );
+    const maxRaw = Array.isArray(questions)
+      ? questions.reduce((sum: number, q: { options?: string[] }) => sum + ((q.options?.length ?? 1) - 1), 0)
+      : 72;
+    const pct = maxRaw > 0 ? totalScore / maxRaw : 0;
     let maturityLevel: string;
-    if (totalScore <= 15) maturityLevel = "Foundational";
-    else if (totalScore <= 30) maturityLevel = "Developing";
-    else if (totalScore <= 45) maturityLevel = "Integrated";
-    else if (totalScore <= 60) maturityLevel = "Predictive";
+    if (pct < 0.21) maturityLevel = "Foundational";
+    else if (pct < 0.42) maturityLevel = "Developing";
+    else if (pct < 0.63) maturityLevel = "Integrated";
+    else if (pct < 0.84) maturityLevel = "Predictive";
     else maturityLevel = "Optimized & Adaptive";
 
     // Build dimension score summary

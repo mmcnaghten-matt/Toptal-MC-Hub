@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ArrowRight, Brain } from "lucide-react";
+import { ChevronLeft, ArrowRight, Brain, Layers } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 const mcDiagnostics = [
   {
     slug: "ai-maturity",
-    title: "AI Navigator Checkup",
+    title: "AI Maturity Checkup",
     description:
       "Assess your organization's AI readiness across six critical pillars — Strategy, Data & Technology, Development, Talent, Governance, and Change Management — and receive a personalized transformation roadmap.",
     pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
@@ -13,9 +13,28 @@ const mcDiagnostics = [
   },
 ];
 
-const industryDiagnostics: typeof mcDiagnostics = [];
+const industryDiagnostics: typeof mcDiagnostics = [
+  {
+    slug: "me-platform",
+    title: "M&E Platform Maturity Diagnostic",
+    description:
+      "Assess your organization's readiness to transition from a linear media model to an optimized multi-sided platform across Ecosystem Strategy, Data Mastery, Content & AI, Monetization, Architecture, and Governance.",
+    pillars: ["Ecosystem Strategy", "Data Mastery", "Content & AI", "Monetization", "Architecture", "Governance"],
+    path: "/diagnostics/me-platform",
+  },
+  {
+    slug: "cannes-me-fan-audience",
+    title: "M&E Fan/Audience Platform Diagnostic — Cannes Edition",
+    description:
+      "A focused assessment of your organization's maturity in building direct, data-driven fan and audience relationships — covering data foundations, personalization, DTC channels, monetization, real-time engagement, AI, and ecosystem integration.",
+    pillars: ["Fan Data", "Personalization", "DTC Channels", "Monetization", "Real-Time Engagement", "AI & Analytics", "Ecosystem", "Org Readiness"],
+    path: "/cannes-diagnostic",
+  },
+];
 
 function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
+  const navigate = useNavigate();
+  const isExternal = d.path.startsWith("http");
   return (
     <div className="card-hover group flex flex-col rounded-lg border border-border bg-card p-6">
       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/8 mb-4">
@@ -31,7 +50,7 @@ function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
         ))}
       </div>
       <button
-        onClick={() => window.open(d.path, "_blank")}
+        onClick={() => isExternal ? window.open(d.path, "_blank") : navigate(d.path)}
         className="flex items-center justify-between w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
       >
         Launch Diagnostic
@@ -71,8 +90,11 @@ export default function DiagnosticsHub() {
 
         {/* Management Consulting Diagnostics */}
         <section>
-          <h3 className="text-lg font-semibold text-foreground mb-1">Management Consulting Diagnostics</h3>
-          <p className="text-sm text-muted-foreground mb-5">Cross-industry assessments supporting the MC engagement lifecycle.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <Layers className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="text-xl font-semibold text-foreground">Management Consulting Diagnostics</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5 ml-6">Cross-industry assessments supporting the MC engagement lifecycle.</p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {mcDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
           </div>
@@ -80,8 +102,11 @@ export default function DiagnosticsHub() {
 
         {/* Toptal Industry Solution Diagnostics */}
         <section>
-          <h3 className="text-lg font-semibold text-foreground mb-1">Toptal Industry Solution Diagnostics</h3>
-          <p className="text-sm text-muted-foreground mb-5">Sector-specific assessments aligned to Toptal's industry solution offerings.</p>
+          <div className="flex items-center gap-2 mb-1">
+            <Layers className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="text-xl font-semibold text-foreground">Toptal Industry Solution Diagnostics</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5 ml-6">Sector-specific assessments aligned to Toptal's industry solution offerings.</p>
           {industryDiagnostics.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {industryDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
