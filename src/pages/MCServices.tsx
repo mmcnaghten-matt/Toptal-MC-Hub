@@ -530,16 +530,22 @@ export default function MCServices() {
 
         {/* MC Services Web */}
         <section className="fade-in rounded-lg border border-border bg-card p-6">
-          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Services Web
-          </p>
-          <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
-            Management Consulting Services Web
-          </h2>
-          <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
-            Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web below depicts six of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution, as well as additional, or secondary, services that are often coupled with the Hub offering. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
-          </p>
-          <ConstellationDiagram compact />
+          <div className="grid gap-6 lg:grid-cols-5 items-start">
+            <div className="lg:col-span-2">
+              <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Services Web
+              </p>
+              <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
+                Management Consulting Services Web
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web below depicts six of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution, as well as additional, or secondary, services that are often coupled with the Hub offering. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
+              </p>
+            </div>
+            <div className="lg:col-span-3">
+              <ConstellationDiagram compact />
+            </div>
+          </div>
         </section>
 
         {/* GTM Materials (slide 7) */}
