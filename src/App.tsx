@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminIndustryInsights from "./pages/AdminIndustryInsights";
 import DiagnosticsHub from "./pages/DiagnosticsHub";
+import MCServicesWeb from "./pages/MCServicesWeb";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 
@@ -34,6 +35,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/services" element={<MCServices />} />
+                <Route path="/services/web" element={<MCServicesWeb />} />
                 <Route path="/way-of-working" element={<WayOfWorking />} />
                 <Route path="/industry-insights" element={<Index />} />
                 <Route path="/account-market-intel" element={<AccountMarketIntel />} />

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
+import ConstellationDiagram from "@/components/ConstellationDiagram";
 
 const definition = {
   title: "Management Consulting Services",
@@ -526,6 +527,20 @@ export default function MCServices() {
             </div>
           </section>
         </div>
+
+        {/* MC Services Web */}
+        <section className="fade-in rounded-lg border border-border bg-card p-6">
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Services Web
+          </p>
+          <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
+            Management Consulting Services Web
+          </h2>
+          <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+            Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web below depicts six of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution, as well as additional, or secondary, services that are often coupled with the Hub offering. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
+          </p>
+          <ConstellationDiagram compact />
+        </section>
 
         {/* GTM Materials (slide 7) */}
         <section className="fade-in rounded-lg border border-border bg-card p-6">
