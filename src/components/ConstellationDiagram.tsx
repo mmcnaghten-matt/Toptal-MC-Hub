@@ -276,13 +276,15 @@ export default function ConstellationDiagram({ compact = false }: Props) {
 
   return (
     <div className="space-y-2">
-      <svg
-        ref={svgRef}
-        width="100%"
-        viewBox="0 0 680 600"
-        role="img"
-        aria-label="Toptal Management Consulting Ecosystem — Six-Hub Constellation"
-      />
+      <div style={compact ? { maxWidth: "420px" } : undefined}>
+        <svg
+          ref={svgRef}
+          width="100%"
+          viewBox="0 0 680 600"
+          role="img"
+          aria-label="Toptal Management Consulting Ecosystem — Six-Hub Constellation"
+        />
+      </div>
       <div
         ref={infoRef}
         style={{ padding: ".75rem 1rem", borderRadius: "6px", fontSize: "13px", lineHeight: "1.6", minHeight: "52px" }}
