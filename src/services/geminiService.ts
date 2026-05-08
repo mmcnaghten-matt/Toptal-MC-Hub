@@ -8,6 +8,11 @@ export interface ResearchResult {
     competitivePositioning: string;
     bigOpportunity: string;
   };
+  businessPerformance: {
+    financialHighlights: string;
+    recentMetrics: string[];
+    strategicInitiatives: { name: string; description: string }[];
+  };
   marketOverview: {
     definition: string;
     metrics: { tam: string; sam: string; som: string };

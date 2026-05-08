@@ -33,19 +33,21 @@ serve(async (req) => {
     const model = deepResearch ? "gemini-2.5-pro" : "gemini-2.5-flash";
 
     const prompt = `Perform a deep-dive, professional market and competitive research report on the company: "${companyName}".
-  
+
 Structure the report into these specific sections:
-1. Executive Summary: TL;DR for leadership, 2-3 key trends, competitive positioning (Leader/Challenger/Niche), and the "Big Opportunity".
-2. Market Overview: Definition of the playground, TAM/SAM/SOM metrics, segmentation, and drivers/inhibitors.
-3. Competitive Landscape: List of direct, indirect, and potential entrants.
-4. Competitor Deep Dives: Detailed profiles for the top 3-5 competitors (Revenue, Headcount, Activity, Value Prop, Gap Analysis, Pricing).
-5. Strategic Frameworks: Detailed SWOT, Porter's Five Forces, and PESTLE analysis.
-6. Customer & Win-Loss Insights: Sentiment analysis, win/loss reasons, and unmet needs.
-7. Recommendations: Strategic roadmap for Product, Marketing, and Resource Allocation.
-8. MC Service Opportunities: Map the target company's initiatives and needs to specific Management Consulting (MC) service offerings (e.g., Digital Transformation, Operational Excellence, Strategic Growth, M&A Advisory, Change Management). Identify specific sales opportunities.
+1. Executive Summary: TL;DR for leadership (weave in a brief reference to the company's recent financial performance and top strategic priorities), 2-3 key trends, competitive positioning (Leader/Challenger/Niche), and the "Big Opportunity".
+2. Business Performance & Strategic Initiatives: Summarise the company's recent financial/business performance — revenue trajectory, growth rates, margin trends, and notable results from the last 1-2 years. Then list the company's key strategic initiatives currently underway; for each provide a concise name and a 2-3 sentence description of what it is and why it matters.
+3. Market Overview: Definition of the playground, TAM/SAM/SOM metrics, segmentation, and drivers/inhibitors.
+4. Competitive Landscape: List of direct, indirect, and potential entrants.
+5. Competitor Deep Dives: Detailed profiles for the top 3-5 competitors (Revenue, Headcount, Activity, Value Prop, Gap Analysis, Pricing).
+6. Strategic Frameworks: Detailed SWOT, Porter's Five Forces, and PESTLE analysis.
+7. Customer & Win-Loss Insights: Sentiment analysis, win/loss reasons, and unmet needs.
+8. Recommendations: Strategic roadmap for Product, Marketing, and Resource Allocation.
+9. MC Service Opportunities: Map the target company's initiatives and needs to specific Management Consulting (MC) service offerings (e.g., Digital Transformation, Operational Excellence, Strategic Growth, M&A Advisory, Change Management). Identify specific sales opportunities.
 
 Provide specific, high-quality insights. Return the result as a valid JSON object with these exact keys:
 executiveSummary (with tldr, keyTrends array, competitivePositioning, bigOpportunity),
+businessPerformance (with financialHighlights string, recentMetrics array of concise metric strings, strategicInitiatives array of {name, description}),
 marketOverview (with definition, metrics {tam, sam, som}, segmentation array, drivers array, inhibitors array),
 competitiveLandscape (with directCompetitors array, indirectCompetitors array, potentialEntrants array),
 competitorDeepDives (array of {name, profile {revenue, headcount, activity}, strengths array, valueProposition, gapAnalysis, pricingModel}),

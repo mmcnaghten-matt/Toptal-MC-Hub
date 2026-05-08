@@ -90,6 +90,7 @@ import { cn } from "@/lib/utils";
 
 const SECTIONS = [
   { id: "executive", label: "Executive Summary", icon: FileText },
+  { id: "performance", label: "Business Performance", icon: BarChart3 },
   { id: "market", label: "Market Overview", icon: Globe },
   { id: "landscape", label: "Competitive Landscape", icon: Users },
   { id: "deepdive", label: "Competitor Deep Dives", icon: Layers },
@@ -526,7 +527,48 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 2. Market Overview */}
+                {/* 2. Business Performance & Strategic Initiatives */}
+                <section
+                  ref={(el) => { sectionRefs.current["performance"] = el; }}
+                  className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
+                >
+                  <div className="px-8 py-6 border-b border-border bg-secondary/50 flex items-center">
+                    <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                      <BarChart3 className="w-5 h-5 text-primary" />
+                      2. Business Performance &amp; Strategic Initiatives
+                    </h3>
+                  </div>
+                  <div className="p-8 space-y-8">
+                    <div className="prose prose-neutral max-w-none text-foreground leading-relaxed">
+                      <Markdown>{result.businessPerformance.financialHighlights}</Markdown>
+                    </div>
+                    {result.businessPerformance.recentMetrics?.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {result.businessPerformance.recentMetrics.map((m, i) => (
+                          <span key={i} className="inline-flex items-center px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground border border-border">
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                        <Target className="w-4 h-4 text-primary" />
+                        Key Strategic Initiatives
+                      </h4>
+                      <div className="space-y-3">
+                        {result.businessPerformance.strategicInitiatives.map((init, i) => (
+                          <div key={i} className="p-4 rounded-lg border border-border bg-secondary/20">
+                            <p className="text-sm font-semibold text-foreground mb-1">{init.name}</p>
+                            <p className="text-sm text-muted-foreground">{init.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* 3. Market Overview */}
                 <section
                   ref={(el) => { sectionRefs.current["market"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
@@ -534,7 +576,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <Globe className="w-5 h-5 text-primary" />
-                      2. Market Overview
+                      3. Market Overview
                     </h3>
                   </div>
                   <div className="p-8 space-y-8">
@@ -587,7 +629,7 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 3. Competitive Landscape */}
+                {/* 4. Competitive Landscape */}
                 <section
                   ref={(el) => { sectionRefs.current["landscape"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
@@ -595,7 +637,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <Users className="w-5 h-5 text-primary" />
-                      3. Competitive Landscape
+                      4. Competitive Landscape
                     </h3>
                   </div>
                   <div className="p-8 space-y-10">
@@ -650,7 +692,7 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 4. Competitor Deep Dives */}
+                {/* 5. Competitor Deep Dives */}
                 <section
                   ref={(el) => { sectionRefs.current["deepdive"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
@@ -658,7 +700,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <Layers className="w-5 h-5 text-primary" />
-                      4. Competitor Deep Dives
+                      5. Competitor Deep Dives
                     </h3>
                   </div>
                   <div className="divide-y divide-border">
@@ -692,7 +734,7 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 5. Strategic Frameworks */}
+                {/* 6. Strategic Frameworks */}
                 <section
                   ref={(el) => { sectionRefs.current["strategic"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
@@ -700,7 +742,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <ShieldAlert className="w-5 h-5 text-primary" />
-                      5. Strategic Frameworks
+                      6. Strategic Frameworks
                     </h3>
                   </div>
                   <div className="p-8 space-y-12">
@@ -782,7 +824,7 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 6. Customer Insights */}
+                {/* 7. Customer Insights */}
                 <section
                   ref={(el) => { sectionRefs.current["customer"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
@@ -790,7 +832,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <UserCheck className="w-5 h-5 text-primary" />
-                      6. Customer & Win-Loss Insights
+                      7. Customer & Win-Loss Insights
                     </h3>
                   </div>
                   <div className="p-8 space-y-8">
@@ -814,7 +856,7 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 7. Recommendations */}
+                {/* 8. Recommendations */}
                 <section
                   ref={(el) => { sectionRefs.current["recommendations"] = el; }}
                   className="bg-card rounded-lg shadow-xl overflow-hidden scroll-mt-24 border border-border"
@@ -822,7 +864,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-8 border-b border-border bg-primary/5">
                     <h3 className="text-xl font-bold flex items-center gap-3 text-foreground">
                       <Lightbulb className="w-6 h-6 text-primary" />
-                      7. Recommendations & Strategic Roadmap
+                      8. Recommendations & Strategic Roadmap
                     </h3>
                   </div>
                   <div className="p-8 space-y-10">
@@ -867,7 +909,7 @@ export default function AccountMarketIntel() {
                   </div>
                 </section>
 
-                {/* 8. MC Service Opportunities */}
+                {/* 9. MC Service Opportunities */}
                 <section
                   ref={(el) => { sectionRefs.current["mc"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
@@ -875,7 +917,7 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <Target className="w-5 h-5 text-primary" />
-                      8. MC Service Opportunities
+                      9. MC Service Opportunities
                     </h3>
                   </div>
                   <div className="p-8">
