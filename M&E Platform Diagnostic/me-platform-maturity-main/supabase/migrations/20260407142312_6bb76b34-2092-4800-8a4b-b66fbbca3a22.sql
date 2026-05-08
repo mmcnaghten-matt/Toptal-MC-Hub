@@ -1,1 +1,0 @@
-ALTER TABLE public.survey_records ADD COLUMN recommendations text;
