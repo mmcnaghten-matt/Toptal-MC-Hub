@@ -128,6 +128,7 @@ const servicePortfolio: ServiceCategory[] = [
 type Practice = "Strategy" | "Finance" | "Operations" | "People";
 
 interface GTMRow {
+  isHub?: boolean;
   seq?: number;
   practice: Practice;
   service: string;
@@ -145,6 +146,7 @@ const PRACTICE_ORDER: Practice[] = ["Strategy", "Finance", "Operations", "People
 const gtmMaterials: GTMRow[] = [
   // Strategy
   {
+    isHub: true,
     seq: 1,
     practice: "Strategy",
     service: "Growth Strategy",
@@ -245,6 +247,7 @@ const gtmMaterials: GTMRow[] = [
   },
   // Finance
   {
+    isHub: true,
     seq: 11,
     practice: "Finance",
     service: "Finance Transformation",
@@ -268,6 +271,7 @@ const gtmMaterials: GTMRow[] = [
   },
   // Operations
   {
+    isHub: true,
     practice: "Operations",
     service: "Business Transformation",
     docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
@@ -279,6 +283,7 @@ const gtmMaterials: GTMRow[] = [
     ],
   },
   {
+    isHub: true,
     seq: 13,
     practice: "Operations",
     service: "Performance Improvement",
@@ -291,6 +296,7 @@ const gtmMaterials: GTMRow[] = [
     ],
   },
   {
+    isHub: true,
     seq: 15,
     practice: "Operations",
     service: "Supply Chain",
@@ -310,6 +316,7 @@ const gtmMaterials: GTMRow[] = [
   },
   // People
   {
+    isHub: true,
     seq: 17,
     practice: "People",
     service: "Workforce Transformation",
@@ -610,7 +617,7 @@ export default function MCServices() {
                     </tr>,
                     ...rows.map((row) => (
                       <tr key={row.service} className="border-b border-border/50">
-                        <td className="py-2 pr-4 text-muted-foreground">{row.service}</td>
+                        <td className={`py-2 pr-4 ${row.isHub ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{row.service}</td>
                         <td className="py-2 px-3 text-center">
                           {row.docUrl ? (
                             <a href={row.docUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
