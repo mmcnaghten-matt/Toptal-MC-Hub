@@ -485,8 +485,26 @@ export default function MCServices() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8 space-y-10">
+        {/* Section nav */}
+        <nav className="flex gap-2 flex-wrap border-b border-border pb-4">
+          {[
+            { label: "Introduction", href: "#introduction" },
+            { label: "Services Web", href: "#services-web" },
+            { label: "Go-to-Market Materials", href: "#gtm-materials" },
+            { label: "Sales Motion Documents", href: "#sales-motion" },
+          ].map(({ label, href }) => (
+            <a
+              key={href}
+              href={href}
+              className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-primary hover:text-primary-foreground hover:border-primary"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
         {/* Introduction - Definition + Service Portfolio side by side */}
-        <div className="fade-in grid gap-8 lg:grid-cols-5">
+        <div id="introduction" className="fade-in grid gap-8 lg:grid-cols-5">
           {/* Left: Definition (slide 4) */}
           <section className="lg:col-span-2 rounded-lg border border-border bg-card p-6">
             <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Introduction</p>
@@ -529,7 +547,7 @@ export default function MCServices() {
         </div>
 
         {/* MC Services Web */}
-        <section className="fade-in rounded-lg border border-border bg-card p-6">
+        <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6">
           <div className="grid gap-6 lg:grid-cols-5 items-start">
             <div className="lg:col-span-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -552,7 +570,7 @@ export default function MCServices() {
         </section>
 
         {/* GTM Materials (slide 7) */}
-        <section className="fade-in rounded-lg border border-border bg-card p-6">
+        <section id="gtm-materials" className="fade-in rounded-lg border border-border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Presentation className="h-4 w-4 text-primary" />
             <h2 className="text-xl font-bold text-card-foreground">Go-to-Market Materials</h2>
@@ -665,7 +683,7 @@ export default function MCServices() {
         </section>
 
         {/* Sales Motion Documents (slide 8) */}
-        <section className="fade-in rounded-lg border border-border bg-card p-6">
+        <section id="sales-motion" className="fade-in rounded-lg border border-border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" />
             <h2 className="text-xl font-bold text-card-foreground">Sales Motion Documents &amp; Assets</h2>
