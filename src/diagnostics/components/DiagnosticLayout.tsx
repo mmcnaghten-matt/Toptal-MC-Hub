@@ -1,3 +1,5 @@
+import ToptalLogo from "@/components/ToptalLogo";
+
 interface Props {
   title: string;
   children: React.ReactNode;
@@ -6,10 +8,10 @@ interface Props {
 export default function DiagnosticLayout({ title, children }: Props) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="w-2 h-6 bg-primary rounded-full" />
-          <span className="font-semibold text-foreground text-sm">{title}</span>
+      <header className="border-b border-border bg-primary sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <span className="font-semibold text-primary-foreground text-sm">{title}</span>
+          <ToptalLogo className="h-7" />
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 py-8">

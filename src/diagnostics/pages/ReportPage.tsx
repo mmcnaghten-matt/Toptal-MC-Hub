@@ -46,7 +46,7 @@ export default function ReportPage({ config }: Props) {
 
   if (loadingResponse) {
     return (
-      <DiagnosticLayout title={config.title}>
+      <DiagnosticLayout title={`${config.title} Report`}>
         <div className="flex items-center justify-center py-24">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
@@ -56,7 +56,7 @@ export default function ReportPage({ config }: Props) {
 
   if (!responseData) {
     return (
-      <DiagnosticLayout title={config.title}>
+      <DiagnosticLayout title={`${config.title} Report`}>
         <p className="text-sm text-destructive">Report not found.</p>
       </DiagnosticLayout>
     );
@@ -66,7 +66,7 @@ export default function ReportPage({ config }: Props) {
   const scoreSummary = ((responseData as any).score_summary as Record<string, number>) ?? {};
 
   return (
-    <DiagnosticLayout title={config.title}>
+    <DiagnosticLayout title={`${config.title} Report`}>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">{config.title}</h1>
         <p className="text-muted-foreground text-sm mt-1">Based on your survey responses.</p>

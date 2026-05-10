@@ -193,7 +193,7 @@ function CompositeReportModal({ config, selectedRows, onClose }: { config: Diagn
       >
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
           <div>
-            <h2 className="font-bold text-foreground text-lg">Composite Report</h2>
+            <h2 className="font-bold text-foreground text-lg">{config.title} Composite Report</h2>
             <p className="text-sm text-muted-foreground mt-0.5">{contextLabel}</p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
