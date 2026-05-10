@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import ScoreChart from "./ScoreChart";
+import ToptalLogo from "@/components/ToptalLogo";
 import type { DiagnosticConfig, RecommendationContent } from "../types";
 
 interface Props {
@@ -93,6 +94,14 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       </div>
 
       <div ref={reportRef} className="space-y-6">
+        {/* Branded header — rendered on screen and captured in PDF */}
+        <div className="flex items-center justify-between px-5 py-4 bg-primary rounded-xl">
+          <span className="font-semibold text-primary-foreground text-sm">
+            {compositeLabel ? `${config.title} Composite Report` : `${config.title} Report`}
+          </span>
+          <ToptalLogo className="h-7" />
+        </div>
+
         {/* Respondent / composite header */}
         {compositeLabel ? (
           <div className="bg-card border border-border rounded-xl p-5">

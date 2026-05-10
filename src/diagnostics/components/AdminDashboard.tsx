@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { DiagnosticConfig, DiagnosticRespondent, DiagnosticResponse, DiagnosticRecommendation, RecommendationContent } from "../types";
 import ReportView from "./ReportView";
+import ToptalLogo from "@/components/ToptalLogo";
 
 interface AdminRow {
   respondent: DiagnosticRespondent;
@@ -127,14 +128,17 @@ function ReportModal({ config, row, onClose }: { config: DiagnosticConfig; row: 
         className="bg-background rounded-2xl shadow-2xl w-full max-w-3xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 bg-primary rounded-t-2xl">
           <div>
-            <h2 className="font-bold text-foreground text-lg">Full Report</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <h2 className="font-bold text-primary-foreground text-lg">{config.title} Report</h2>
+            <p className="text-primary-foreground/70 text-sm mt-0.5">
               {row.respondent.full_name} · {row.respondent.enterprise}
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+          <div className="flex items-center gap-4">
+            <ToptalLogo className="h-7" />
+            <button onClick={onClose} className="text-primary-foreground/70 hover:text-primary-foreground text-2xl leading-none">×</button>
+          </div>
         </div>
         <div className="p-6">
           <ReportView
@@ -191,12 +195,15 @@ function CompositeReportModal({ config, selectedRows, onClose }: { config: Diagn
         className="bg-background rounded-2xl shadow-2xl w-full max-w-3xl"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 bg-primary rounded-t-2xl">
           <div>
-            <h2 className="font-bold text-foreground text-lg">{config.title} Composite Report</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">{contextLabel}</p>
+            <h2 className="font-bold text-primary-foreground text-lg">{config.title} Composite Report</h2>
+            <p className="text-primary-foreground/70 text-sm mt-0.5">{contextLabel}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+          <div className="flex items-center gap-4">
+            <ToptalLogo className="h-7" />
+            <button onClick={onClose} className="text-primary-foreground/70 hover:text-primary-foreground text-2xl leading-none">×</button>
+          </div>
         </div>
         <div className="p-6">
           <ReportView
