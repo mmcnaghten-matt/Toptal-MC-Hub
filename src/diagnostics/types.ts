@@ -9,6 +9,7 @@ export interface DimensionConfig {
   id: string;
   label: string;
   shortName: string;
+  description?: string;
 }
 
 export interface DiagnosticConfig {

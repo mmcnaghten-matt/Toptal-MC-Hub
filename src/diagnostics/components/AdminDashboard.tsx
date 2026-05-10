@@ -83,11 +83,16 @@ function SurveyResponsesModal({ config, row, onClose }: { config: DiagnosticConf
             const questions = config.questions.filter(q => q.dimension === dim.id);
             return (
               <div key={dim.id}>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                    {dimIdx + 1}
-                  </span>
-                  <h3 className="font-bold text-gray-900">{dim.label}</h3>
+                <div className="mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                      {dimIdx + 1}
+                    </span>
+                    <h3 className="font-bold text-gray-900">{dim.label}</h3>
+                  </div>
+                  {dim.description && (
+                    <p className="text-sm text-gray-500 mt-1.5 ml-9 leading-relaxed">{dim.description}</p>
+                  )}
                 </div>
                 <div className="divide-y divide-gray-100">
                   {questions.map((q, qIdx) => {

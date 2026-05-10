@@ -47,11 +47,14 @@ export default function SurveyForm({ questions, dimensions, onSubmit, isSubmitti
       {/* Questions grouped by pillar */}
       {questionsByDimension.map(({ dimension, questions: qs }) => (
         <div key={dimension.id} className="space-y-6">
-          <div className="border-b border-border pb-2">
+          <div className="border-b border-border pb-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
               {dimension.shortName}
             </p>
             <h3 className="font-semibold text-foreground">{dimension.label}</h3>
+            {dimension.description && (
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{dimension.description}</p>
+            )}
           </div>
 
           {qs.map((q) => {

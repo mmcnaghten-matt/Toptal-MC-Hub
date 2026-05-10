@@ -6,12 +6,12 @@ const config: DiagnosticConfig = {
   title: 'AI Maturity Checkup',
   description: 'Assess your organization\'s AI readiness across six critical pillars and receive a personalized transformation roadmap.',
   dimensions: [
-    { id: 'strategy', label: 'AI Strategy & Vision', shortName: 'Strategy' },
-    { id: 'data', label: 'Data & Technology Foundation', shortName: 'Data & Tech' },
-    { id: 'development', label: 'AI Solution Development & Deployment', shortName: 'Development' },
-    { id: 'talent', label: 'Operating Model, Organization & Talent', shortName: 'Talent & Org' },
-    { id: 'governance', label: 'Responsible AI & Governance', shortName: 'Responsible AI' },
-    { id: 'change', label: 'Transformation & Change Management', shortName: 'Change Mgmt' },
+    { id: 'strategy', label: 'AI Strategy & Vision', shortName: 'Strategy', description: 'Establishing a clear, value-driven AI roadmap that is meticulously aligned with overarching business objectives and continuously adapts to market dynamics.' },
+    { id: 'data', label: 'Data & Technology Foundation', shortName: 'Data & Tech', description: 'Building robust, scalable data infrastructure and technology platforms that are essential for efficient AI development, reliable deployment, and continuous operation.' },
+    { id: 'development', label: 'AI Solution Development & Deployment', shortName: 'Development', description: 'Iterative design, building, testing, and scaling of AI solutions, transitioning effectively from initial proofs of concept (POCs) to robust, enterprise-wide integrations.' },
+    { id: 'talent', label: 'Operating Model, Organization & Talent', shortName: 'Talent & Org', description: 'Designing AI-compatible organizational structures, fostering widespread AI literacy, and strategically developing the necessary talent to drive and sustain AI initiatives.' },
+    { id: 'governance', label: 'Responsible AI & Governance', shortName: 'Responsible AI', description: 'Ensuring ethical, fair, transparent, and accountable AI development and deployment, thereby mitigating risks and building enduring trust with all stakeholders.' },
+    { id: 'change', label: 'Transformation & Change Management', shortName: 'Change Mgmt', description: 'Orchestrating enterprise-wide AI adoption, effectively overcoming resistance to change, and fostering a pervasive culture of continuous innovation and improvement.' },
   ],
   questions: [
     // Pillar 1: AI Strategy & Vision
