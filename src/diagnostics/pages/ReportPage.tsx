@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import DiagnosticLayout from "../components/DiagnosticLayout";
 import ReportView from "../components/ReportView";
 import { useResponse, useRespondent } from "../hooks/useRecommendation";
@@ -12,6 +12,7 @@ interface Props {
 
 export default function ReportPage({ config }: Props) {
   const { responseId } = useParams<{ responseId: string }>();
+  const navigate = useNavigate();
   const { data: responseData, isLoading: loadingResponse } = useResponse(responseId);
   const respondentId = (responseData as any)?.respondent_id as string | undefined;
   const { data: respondent } = useRespondent(respondentId);
@@ -67,9 +68,20 @@ export default function ReportPage({ config }: Props) {
 
   return (
     <DiagnosticLayout title={`${config.title} Report`}>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">{config.title}</h1>
-        <p className="text-muted-foreground text-sm mt-1">Based on your survey responses.</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">{config.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">Based on your survey responses.</p>
+        </div>
+        <button
+          onClick={() => navigate(`/diagnostics/${config.slug}`)}
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Exit
+        </button>
       </div>
       <ReportView
         config={config}
