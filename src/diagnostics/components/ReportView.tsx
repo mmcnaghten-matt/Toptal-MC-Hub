@@ -12,6 +12,7 @@ interface Props {
   recommendation: RecommendationContent | null;
   recLoading: boolean;
   recError: string | null;
+  compositeLabel?: string;
 }
 
 const PILLAR_COLORS = ['#6366f1', '#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
@@ -45,7 +46,7 @@ function computeMaturityLevel(raw: number, maxRaw: number): RecommendationConten
   return 'Optimized & Adaptive';
 }
 
-export default function ReportView({ config, answers, scoreSummary, respondent, recommendation, recLoading, recError }: Props) {
+export default function ReportView({ config, answers, scoreSummary, respondent, recommendation, recLoading, recError, compositeLabel }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
 
   const scoreDisplay = config.scoreDisplay ?? 'raw';
@@ -92,8 +93,13 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       </div>
 
       <div ref={reportRef} className="space-y-6">
-        {/* Respondent header */}
-        {respondent && (
+        {/* Respondent / composite header */}
+        {compositeLabel ? (
+          <div className="bg-card border border-border rounded-xl p-5">
+            <p className="font-semibold text-foreground text-base">Composite Report</p>
+            <p className="text-muted-foreground text-sm mt-0.5">{compositeLabel}</p>
+          </div>
+        ) : respondent && (
           <div className="bg-card border border-border rounded-xl p-5">
             <p className="font-semibold text-foreground text-base">{respondent.full_name}</p>
             <p className="text-muted-foreground text-sm mt-0.5">

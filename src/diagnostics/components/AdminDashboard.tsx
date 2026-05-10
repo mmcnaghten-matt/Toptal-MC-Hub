@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { DiagnosticConfig, DiagnosticRespondent, DiagnosticResponse, DiagnosticRecommendation, RecommendationContent } from "../types";
@@ -19,6 +19,41 @@ function avgScore(row: AdminRow): number | null {
   const vals = Object.values((row.response.score_summary ?? {}) as Record<string, number>);
   if (!vals.length) return null;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function buildComposite(rows: AdminRow[]): { answers: Record<string, number>; scoreSummary: Record<string, number> } {
+  if (rows.length === 0) return { answers: {}, scoreSummary: {} };
+
+  const allAnswerKeys = new Set<string>();
+  const allDimKeys = new Set<string>();
+  for (const row of rows) {
+    Object.keys((row.response.answers ?? {}) as Record<string, number>).forEach(k => allAnswerKeys.add(k));
+    Object.keys((row.response.score_summary ?? {}) as Record<string, number>).forEach(k => allDimKeys.add(k));
+  }
+
+  const answers: Record<string, number> = {};
+  for (const key of allAnswerKeys) {
+    const vals = rows.map(r => ((r.response.answers ?? {}) as Record<string, number>)[key] ?? 0);
+    answers[key] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+  }
+
+  const scoreSummary: Record<string, number> = {};
+  for (const key of allDimKeys) {
+    const vals = rows.map(r => ((r.response.score_summary ?? {}) as Record<string, number>)[key] ?? 1);
+    scoreSummary[key] = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+  }
+
+  return { answers, scoreSummary };
+}
+
+function buildContextLabel(rows: AdminRow[]): string {
+  const enterprises = [...new Set(rows.map(r => r.respondent.enterprise).filter(Boolean))];
+  const departments = [...new Set(rows.map(r => r.respondent.department).filter(Boolean))];
+  const parts: string[] = [`${rows.length} respondent${rows.length !== 1 ? 's' : ''}`];
+  if (enterprises.length === 1) parts.push(enterprises[0]);
+  else if (enterprises.length <= 3) parts.push(enterprises.join(', '));
+  if (departments.length === 1) parts.push(departments[0]);
+  return parts.join(' · ');
 }
 
 function SurveyResponsesModal({ config, row, onClose }: { config: DiagnosticConfig; row: AdminRow; onClose: () => void }) {
@@ -117,10 +152,75 @@ function ReportModal({ config, row, onClose }: { config: DiagnosticConfig; row: 
   );
 }
 
+function CompositeReportModal({ config, selectedRows, onClose }: { config: DiagnosticConfig; selectedRows: AdminRow[]; onClose: () => void }) {
+  const { answers, scoreSummary } = buildComposite(selectedRows);
+  const contextLabel = buildContextLabel(selectedRows);
+
+  const [recommendation, setRecommendation] = useState<RecommendationContent | null>(null);
+  const [recLoading, setRecLoading] = useState(true);
+  const [recError, setRecError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRecLoading(true);
+    const enterprises = [...new Set(selectedRows.map(r => r.respondent.enterprise).filter(Boolean))];
+
+    supabase.functions.invoke('generate-composite-report', {
+      body: {
+        diagnostic_id: config.slug,
+        diagnostic_title: config.title,
+        questions: config.questions,
+        answers,
+        score_summary: scoreSummary,
+        respondent_count: selectedRows.length,
+        context_label: enterprises.length > 0 ? enterprises.join(', ') : undefined,
+      },
+    }).then(({ data, error }) => {
+      if (error) { setRecError(error.message ?? 'Edge function error'); return; }
+      if (data) setRecommendation(data as RecommendationContent);
+      else setRecError('No response from edge function');
+    }).catch(err => setRecError(err?.message ?? 'Unknown error'))
+      .finally(() => setRecLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-8 px-4 pb-8 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background rounded-2xl shadow-2xl w-full max-w-3xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border">
+          <div>
+            <h2 className="font-bold text-foreground text-lg">Composite Report</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{contextLabel}</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+        <div className="p-6">
+          <ReportView
+            config={config}
+            answers={answers}
+            scoreSummary={scoreSummary}
+            respondent={null}
+            compositeLabel={contextLabel}
+            recommendation={recommendation}
+            recLoading={recLoading}
+            recError={recError}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard({ config, rows }: Props) {
   const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [viewingRow, setViewingRow] = useState<AdminRow | null>(null);
   const [reportRow, setReportRow] = useState<AdminRow | null>(null);
+  const [showComposite, setShowComposite] = useState(false);
   const queryClient = useQueryClient();
 
   const filtered = rows.filter(row => {
@@ -134,6 +234,34 @@ export default function AdminDashboard({ config, rows }: Props) {
       row.respondent.email.toLowerCase().includes(q)
     );
   });
+
+  const allFilteredSelected = filtered.length > 0 && filtered.every(r => selectedIds.has(r.response.id));
+
+  function toggleRow(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllFiltered() {
+    if (allFilteredSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        filtered.forEach(r => next.delete(r.response.id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        filtered.forEach(r => next.add(r.response.id));
+        return next;
+      });
+    }
+  }
+
+  const selectedRows = rows.filter(r => selectedIds.has(r.response.id));
 
   async function handleDelete(row: AdminRow) {
     if (!window.confirm(`Delete ${row.respondent.full_name}'s submission? This cannot be undone.`)) return;
@@ -175,6 +303,9 @@ export default function AdminDashboard({ config, rows }: Props) {
       {reportRow && (
         <ReportModal config={config} row={reportRow} onClose={() => setReportRow(null)} />
       )}
+      {showComposite && selectedRows.length >= 2 && (
+        <CompositeReportModal config={config} selectedRows={selectedRows} onClose={() => setShowComposite(false)} />
+      )}
 
       <div className="space-y-4">
         {/* Search + Export */}
@@ -191,6 +322,17 @@ export default function AdminDashboard({ config, rows }: Props) {
               className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
+          {selectedIds.size >= 2 && (
+            <button
+              onClick={() => setShowComposite(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shrink-0"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Compare {selectedIds.size} Selected →
+            </button>
+          )}
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors shrink-0"
@@ -208,6 +350,15 @@ export default function AdminDashboard({ config, rows }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
+                  <th className="px-4 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={allFilteredSelected}
+                      onChange={toggleAllFiltered}
+                      className="rounded border-border accent-primary"
+                      title="Select all filtered"
+                    />
+                  </th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Enterprise</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Department</th>
@@ -221,15 +372,27 @@ export default function AdminDashboard({ config, rows }: Props) {
               <tbody className="divide-y divide-border">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-10 text-muted-foreground">
+                    <td colSpan={9} className="text-center py-10 text-muted-foreground">
                       {rows.length === 0 ? 'No responses yet.' : 'No results match your search.'}
                     </td>
                   </tr>
                 ) : (
                   filtered.map(row => {
                     const score = avgScore(row);
+                    const isSelected = selectedIds.has(row.response.id);
                     return (
-                      <tr key={row.response.id} className="hover:bg-muted/30 transition-colors">
+                      <tr
+                        key={row.response.id}
+                        className={`hover:bg-muted/30 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
+                      >
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleRow(row.response.id)}
+                            className="rounded border-border accent-primary"
+                          />
+                        </td>
                         <td className="px-4 py-3 font-medium text-foreground">{row.respondent.full_name}</td>
                         <td className="px-4 py-3 text-muted-foreground">{row.respondent.enterprise}</td>
                         <td className="px-4 py-3 text-muted-foreground">{row.respondent.department}</td>
@@ -285,8 +448,11 @@ export default function AdminDashboard({ config, rows }: Props) {
               </tbody>
             </table>
           </div>
-          <div className="px-4 py-3 border-t border-border text-xs text-muted-foreground">
-            {filtered.length} of {rows.length} record{rows.length !== 1 ? 's' : ''}
+          <div className="px-4 py-3 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
+            <span>{filtered.length} of {rows.length} record{rows.length !== 1 ? 's' : ''}</span>
+            {selectedIds.size > 0 && (
+              <span className="text-primary font-medium">{selectedIds.size} selected</span>
+            )}
           </div>
         </div>
       </div>
