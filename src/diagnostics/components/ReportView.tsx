@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 import ScoreChart from "./ScoreChart";
-import ToptalLogo from "@/components/ToptalLogo";
+import logoSvg from "@/assets/toptal-logo-white.svg";
 import type { DiagnosticConfig, RecommendationContent } from "../types";
 
 interface Props {
@@ -66,6 +66,21 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
   const handleExportPDF = async () => {
     const el = reportRef.current;
     if (!el) return;
+
+    // Inject branded header into the capture area, then remove it after
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+    const header = document.createElement('div');
+    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:hsl(${primaryColor});border-radius:12px;margin-bottom:24px;`;
+    const titleSpan = document.createElement('span');
+    titleSpan.style.cssText = 'font-weight:600;color:white;font-size:14px;font-family:inherit;';
+    titleSpan.textContent = compositeLabel ? `${config.title} Composite Report` : `${config.title} Report`;
+    const logo = document.createElement('img');
+    logo.src = logoSvg;
+    logo.style.cssText = 'height:28px;';
+    header.appendChild(titleSpan);
+    header.appendChild(logo);
+    el.prepend(header);
+
     try {
       const dataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' });
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -76,6 +91,8 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       pdf.save(`${config.slug}-report.pdf`);
     } catch (err) {
       console.error('PDF export failed:', err);
+    } finally {
+      if (el.contains(header)) el.removeChild(header);
     }
   };
 
@@ -94,14 +111,6 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       </div>
 
       <div ref={reportRef} className="space-y-6">
-        {/* Branded header — rendered on screen and captured in PDF */}
-        <div className="flex items-center justify-between px-5 py-4 bg-primary rounded-xl">
-          <span className="font-semibold text-primary-foreground text-sm">
-            {compositeLabel ? `${config.title} Composite Report` : `${config.title} Report`}
-          </span>
-          <ToptalLogo className="h-7" />
-        </div>
-
         {/* Respondent / composite header */}
         {compositeLabel ? (
           <div className="bg-card border border-border rounded-xl p-5">
