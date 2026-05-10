@@ -11,6 +11,14 @@ const mcDiagnostics = [
     pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
     path: "/diagnostics/ai-maturity",
   },
+  {
+    slug: "finance-transformation",
+    title: "Finance Transformation Maturity Checkup",
+    description:
+      "Assess your organization's finance function maturity across five capability pillars — Strategy & Vision, Performance Management, Process Optimization, Organization & Governance, and Data & Technology — and receive a personalized transformation roadmap.",
+    pillars: ["Strategy & Vision", "Performance Management", "Process Optimization", "Org & Governance", "Data & Technology"],
+    path: "/diagnostics/finance-transformation",
+  },
 ];
 
 const industryDiagnostics: typeof mcDiagnostics = [
