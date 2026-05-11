@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ArrowRight, Brain, Layers } from "lucide-react";
+import { ChevronLeft, ArrowRight, Brain, Layers, KeyRound } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 const mcDiagnostics = [
@@ -10,6 +10,7 @@ const mcDiagnostics = [
       "Assess your organization's AI readiness across six critical pillars — Strategy, Data & Technology, Development, Talent, Governance, and Change Management — and receive a personalized transformation roadmap.",
     pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
     path: "/diagnostics/ai-maturity",
+    password: "AI2026",
   },
   {
     slug: "finance-transformation",
@@ -18,6 +19,7 @@ const mcDiagnostics = [
       "Assess your organization's finance function maturity across five capability pillars — Strategy & Vision, Performance Management, Process Optimization, Organization & Governance, and Data & Technology — and receive a personalized transformation roadmap.",
     pillars: ["Strategy & Vision", "Performance Management", "Process Optimization", "Org & Governance", "Data & Technology"],
     path: "/diagnostics/finance-transformation",
+    password: "FT2026",
   },
   {
     slug: "performance-improvement",
@@ -26,6 +28,7 @@ const mcDiagnostics = [
       "Assess your organization's operational performance maturity across six capability pillars — Strategic Alignment & Goal Setting, Process Design & Execution, Organizational & Functional Alignment, Technology & Data Management, People & Culture, and Resource & Asset Optimization — and receive a personalized improvement roadmap.",
     pillars: ["Strategy", "Process", "Org Alignment", "Tech & Data", "People", "Resources"],
     path: "/diagnostics/performance-improvement",
+    password: "PI2026",
   },
   {
     slug: "supply-chain",
@@ -34,6 +37,7 @@ const mcDiagnostics = [
       "Assess your organization's supply chain maturity across five capability pillars — Strategy & Planning, Data & Digital Integration, Operations & Execution, Resilience & Risk Management, and Collaboration & Ecosystem Alignment — and receive a personalized transformation roadmap.",
     pillars: ["Strategy & Planning", "Data & Digital", "Operations", "Resilience", "Collaboration"],
     path: "/diagnostics/supply-chain",
+    password: "SC2026",
   },
   {
     slug: "workforce-transformation",
@@ -42,10 +46,11 @@ const mcDiagnostics = [
       "Assess your organization's workforce transformation maturity across five capability pillars — Organizational Transformation, Digital Workforce Transformation, Leadership Transformation, Cultural Transformation, and Process Transformation — and receive a personalized roadmap.",
     pillars: ["Org Transformation", "Digital Workforce", "Leadership", "Culture", "Process"],
     path: "/diagnostics/workforce-transformation",
+    password: "WT2026",
   },
 ];
 
-const industryDiagnostics: typeof mcDiagnostics = [
+const industryDiagnostics = [
   {
     slug: "me-platform",
     title: "M&E Platform Maturity Diagnostic",
@@ -53,6 +58,7 @@ const industryDiagnostics: typeof mcDiagnostics = [
       "Assess your organization's readiness to transition from a linear media model to an optimized multi-sided platform across Ecosystem Strategy, Data Mastery, Content & AI, Monetization, Architecture, and Governance.",
     pillars: ["Ecosystem Strategy", "Data Mastery", "Content & AI", "Monetization", "Architecture", "Governance"],
     path: "/diagnostics/me-platform",
+    password: "ME2026",
   },
   {
     slug: "cannes-me-fan-audience",
@@ -61,6 +67,7 @@ const industryDiagnostics: typeof mcDiagnostics = [
       "A focused assessment of your organization's maturity in building direct, data-driven fan and audience relationships — covering data foundations, personalization, DTC channels, monetization, real-time engagement, AI, and ecosystem integration.",
     pillars: ["Fan Data", "Personalization", "DTC Channels", "Monetization", "Real-Time Engagement", "AI & Analytics", "Ecosystem", "Org Readiness"],
     path: "/cannes-diagnostic",
+    password: null,
   },
 ];
 
@@ -74,13 +81,20 @@ function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
       </div>
       <h3 className="text-base font-semibold text-card-foreground mb-2">{d.title}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{d.description}</p>
-      <div className="flex flex-wrap gap-1.5 mb-5">
+      <div className="flex flex-wrap gap-1.5 mb-4">
         {d.pillars.map((p) => (
           <span key={p} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
             {p}
           </span>
         ))}
       </div>
+      {d.password && (
+        <div className="flex items-center gap-2 mb-4 rounded-md bg-muted px-3 py-2">
+          <KeyRound className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground">Respondent password:</span>
+          <span className="text-xs font-mono font-semibold text-foreground">{d.password}</span>
+        </div>
+      )}
       <button
         onClick={() => isExternal ? window.open(d.path, "_blank") : navigate(d.path)}
         className="flex items-center justify-between w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
@@ -115,8 +129,11 @@ export default function DiagnosticsHub() {
           <h2 className="mb-3 text-3xl font-bold tracking-tight text-foreground">
             Maturity Model Diagnostics
           </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Interactive assessments that help clients understand their current maturity level and receive a personalized strategic roadmap. Share the survey link directly with clients — no login required.
+          <p className="text-muted-foreground leading-relaxed mb-3">
+            Interactive assessments that help clients understand their current maturity level and receive a personalized strategic roadmap. Survey respondent login codes are provided below for each diagnostic.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">Admin access:</span> Admin passwords for viewing results and managing responses can be obtained by contacting Management Consulting leadership.
           </p>
         </div>
 
