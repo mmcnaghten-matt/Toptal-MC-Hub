@@ -208,6 +208,16 @@ const gtmMaterials: GTMRow[] = [
   {
     seq: 7,
     practice: "Strategy",
+    service: "Digital Strategy",
+    docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
+    pdfUrl: "https://drive.google.com/file/d/19Bj0TbM74IX5jODeHOBb67gt1FJ4huZY/view?usp=drive_link",
+    battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
+    sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
+    maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
+  },
+  {
+    seq: 8,
+    practice: "Strategy",
     service: "AI Consulting",
     docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1Fg_9v11GJFglH76znXgNyY2Q4vlzbXSI/view?usp=drive_link",
@@ -221,7 +231,7 @@ const gtmMaterials: GTMRow[] = [
     ],
   },
   {
-    seq: 8,
+    seq: 9,
     practice: "Strategy",
     service: "Responsible AI",
     docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
@@ -229,17 +239,20 @@ const gtmMaterials: GTMRow[] = [
     maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
   },
   {
-    seq: 9,
+    isHub: true,
+    seq: 10,
     practice: "Strategy",
-    service: "Digital Strategy",
-    docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/19Bj0TbM74IX5jODeHOBb67gt1FJ4huZY/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
+    service: "Business Transformation",
+    docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
+    pdfUrl: "https://drive.google.com/file/d/1R-ZpyubSfT3l5ipbbhFkv-dWDClE7Ju8/view?usp=drive_link",
+    battlecardUrl: "https://docs.google.com/presentation/d/1lOGfxA4iMazV9Kfn1tPJH2Q0M4GWJgRpUVBv-p7xI1M/edit",
+    maturityModelUrl: "https://docs.google.com/document/d/1syzt0kO66n6vCgOzasujXt0jDdd4by6LGn_pTngLcrU/edit",
+    exampleMaterials: [
+      { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
+    ],
   },
   {
-    seq: 10,
+    seq: 11,
     practice: "Strategy",
     service: "Sales Transformation",
     docUrl: "https://docs.google.com/presentation/d/1D4n31KDux-KaP-DKYSOMZYOcWBaJe7yfteAZAqNdTSo/edit?usp=sharing",
@@ -248,7 +261,7 @@ const gtmMaterials: GTMRow[] = [
   // Finance
   {
     isHub: true,
-    seq: 11,
+    seq: 12,
     practice: "Finance",
     service: "Finance Transformation",
     docUrl: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link",
@@ -259,7 +272,7 @@ const gtmMaterials: GTMRow[] = [
     maturityDiagnosticUrl: "/diagnostics/finance-transformation",
   },
   {
-    seq: 12,
+    seq: 13,
     practice: "Finance",
     service: "M&A Services",
     docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link",
@@ -273,19 +286,7 @@ const gtmMaterials: GTMRow[] = [
   // Operations
   {
     isHub: true,
-    practice: "Strategy",
-    service: "Business Transformation",
-    docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/1R-ZpyubSfT3l5ipbbhFkv-dWDClE7Ju8/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1lOGfxA4iMazV9Kfn1tPJH2Q0M4GWJgRpUVBv-p7xI1M/edit",
-    maturityModelUrl: "https://docs.google.com/document/d/1syzt0kO66n6vCgOzasujXt0jDdd4by6LGn_pTngLcrU/edit",
-    exampleMaterials: [
-      { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
-    ],
-  },
-  {
-    isHub: true,
-    seq: 13,
+    seq: 14,
     practice: "Operations",
     service: "Performance Improvement",
     docUrl: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link",
