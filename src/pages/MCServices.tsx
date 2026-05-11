@@ -289,7 +289,7 @@ const gtmMaterials: GTMRow[] = [
     practice: "Operations",
     service: "Performance Improvement",
     docUrl: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/1qiSQnyoGcGmGAk6sEpHMnlruHfyyrg5Q/view?usp=drive_link",
+    pdfUrl: "https://drive.google.com/file/d/1y4_Tu_MVGhSq1W4hYgOJP2G5NU3sq77J/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1Gm9I5zaX01X1DlTp6J2eB4G3zE4vcGYxvJ8lwbe6-MM/edit",
     maturityModelUrl: "https://docs.google.com/document/d/1bQIwVkhYrgvTK-S_jDKZbOCtnjUPsltD6Kndvx92h4A/edit",
     exampleMaterials: [
