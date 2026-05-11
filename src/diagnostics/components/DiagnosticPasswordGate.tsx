@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ToptalLogo from "@/components/ToptalLogo";
 
 interface Props {
   slug: string;
@@ -59,8 +60,10 @@ export default function DiagnosticPasswordGate({ slug, role, title, children }: 
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6 text-center">
         <div className="flex justify-center">
-          <div className="bg-primary rounded-xl p-4">
-            <Lock className="h-6 w-6 text-primary-foreground" />
+          <div className="bg-primary rounded-xl px-5 py-4 flex items-center gap-4">
+            <ToptalLogo className="h-6" />
+            <div className="w-px h-6 bg-primary-foreground/30" />
+            <Lock className="h-5 w-5 text-primary-foreground" />
           </div>
         </div>
         <div>
