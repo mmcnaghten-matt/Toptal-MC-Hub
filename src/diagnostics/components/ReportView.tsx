@@ -145,13 +145,9 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
           <p className="text-muted-foreground text-sm">Overall Maturity Score</p>
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-card border border-border rounded-xl p-5">
-            <h3 className="font-semibold text-foreground text-sm mb-3">Dimension Profile</h3>
-            <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
-          </div>
-
+        {/* Charts — stacked: bar first, radar below */}
+        <div className="space-y-6">
+          {/* Pillar Scores bar chart */}
           <div className="bg-card border border-border rounded-xl p-5">
             <h3 className="font-semibold text-foreground text-sm mb-4">Pillar Scores</h3>
             <div className="space-y-4">
@@ -180,6 +176,12 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
                 );
               })}
             </div>
+          </div>
+
+          {/* Radar chart — full width gives labels room to render */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-3">Dimension Profile</h3>
+            <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
           </div>
         </div>
 
