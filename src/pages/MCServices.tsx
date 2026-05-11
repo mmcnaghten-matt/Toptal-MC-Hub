@@ -48,6 +48,14 @@ const servicePortfolio: ServiceCategory[] = [
           "Responsible AI Consulting",
         ],
       },
+      {
+        name: "Business Transformation",
+        services: [
+          "Business Restructuring Services",
+          "Business Transformation Consulting Services",
+          "Sales Transformation Consulting",
+        ],
+      },
     ],
   },
   {
@@ -80,14 +88,6 @@ const servicePortfolio: ServiceCategory[] = [
           "Supply Chain Consulting",
           "Inventory Management Services",
           "Procurement Consulting",
-        ],
-      },
-      {
-        name: "Business Transformation",
-        services: [
-          "Business Restructuring Services",
-          "Business Transformation Consulting Services",
-          "Sales Transformation Consulting",
         ],
       },
     ],
@@ -273,7 +273,7 @@ const gtmMaterials: GTMRow[] = [
   // Operations
   {
     isHub: true,
-    practice: "Operations",
+    practice: "Strategy",
     service: "Business Transformation",
     docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
     pdfUrl: "https://drive.google.com/file/d/1R-ZpyubSfT3l5ipbbhFkv-dWDClE7Ju8/view?usp=drive_link",
