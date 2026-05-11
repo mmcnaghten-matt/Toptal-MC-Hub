@@ -22,6 +22,15 @@ const mcDiagnostics = [
     password: "FT2026",
   },
   {
+    slug: "business-transformation",
+    title: "Business Transformation Maturity Checkup",
+    description:
+      "Assess your organization's business transformation maturity across five capability pillars — Strategic Alignment & Governance, Process & Operational Excellence, Data & Technology Integration, Organizational & Cultural Change, and Customer & Market Centricity — and receive a personalized transformation roadmap.",
+    pillars: ["Strategy & Gov.", "Process", "Data & Tech", "Org & Culture", "Customer"],
+    path: "/diagnostics/business-transformation",
+    password: "BT2026",
+  },
+  {
     slug: "performance-improvement",
     title: "Performance Improvement Maturity Checkup",
     description:
