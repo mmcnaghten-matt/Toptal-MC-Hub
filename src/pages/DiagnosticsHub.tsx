@@ -19,6 +19,14 @@ const mcDiagnostics = [
     pillars: ["Strategy & Vision", "Performance Management", "Process Optimization", "Org & Governance", "Data & Technology"],
     path: "/diagnostics/finance-transformation",
   },
+  {
+    slug: "performance-improvement",
+    title: "Performance Improvement Maturity Checkup",
+    description:
+      "Assess your organization's operational performance maturity across six capability pillars — Strategic Alignment & Goal Setting, Process Design & Execution, Organizational & Functional Alignment, Technology & Data Management, People & Culture, and Resource & Asset Optimization — and receive a personalized improvement roadmap.",
+    pillars: ["Strategy", "Process", "Org Alignment", "Tech & Data", "People", "Resources"],
+    path: "/diagnostics/performance-improvement",
+  },
 ];
 
 const industryDiagnostics: typeof mcDiagnostics = [
