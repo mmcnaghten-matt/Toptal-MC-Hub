@@ -306,6 +306,7 @@ const gtmMaterials: GTMRow[] = [
     pdfUrl: "https://drive.google.com/file/d/1lceoWsWXmrhx_yLjDQTUPnCVcK5DNHdf/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1aIPsWUe1o6CHR-YszRpiwyACLLSw9qzZFCg0ZO7L72Q/edit",
     maturityModelUrl: "https://docs.google.com/document/d/1eKjYH3O-7GL3NGNFGS9NgcaOGtC0Pz6nvuZ8ZOv0ItA/edit",
+    maturityDiagnosticUrl: "/diagnostics/supply-chain",
   },
   {
     seq: 16,

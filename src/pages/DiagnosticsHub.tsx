@@ -27,6 +27,14 @@ const mcDiagnostics = [
     pillars: ["Strategy", "Process", "Org Alignment", "Tech & Data", "People", "Resources"],
     path: "/diagnostics/performance-improvement",
   },
+  {
+    slug: "supply-chain",
+    title: "Supply Chain Maturity Checkup",
+    description:
+      "Assess your organization's supply chain maturity across five capability pillars — Strategy & Planning, Data & Digital Integration, Operations & Execution, Resilience & Risk Management, and Collaboration & Ecosystem Alignment — and receive a personalized transformation roadmap.",
+    pillars: ["Strategy & Planning", "Data & Digital", "Operations", "Resilience", "Collaboration"],
+    path: "/diagnostics/supply-chain",
+  },
 ];
 
 const industryDiagnostics: typeof mcDiagnostics = [
