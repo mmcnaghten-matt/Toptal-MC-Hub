@@ -67,7 +67,7 @@ const industryDiagnostics = [
       "A focused assessment of your organization's maturity in building direct, data-driven fan and audience relationships — covering data foundations, personalization, DTC channels, monetization, real-time engagement, AI, and ecosystem integration.",
     pillars: ["Fan Data", "Personalization", "DTC Channels", "Monetization", "Real-Time Engagement", "AI & Analytics", "Ecosystem", "Org Readiness"],
     path: "/cannes-diagnostic",
-    password: null,
+    password: "Cannes2026",
   },
 ];
 
