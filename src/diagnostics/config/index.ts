@@ -6,6 +6,7 @@ import performanceImprovement from './performance-improvement';
 import supplyChain from './supply-chain';
 import workforceTransformation from './workforce-transformation';
 import businessTransformation from './business-transformation';
+import growthStrategy from './growth-strategy';
 
 const registry: Record<string, DiagnosticConfig> = {
   'ai-maturity': aiMaturity,
@@ -15,6 +16,7 @@ const registry: Record<string, DiagnosticConfig> = {
   'supply-chain': supplyChain,
   'workforce-transformation': workforceTransformation,
   'business-transformation': businessTransformation,
+  'growth-strategy': growthStrategy,
 };
 
 export function getDiagnosticConfig(slug: string): DiagnosticConfig | undefined {

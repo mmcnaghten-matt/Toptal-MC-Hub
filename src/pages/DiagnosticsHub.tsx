@@ -22,6 +22,15 @@ const mcDiagnostics = [
     password: "FT2026",
   },
   {
+    slug: "growth-strategy",
+    title: "Growth Strategy Maturity Checkup",
+    description:
+      "Assess your organization's growth strategy maturity across five capability pillars — Growth Strategy Formulation & Vision, Market & Customer Intelligence, Execution & Go-to-Market, Organizational Alignment & Collaboration, and Technology & Innovation Adoption — and receive a personalized growth roadmap.",
+    pillars: ["Strategy & Vision", "Market Intelligence", "Execution & GTM", "Org Alignment", "Tech & Innovation"],
+    path: "/diagnostics/growth-strategy",
+    password: "GS2026",
+  },
+  {
     slug: "business-transformation",
     title: "Business Transformation Maturity Checkup",
     description:
