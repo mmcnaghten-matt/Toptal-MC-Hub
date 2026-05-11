@@ -16,14 +16,14 @@ interface Props {
 
 // Custom tick that wraps multi-word labels onto separate lines so they
 // never overflow the SVG viewport horizontally.
-const CustomTick = ({ x, y, textAnchor, value }: {
+const CustomTick = ({ x, y, textAnchor, payload }: {
   x: number;
   y: number;
   textAnchor: string;
-  value: string;
+  payload: { value: string };
   [key: string]: unknown;
 }) => {
-  const words = String(value).split(' ');
+  const words = String(payload?.value ?? '').split(' ');
   const lineHeight = 13;
   // Shift the whole label up so multi-line blocks are centred on the axis point
   const offsetY = -((words.length - 1) * lineHeight) / 2;
