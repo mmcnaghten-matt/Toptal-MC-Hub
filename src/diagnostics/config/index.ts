@@ -4,6 +4,7 @@ import mePlatform from './me-platform';
 import financeTransformation from './finance-transformation';
 import performanceImprovement from './performance-improvement';
 import supplyChain from './supply-chain';
+import workforceTransformation from './workforce-transformation';
 
 const registry: Record<string, DiagnosticConfig> = {
   'ai-maturity': aiMaturity,
@@ -11,6 +12,7 @@ const registry: Record<string, DiagnosticConfig> = {
   'finance-transformation': financeTransformation,
   'performance-improvement': performanceImprovement,
   'supply-chain': supplyChain,
+  'workforce-transformation': workforceTransformation,
 };
 
 export function getDiagnosticConfig(slug: string): DiagnosticConfig | undefined {

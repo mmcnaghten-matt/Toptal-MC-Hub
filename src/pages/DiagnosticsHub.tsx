@@ -35,6 +35,14 @@ const mcDiagnostics = [
     pillars: ["Strategy & Planning", "Data & Digital", "Operations", "Resilience", "Collaboration"],
     path: "/diagnostics/supply-chain",
   },
+  {
+    slug: "workforce-transformation",
+    title: "Workforce Transformation Maturity Checkup",
+    description:
+      "Assess your organization's workforce transformation maturity across five capability pillars — Organizational Transformation, Digital Workforce Transformation, Leadership Transformation, Cultural Transformation, and Process Transformation — and receive a personalized roadmap.",
+    pillars: ["Org Transformation", "Digital Workforce", "Leadership", "Culture", "Process"],
+    path: "/diagnostics/workforce-transformation",
+  },
 ];
 
 const industryDiagnostics: typeof mcDiagnostics = [

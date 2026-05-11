@@ -328,6 +328,7 @@ const gtmMaterials: GTMRow[] = [
     battlecardUrl: "https://docs.google.com/presentation/d/1Kvou1MHJWg5lj7HE2_Qy75m4b2IPMtBe99EeOwjPhQ0/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1lIi3-yMadUeoyRvz1oLKwdm5UABWkjedOqSyzTgMN7k/edit",
+    maturityDiagnosticUrl: "/diagnostics/workforce-transformation",
     exampleMaterials: [
       { label: "Owens Corning Culture", url: "https://docs.google.com/presentation/d/1guXlLNwMI1KfyJiFQBshjb6xF2pqkDMvWI4Osl9nUUU/edit" },
     ],
