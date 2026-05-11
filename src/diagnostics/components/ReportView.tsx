@@ -126,29 +126,29 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
           </div>
         )}
 
-        {/* Overall score */}
-        <div className="bg-card border border-border rounded-xl p-6 text-center space-y-2">
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
-            {maturityLevel}
-          </span>
-          {scoreDisplay === 'normalized' ? (
-            <p className="text-4xl font-bold text-foreground">
-              {avgScore.toFixed(1)}
-              <span className="text-xl text-muted-foreground font-normal"> / 5</span>
-            </p>
-          ) : (
-            <p className="text-4xl font-bold text-foreground">
-              {totalRaw}
-              <span className="text-xl text-muted-foreground font-normal"> / {maxRaw}</span>
-            </p>
-          )}
-          <p className="text-muted-foreground text-sm">Overall Maturity Score</p>
-        </div>
+        {/* Overall score + Pillar Scores side by side */}
+        <div className="grid grid-cols-3 gap-6 items-stretch">
+          {/* Overall score — 1/3 width */}
+          <div className="bg-card border border-border rounded-xl p-6 text-center flex flex-col items-center justify-center space-y-2">
+            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
+              {maturityLevel}
+            </span>
+            {scoreDisplay === 'normalized' ? (
+              <p className="text-4xl font-bold text-foreground">
+                {avgScore.toFixed(1)}
+                <span className="text-xl text-muted-foreground font-normal"> / 5</span>
+              </p>
+            ) : (
+              <p className="text-4xl font-bold text-foreground">
+                {totalRaw}
+                <span className="text-xl text-muted-foreground font-normal"> / {maxRaw}</span>
+              </p>
+            )}
+            <p className="text-muted-foreground text-sm">Overall Maturity Score</p>
+          </div>
 
-        {/* Charts — stacked: bar first, radar below */}
-        <div className="space-y-6">
-          {/* Pillar Scores bar chart */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          {/* Pillar Scores bar chart — 2/3 width */}
+          <div className="col-span-2 bg-card border border-border rounded-xl p-5">
             <h3 className="font-semibold text-foreground text-sm mb-4">Pillar Scores</h3>
             <div className="space-y-4">
               {config.dimensions.map((dim, i) => {
@@ -178,11 +178,12 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
             </div>
           </div>
 
-          {/* Radar chart — full width gives labels room to render */}
-          <div className="bg-card border border-border rounded-xl p-5">
-            <h3 className="font-semibold text-foreground text-sm mb-3">Dimension Profile</h3>
-            <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
-          </div>
+        </div>
+
+        {/* Radar chart — full width gives labels room to render */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-semibold text-foreground text-sm mb-3">Dimension Profile</h3>
+          <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
         </div>
 
         {/* Strategic recommendations */}
