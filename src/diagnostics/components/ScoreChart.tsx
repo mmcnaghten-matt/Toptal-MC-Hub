@@ -22,8 +22,8 @@ export default function ScoreChart({ dimensions, scoreSummary }: Props) {
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <RadarChart data={data}>
+    <ResponsiveContainer width="100%" height={340}>
+      <RadarChart data={data} margin={{ top: 25, right: 50, bottom: 25, left: 50 }}>
         <PolarGrid gridType="polygon" />
         {/* Force fixed 0–5 domain so the scale is always consistent */}
         <PolarRadiusAxis domain={[0, 5]} tickCount={6} tick={false} axisLine={false} />
