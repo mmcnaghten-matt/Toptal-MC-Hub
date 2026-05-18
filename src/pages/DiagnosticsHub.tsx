@@ -66,6 +66,15 @@ const mcDiagnostics = [
     path: "/diagnostics/workforce-transformation",
     password: "WT2026",
   },
+  {
+    slug: "ai-value-realization",
+    title: "AI Value Realization Maturity Checkup",
+    description:
+      "Assess your organization's ability to translate AI investments into auditable, sustained financial and operational returns across five capability pillars — Strategy & Targeting, Data & Workflows, Telemetry & Control, Org & Steerage, and Tech Lifecycle — and receive a personalized ROI optimization roadmap.",
+    pillars: ["Strategy & Targeting", "Data & Workflows", "Telemetry & Control", "Org & Steerage", "Tech Lifecycle"],
+    path: "/diagnostics/ai-value-realization",
+    password: "AVR2026",
+  },
 ];
 
 const industryDiagnostics = [
