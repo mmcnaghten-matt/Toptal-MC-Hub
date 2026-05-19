@@ -127,6 +127,12 @@ export default function ConstellationDiagram({ compact = false }: Props) {
        info:"<strong>Organizational Design</strong> — Restructures departments to align with new visions and post-transformation goals. A key satellite of Workforce Transformation."},
       {id:"talent",    ll:["Talent","Management"],            cx:415,cy:538,rx:52,ry:21,type:"secondary",
        info:"<strong>Talent Management</strong> — Attracts, develops, and retains the skills required for a transformed enterprise. A key satellite of Workforce Transformation."},
+      {id:"gtm",       ll:["Go-to-Market","Consulting"],      cx:430,cy:-8, rx:65,ry:22,type:"secondary",
+       info:"<strong>Go-to-Market Consulting</strong> — Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy."},
+      {id:"prodstrat", ll:["Product Strategy","Consulting"],  cx:265,cy:-8, rx:70,ry:22,type:"secondary",
+       info:"<strong>Product Strategy Consulting</strong> — Provides structured consulting around product roadmap development, portfolio prioritization, and innovation governance. A direct enabler of Growth Strategy outcomes."},
+      {id:"corpfin",   ll:["Corporate Finance","Consulting"], cx:80, cy:140,rx:65,ry:22,type:"secondary",
+       info:"<strong>Corporate Finance Consulting</strong> — Supports capital allocation, valuation, financial modeling, and strategic finance decisions. A direct enabler of Finance Transformation, often engaged during M&A, restructuring, or major capital events."},
     ];
 
     const edges: DiagramEdge[] = [
@@ -148,6 +154,9 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       {a:"business", b:"cx",        s:"p"},
       {a:"supply",   b:"inventory", s:"p"},{a:"supply",   b:"sustain",   s:"p"},
       {a:"workforce",b:"orgdesign", s:"p"},{a:"workforce",b:"talent",    s:"p"},
+      {a:"growth",  b:"gtm",       s:"p"},
+      {a:"growth",  b:"prodstrat", s:"p"},
+      {a:"finance", b:"corpfin",   s:"p"},
     ];
 
     const nM: Record<string, DiagramNode> = {};
@@ -279,7 +288,7 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       <svg
         ref={svgRef}
         width="100%"
-        viewBox="0 0 680 600"
+        viewBox="0 -40 680 640"
         role="img"
         aria-label="Toptal Management Consulting Ecosystem — Six-Hub Constellation"
       />
