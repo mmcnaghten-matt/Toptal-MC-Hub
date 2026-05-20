@@ -53,6 +53,12 @@ interface ServiceModule {
   outcomes: string[];
 }
 
+interface AdjacentService {
+  name: string;
+  type: "universal" | "secondary";
+  docUrl?: string;
+}
+
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const PRACTICE_COLORS: Record<Practice, string> = {
@@ -118,6 +124,84 @@ const hubs: Record<HubId, Hub> = {
     docUrl: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing",
     sellersSheetUrl: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/workforce-transformation",
+  },
+};
+
+// ── Adjacent services per hub (sourced from ConstellationDiagram edges) ───────
+// Overview deck URLs from gtmMaterials in MCServices.tsx.
+// Services with no dedicated overview deck appear name-only (no docUrl).
+
+const HUB_ADJACENTS: Record<HubId, { universals: AdjacentService[]; secondaries: AdjacentService[] }> = {
+  growth: {
+    universals: [
+      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
+      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
+      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
+      // AI Consulting is not connected to Growth Strategy in the services web
+    ],
+    secondaries: [
+      { name: "Product Strategy",            type: "secondary", docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing" },
+      { name: "Go-to-Market Consulting",     type: "secondary", docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing" },
+      { name: "Customer Experience",         type: "secondary", docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link" },
+      { name: "M&A Consulting",              type: "secondary", docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link" },
+      { name: "Product Strategy Consulting", type: "secondary" }, // no dedicated overview deck
+    ],
+  },
+  business: {
+    universals: [
+      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
+      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
+      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
+      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
+    ],
+    secondaries: [
+      { name: "Customer Experience", type: "secondary", docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link" },
+    ],
+  },
+  finance: {
+    universals: [
+      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
+      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
+      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
+      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
+    ],
+    secondaries: [
+      { name: "M&A Services",                type: "secondary", docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link" },
+      { name: "Corporate Finance Consulting", type: "secondary" }, // no dedicated overview deck
+    ],
+  },
+  perf: {
+    universals: [
+      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
+      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
+      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
+      // Risk & Compliance is not connected to Performance Improvement in the services web
+    ],
+    secondaries: [],
+  },
+  supply: {
+    universals: [
+      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
+      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
+      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
+      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
+    ],
+    secondaries: [
+      { name: "Inventory Management",    type: "secondary", docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing" },
+      { name: "Sustainability Consulting",type: "secondary" }, // no dedicated overview deck
+    ],
+  },
+  workforce: {
+    universals: [
+      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
+      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
+      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
+      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
+    ],
+    secondaries: [
+      { name: "Organizational Design", type: "secondary" }, // no dedicated overview deck
+      { name: "Talent Management",     type: "secondary" }, // no dedicated overview deck
+    ],
   },
 };
 
@@ -718,6 +802,65 @@ export default function HubFinder() {
           </div>
 
           <p className="text-sm text-muted-foreground">{hub.rationale}</p>
+
+          {/* Adjacent services from the services web */}
+          {(HUB_ADJACENTS[hub.id].universals.length > 0 || HUB_ADJACENTS[hub.id].secondaries.length > 0) && (
+            <div className="border-t border-border pt-3 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Adjacent Services</p>
+              {HUB_ADJACENTS[hub.id].universals.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground mr-0.5">Universal Connectors:</span>
+                  {HUB_ADJACENTS[hub.id].universals.map((svc) =>
+                    svc.docUrl ? (
+                      <a
+                        key={svc.name}
+                        href={svc.docUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10 transition-colors"
+                      >
+                        {svc.name}
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    ) : (
+                      <span
+                        key={svc.name}
+                        className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+                      >
+                        {svc.name}
+                      </span>
+                    )
+                  )}
+                </div>
+              )}
+              {HUB_ADJACENTS[hub.id].secondaries.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground mr-0.5">Secondary Services:</span>
+                  {HUB_ADJACENTS[hub.id].secondaries.map((svc) =>
+                    svc.docUrl ? (
+                      <a
+                        key={svc.name}
+                        href={svc.docUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-foreground/70 hover:text-foreground hover:bg-muted transition-colors"
+                      >
+                        {svc.name}
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    ) : (
+                      <span
+                        key={svc.name}
+                        className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
+                      >
+                        {svc.name}
+                      </span>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-4 pt-1">
             <a
