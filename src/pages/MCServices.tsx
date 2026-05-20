@@ -508,7 +508,7 @@ export default function MCServices() {
         {/* Section nav */}
         <nav className="flex gap-2 flex-wrap border-b border-border pb-4">
           {[
-            { label: "Hub Finder", href: "#hub-finder" },
+            { label: "MC Service Offering Finder", href: "#hub-finder" },
             { label: "Introduction", href: "#introduction" },
             { label: "Services Web", href: "#services-web" },
             { label: "Go-to-Market Materials", href: "#gtm-materials" },
@@ -524,7 +524,7 @@ export default function MCServices() {
           ))}
         </nav>
 
-        {/* Hub Service Finder */}
+        {/* MC Service Offering Finder */}
         <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6">
           <HubFinder />
         </section>

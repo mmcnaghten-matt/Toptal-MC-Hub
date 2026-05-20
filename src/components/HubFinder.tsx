@@ -569,7 +569,7 @@ export default function HubFinder() {
   return (
     <div>
       <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-        Hub Service Finder
+        Management Consulting Service Offering Finder
       </p>
       <h2 className="mb-1 text-xl font-bold text-card-foreground tracking-tight">
         Find Your Starting Point
