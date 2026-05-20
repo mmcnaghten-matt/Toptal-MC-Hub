@@ -108,6 +108,44 @@ const hubs: Record<HubId, Hub> = {
 
 const HUB_ORDER: HubId[] = ["growth", "business", "finance", "perf", "supply", "workforce"];
 
+// Hub priority order keyed by every buyer option — most relevant hub first
+const BUYER_HUB_PRIORITY: Record<string, HubId[]> = {
+  // Buying Center
+  "Finance":                                   ["finance", "perf", "business", "supply", "growth", "workforce"],
+  "Operations":                                ["perf", "supply", "business", "finance", "workforce", "growth"],
+  "Supply Chain & Logistics":                  ["supply", "perf", "business", "finance", "growth", "workforce"],
+  "Marketing & Sales":                         ["growth", "business", "perf", "workforce", "finance", "supply"],
+  "Human Resources":                           ["workforce", "business", "perf", "growth", "finance", "supply"],
+  "IT & Technology":                           ["perf", "business", "finance", "supply", "workforce", "growth"],
+  "Strategy & Corporate Development":          ["business", "growth", "finance", "perf", "supply", "workforce"],
+  "Growth & Innovation":                       ["growth", "business", "perf", "supply", "workforce", "finance"],
+  // C-Suite
+  "CEO / President":                           ["business", "growth", "perf", "finance", "supply", "workforce"],
+  "Chief Operating Officer (COO)":             ["perf", "business", "supply", "finance", "workforce", "growth"],
+  "Chief Financial Officer (CFO)":             ["finance", "perf", "business", "supply", "growth", "workforce"],
+  "Chief Marketing Officer (CMO)":             ["growth", "business", "perf", "workforce", "finance", "supply"],
+  "Chief Growth Officer (CGO)":                ["growth", "business", "perf", "finance", "supply", "workforce"],
+  "Chief Strategy Officer (CSO)":              ["growth", "business", "perf", "finance", "supply", "workforce"],
+  "Chief Sales Officer / Head of Sales":       ["growth", "business", "perf", "workforce", "finance", "supply"],
+  "Chief Information Officer (CIO)":           ["perf", "business", "finance", "supply", "workforce", "growth"],
+  "Chief Technology Officer (CTO)":            ["perf", "supply", "business", "finance", "workforce", "growth"],
+  "Chief Digital Officer (CDO)":               ["business", "perf", "supply", "finance", "growth", "workforce"],
+  "Chief Human Resources Officer (CHRO)":      ["workforce", "business", "perf", "growth", "finance", "supply"],
+  "Chief Transformation Officer":              ["business", "perf", "workforce", "finance", "supply", "growth"],
+  "Chief Sustainability Officer":              ["supply", "business", "perf", "workforce", "finance", "growth"],
+  // Key Leaders
+  "Finance Director":                          ["finance", "perf", "business", "supply", "growth", "workforce"],
+  "VP / Director of Supply Chain":             ["supply", "perf", "business", "finance", "growth", "workforce"],
+  "VP / Director of Learning & Development":   ["workforce", "business", "perf", "growth", "finance", "supply"],
+  "Head of Operations":                        ["perf", "supply", "business", "finance", "workforce", "growth"],
+  "Head of IT":                                ["perf", "business", "finance", "supply", "workforce", "growth"],
+  "Head of HR":                                ["workforce", "business", "perf", "growth", "finance", "supply"],
+  "Business Unit Leader / Division Head":      ["business", "perf", "growth", "workforce", "finance", "supply"],
+  "Head of Product Development / Innovation":  ["growth", "business", "perf", "workforce", "finance", "supply"],
+  "Operational Manager":                       ["perf", "supply", "business", "workforce", "finance", "growth"],
+  "Board Member / Director":                   ["business", "finance", "growth", "perf", "supply", "workforce"],
+};
+
 // ── Buying signals (sourced from each hub's seller sheet) ─────────────────────
 
 const signals: Signal[] = [
@@ -277,6 +315,18 @@ export default function HubFinder() {
   const selectedSignal = signals.find((s) => s.id === selectedSignalId);
   const hub = selectedSignal ? hubs[selectedSignal.hub] : null;
 
+  // Reorder hub groups in the challenge dropdown based on the selected buyer
+  const orderedHubIds: HubId[] =
+    selectedBuyer && BUYER_HUB_PRIORITY[selectedBuyer]
+      ? BUYER_HUB_PRIORITY[selectedBuyer]
+      : HUB_ORDER;
+
+  // Changing buyer clears any stale challenge selection
+  const handleBuyerChange = (value: string) => {
+    setSelectedBuyer(value);
+    setSelectedSignalId("");
+  };
+
   return (
     <div>
       <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -293,7 +343,7 @@ export default function HubFinder() {
       <div className="flex flex-wrap items-center gap-x-2 gap-y-3 text-sm font-medium text-foreground">
         <span className="whitespace-nowrap">I am talking with</span>
 
-        <Select value={selectedBuyer} onValueChange={setSelectedBuyer}>
+        <Select value={selectedBuyer} onValueChange={handleBuyerChange}>
           <SelectTrigger className="h-9 w-auto min-w-[220px] text-sm">
             <SelectValue placeholder="select buyer or title..." />
           </SelectTrigger>
@@ -318,7 +368,7 @@ export default function HubFinder() {
             <SelectValue placeholder="select a challenge or issue..." />
           </SelectTrigger>
           <SelectContent className="max-w-[500px]">
-            {HUB_ORDER.map((hubId) => {
+            {orderedHubIds.map((hubId) => {
               const h = hubs[hubId];
               const hubSignals = signals.filter((s) => s.hub === hubId);
               return (
