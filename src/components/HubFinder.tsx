@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, FileText, BarChart3, LayoutGrid } from "lucide-react";
+import { ExternalLink, FileText, BarChart3, LayoutGrid, Loader2, Wand2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -693,6 +696,10 @@ export default function HubFinder() {
   const [selectedBuyer, setSelectedBuyer] = useState<string>("");
   const [selectedSignalId, setSelectedSignalId] = useState<string>("");
   const [isModulesOpen, setIsModulesOpen] = useState(false);
+  const [freeFormText, setFreeFormText]         = useState<string>("");
+  const [isMatching, setIsMatching]             = useState(false);
+  const [matchError, setMatchError]             = useState<string | null>(null);
+  const [matchExplanation, setMatchExplanation] = useState<string | null>(null);
 
   const selectedSignal = signals.find((s) => s.id === selectedSignalId);
   const hub = selectedSignal ? hubs[selectedSignal.hub] : null;
@@ -711,9 +718,37 @@ export default function HubFinder() {
   };
 
   // Changing signal closes the modal so stale module content doesn't persist
+  // Also clears any AI match state so explanations don't linger on manual picks
   const handleSignalChange = (value: string) => {
     setSelectedSignalId(value);
     setIsModulesOpen(false);
+    setMatchExplanation(null);
+    setMatchError(null);
+  };
+
+  // Free-form AI matcher — sends user text + signal corpus to the edge function
+  const handleFreeFormMatch = async () => {
+    if (!freeFormText.trim() || isMatching) return;
+    setIsMatching(true);
+    setMatchError(null);
+    setMatchExplanation(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("match-hub-signal", {
+        body: {
+          userText: freeFormText.trim(),
+          buyerRole: selectedBuyer || undefined,
+          signals: signals.map(({ id, tag, shortLabel, quote, hub }) => ({ id, tag, shortLabel, quote, hub })),
+        },
+      });
+      if (error || data?.error) throw new Error(error?.message || data?.error || "Matching failed");
+      setSelectedSignalId(data.signalId);
+      setMatchExplanation(data.reason);
+      setIsModulesOpen(false);
+    } catch (e: unknown) {
+      setMatchError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+    } finally {
+      setIsMatching(false);
+    }
   };
 
   return (
@@ -775,6 +810,38 @@ export default function HubFinder() {
         </Select>
       </div>
 
+      {/* Free-form AI matcher */}
+      <div className="mt-4">
+        <div className="flex items-center gap-3 my-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">or describe the challenge in your own words</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="flex gap-2 items-end">
+          <Textarea
+            value={freeFormText}
+            onChange={(e) => { setFreeFormText(e.target.value); setMatchError(null); }}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleFreeFormMatch(); }}
+            placeholder="e.g. Our leadership team keeps asking for updated financials but we can't close the books fast enough…"
+            className="resize-none text-sm min-h-[72px]"
+          />
+          <Button
+            onClick={handleFreeFormMatch}
+            disabled={!freeFormText.trim() || isMatching}
+            size="sm"
+            className="shrink-0 self-end gap-1.5"
+          >
+            {isMatching
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Matching…</>
+              : <><Wand2  className="h-3.5 w-3.5" />Find My Match</>
+            }
+          </Button>
+        </div>
+        {matchError && (
+          <p className="mt-1.5 text-xs text-destructive">{matchError}</p>
+        )}
+      </div>
+
       {/* Result card — shown as soon as a signal is selected */}
       {selectedSignal && hub ? (
         <div className="mt-5 rounded-lg border border-border bg-card p-5 space-y-3 fade-in">
@@ -800,6 +867,13 @@ export default function HubFinder() {
               {selectedSignal.tag}
             </p>
           </div>
+
+          {matchExplanation && (
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground/80 italic">
+              <Wand2 className="h-3 w-3 mt-0.5 shrink-0 text-primary/60" />
+              {matchExplanation}
+            </p>
+          )}
 
           <p className="text-sm text-muted-foreground">{hub.rationale}</p>
 
