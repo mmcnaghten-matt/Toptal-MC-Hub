@@ -221,6 +221,19 @@ const signals: Signal[] = [
 
 const buyerGroups: BuyerGroup[] = [
   {
+    group: "Buying Center",
+    options: [
+      "Finance",
+      "Operations",
+      "Supply Chain & Logistics",
+      "Marketing & Sales",
+      "Human Resources",
+      "IT & Technology",
+      "Strategy & Corporate Development",
+      "Growth & Innovation",
+    ],
+  },
+  {
     group: "C-Suite",
     options: [
       "CEO / President",
@@ -239,20 +252,7 @@ const buyerGroups: BuyerGroup[] = [
     ],
   },
   {
-    group: "Buying Center",
-    options: [
-      "Finance",
-      "Operations",
-      "Supply Chain & Logistics",
-      "Marketing & Sales",
-      "Human Resources",
-      "IT & Technology",
-      "Strategy & Corporate Development",
-      "Growth & Innovation",
-    ],
-  },
-  {
-    group: "Senior Leaders",
+    group: "Key Leaders",
     options: [
       "Finance Director",
       "VP / Director of Supply Chain",
