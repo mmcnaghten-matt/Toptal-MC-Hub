@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, FileText, BarChart3 } from "lucide-react";
+import { ExternalLink, FileText, BarChart3, LayoutGrid } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -36,6 +43,13 @@ interface Signal {
 interface BuyerGroup {
   group: string;
   options: string[];
+}
+
+interface ServiceModule {
+  name: string;
+  challenge: string;
+  duration: string;
+  outcomes: string[];
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -255,6 +269,223 @@ const signals: Signal[] = [
     quote: "Our team is bogged down by manual processes that should be automated, but we don't know where to start." },
 ];
 
+// ── Section 7 service modules (Strategic Sprints) from each seller sheet ─────
+// Workforce Transformation has no Section 7 sprints table — button hidden for that hub.
+
+const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
+  growth: [
+    {
+      name: "Growth Diagnostic & Market Pulse",
+      challenge: "Market Volatility / Competitive Pressure",
+      duration: "2–4 weeks",
+      outcomes: [
+        "Current State Assessment: report on core competencies and market position",
+        "Market & Competitor Insights: detailed look at industry trends and competitor strategies",
+        "Growth Opportunity Document: prioritized list of potential expansion areas and identified challenges",
+      ],
+    },
+    {
+      name: "The Growth Strategy Blueprint",
+      challenge: "Resource Constraints / Lack of a Plan",
+      duration: "4–6 weeks",
+      outcomes: [
+        "Tailored Strategic Plan: actionable roadmap aligned with long-term goals",
+        "Resource & Financial Plan: model for capital and human resource allocation",
+        "Risk Mitigation Roadmap: identification of bottlenecks and a plan to navigate them",
+      ],
+    },
+    {
+      name: "Execution Enablement & Sales Alignment",
+      challenge: "Internal Resistance / Siloed Teams",
+      duration: "8–12 weeks",
+      outcomes: [
+        "Marketing & Sales Optimization: unified processes to drive lead intent and profitability",
+        "Operational Efficiency Report: new workflows and technology adoption strategies",
+        "Internal Capability Program: knowledge transfer and training to sustain the strategy",
+      ],
+    },
+    {
+      name: "Performance & Optimization Audit",
+      challenge: "Stagnant Results / Need for ROI",
+      duration: "Monthly or Quarterly Retainer",
+      outcomes: [
+        "KPI Dashboard & Reporting: real-time visibility into growth objective progress",
+        "Optimization Recommendations: data-driven pivots based on market feedback",
+        "Revenue Maximization Report: analysis of increased profitability and ROI",
+      ],
+    },
+  ],
+  business: [
+    {
+      name: "Transformation Vision & Ambition Sprint",
+      challenge: "Our business model is outdated and we don't have a plan for AI",
+      duration: "2–4 weeks",
+      outcomes: [
+        "Current State Diagnostic Map: fact-based overview of internal pain points and market position",
+        "Transformation Vision Statement: compelling case for change to inspire the organization",
+        "Strategic Value Driver Framework: defined metrics (efficiency, growth) rooting the effort",
+      ],
+    },
+    {
+      name: "Initiative Prioritization & Impact Assessment",
+      challenge: "We have 50 projects going on, but none of them are moving the needle",
+      duration: "4–6 weeks",
+      outcomes: [
+        "Prioritized Initiative Heat Map: visual ranking of projects based on ROI and feasibility",
+        "Impact Assessment Report: estimated net financial gains (P&L levers) and KPI improvements",
+        "Initial Risk Profile: identification of early delivery risks and baseline mitigation plans",
+      ],
+    },
+    {
+      name: "Transformation Roadmap & Resourcing Blueprint",
+      challenge: "We know what we want to do, but we haven't budgeted the people to do it",
+      duration: "4–6 weeks",
+      outcomes: [
+        "Integrated Transformation Roadmap: phased timeline with clear milestones and dependencies",
+        "Resourcing & Budget Plan: detailed breakdown of internal and Toptal talent required",
+        "Stakeholder Commitment Charter: formal alignment from senior leadership on the plan",
+      ],
+    },
+    {
+      name: "Results Orchestration & PMO Governance",
+      challenge: "Our transformations always fail because of internal resistance and lack of tracking",
+      duration: "Monthly or Quarterly Retainer",
+      outcomes: [
+        "Governance Framework & PMO Charter: documentation of escalation processes and intervention levels",
+        "Real-time Performance Dashboard: visual tracking of initiative progress and value realization",
+        "Quarterly Results Review: summary of achieved gains and adapted roadmap milestones",
+      ],
+    },
+  ],
+  finance: [
+    {
+      name: "Finance Diagnostic & Digital Maturity Audit",
+      challenge: "Our reporting is manual and full of errors",
+      duration: "3–4 weeks",
+      outcomes: [
+        "Finance Diagnostic Heat Map: prioritized list of opportunities and risks",
+        "Performance Benchmark Report: functional costs and cycle times vs. industry leaders",
+        "Future Vision & Value Drivers: a defined strategic North Star for the finance function",
+      ],
+    },
+    {
+      name: "Finance Transformation Blueprint & ROI Roadmap",
+      challenge: "We need to modernize, but don't know where to start",
+      duration: "4–6 weeks",
+      outcomes: [
+        "Finance Strategic Plan (Blueprint): recommended policies and service delivery models",
+        "Technology Integration Plan: solution architecture for Cloud ERP, BI, or RPA",
+        "Quantified Financial Business Case: expected ROI and cost-savings model",
+      ],
+    },
+    {
+      name: "Operational Enablement & System Integration",
+      challenge: "We bought a new ERP but our team can't use it effectively",
+      duration: "12–20 weeks",
+      outcomes: [
+        "Live Tech Solutions: deployed and integrated ERP/EPM tools in the production environment",
+        "Standard Operating Procedures: documented new workflows for R2R, P2P, and O2C",
+        "Change Management & Training Records: proof of workforce readiness and internal capability",
+      ],
+    },
+    {
+      name: "Performance Excellence & Scalability Retainer",
+      challenge: "We've modernized, but want to leverage AI for predictive forecasting",
+      duration: "Monthly or Quarterly Retainer",
+      outcomes: [
+        "Sustainability Scorecard: tool to track long-term effectiveness of finance changes",
+        "Continuous Improvement Framework: cadences for ongoing optimization using AI/ML",
+        "Knowledge Transfer Playbooks: best practice guides for full internal ownership",
+      ],
+    },
+  ],
+  perf: [
+    {
+      name: "High-Performance Baseline & Gap Analysis",
+      challenge: "Our teams are busy, but we aren't seeing the results in the bottom line",
+      duration: "3–4 weeks",
+      outcomes: [
+        "Current State Process Maps: identification of delays, inefficiencies, and manual workarounds",
+        "Technology & Data Audit: assessment of system reliability, integration, and technical debt",
+        "Opportunity Mapping Report: prioritized list of high-ROI improvement areas",
+      ],
+    },
+    {
+      name: "The Operational Excellence Blueprint",
+      challenge: "We have dozens of improvement ideas but don't know where to start",
+      duration: "4–6 weeks",
+      outcomes: [
+        "Strategic Roadmap: sequenced project plan prioritized by business value and ease of implementation",
+        "Target Operating Model (TOM) Design: new blueprints for organizational structure",
+        "Technology Selection Matrix: framework for choosing tools to automate tasks and improve visibility",
+      ],
+    },
+    {
+      name: "Silo-Breaking & Efficiency Integration",
+      challenge: "Our departments don't talk to each other, and everything takes too long",
+      duration: "8–16 weeks",
+      outcomes: [
+        "Implemented Performance Frameworks: standardized reporting cycles for project ROI and cash flow",
+        "Cross-Functional Collaboration Tools: deployment of standardized meeting and interaction protocols",
+        "Capability Building Program: role-specific training and leadership coaching certifications",
+      ],
+    },
+    {
+      name: "Continuous Optimization & Value Retainer",
+      challenge: "We've made improvements before, but they never seem to stick",
+      duration: "Monthly or Quarterly Retainer",
+      outcomes: [
+        "Real-Time Performance Dashboards: visibility into progress vs. goals for immediate course correction",
+        "Asset Utilization Audits: ongoing evaluation of products, markets, and projects for high-ROI areas",
+        "Long-Term Talent Pipeline Tracking: monitoring of career progression and workforce transformation",
+      ],
+    },
+  ],
+  supply: [
+    {
+      name: "Supply Chain Baseline & Network Gap Analysis",
+      challenge: "We hit massive tracking blind spots and supplier delays, but don't know where our network is leaking money",
+      duration: "3–4 weeks",
+      outcomes: [
+        "Current State Network Diagnostic Map: visualization of hidden delays, lead-time slips, and data siloing",
+        "Vendor & Supplier Risk Heat Map: dependency assessment tracking macro exposure and vulnerabilities",
+        "Prioritization Matrix Report: ranked opportunity backlog pairing issues by impact and feasibility",
+      ],
+    },
+    {
+      name: "The Resilient Supply Chain Blueprint",
+      challenge: "We want to digitize and optimize our logistics, but our systems are too siloed",
+      duration: "4–6 weeks",
+      outcomes: [
+        "Phased Optimization Roadmap: sequenced action blueprint with timelines and technical interdependencies",
+        "Quantified Financial Business Case: definitive cost models detailing overhead compression and ROI",
+        "Technology Stack Recommendations: architectural blueprint outlining pipeline tools to replace manual workarounds",
+      ],
+    },
+    {
+      name: "Logistics & Analytics Optimization Integration",
+      challenge: "Our warehouses and transport processes run on manual workflows, and customer lead times are slipping",
+      duration: "8–16 weeks",
+      outcomes: [
+        "Implemented Operational Adjustments: streamlined order processing, warehouse, and logistics configurations",
+        "Real-Time Analytics Dashboards: fully deployed visibility portals unifying inventory and tracking metrics",
+        "Automated Workforce Playbooks: clear scheduling rules and process maps to improve cross-functional speed",
+      ],
+    },
+    {
+      name: "Sustainable Supply Chain & Continuous Optimization Retainer",
+      challenge: "We achieve quick savings from individual fixes, but our network quickly decays when new disruptions hit",
+      duration: "Monthly or Quarterly Retainer",
+      outcomes: [
+        "Self-Sustaining Operations Blueprint: institutionalized monitoring rules protecting structural resilience",
+        "Standardized Sustainability Scorecards: multi-tier ESG compliance trackers integrated with live routing",
+        "Continuous Knowledge-Transfer Repositories: upgradable playbooks ensuring independent lifecycle governance",
+      ],
+    },
+  ],
+  // workforce: no Section 7 sprints table in seller sheet
+};
+
 // ── Buyer groups (from seller sheet buyer definitions) ────────────────────────
 
 const buyerGroups: BuyerGroup[] = [
@@ -311,6 +542,7 @@ const buyerGroups: BuyerGroup[] = [
 export default function HubFinder() {
   const [selectedBuyer, setSelectedBuyer] = useState<string>("");
   const [selectedSignalId, setSelectedSignalId] = useState<string>("");
+  const [isModulesOpen, setIsModulesOpen] = useState(false);
 
   const selectedSignal = signals.find((s) => s.id === selectedSignalId);
   const hub = selectedSignal ? hubs[selectedSignal.hub] : null;
@@ -321,10 +553,17 @@ export default function HubFinder() {
       ? BUYER_HUB_PRIORITY[selectedBuyer]
       : HUB_ORDER;
 
-  // Changing buyer clears any stale challenge selection
+  // Changing buyer clears any stale challenge selection and closes the modal
   const handleBuyerChange = (value: string) => {
     setSelectedBuyer(value);
     setSelectedSignalId("");
+    setIsModulesOpen(false);
+  };
+
+  // Changing signal closes the modal so stale module content doesn't persist
+  const handleSignalChange = (value: string) => {
+    setSelectedSignalId(value);
+    setIsModulesOpen(false);
   };
 
   return (
@@ -363,7 +602,7 @@ export default function HubFinder() {
 
         <span className="whitespace-nowrap">and am hearing</span>
 
-        <Select value={selectedSignalId} onValueChange={setSelectedSignalId}>
+        <Select value={selectedSignalId} onValueChange={handleSignalChange}>
           <SelectTrigger className="h-9 w-auto min-w-[300px] text-sm">
             <SelectValue placeholder="select a challenge or issue..." />
           </SelectTrigger>
@@ -440,12 +679,55 @@ export default function HubFinder() {
               <BarChart3 className="h-3.5 w-3.5" />
               Run Diagnostic
             </a>
+            {HUB_MODULES[hub.id] && (
+              <button
+                onClick={() => setIsModulesOpen(true)}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Service Modules
+              </button>
+            )}
           </div>
         </div>
       ) : (
         <p className="mt-4 text-xs italic text-muted-foreground/60">
           Select a challenge above to see the recommended hub service and quick-access materials.
         </p>
+      )}
+
+      {hub && HUB_MODULES[hub.id] && (
+        <Dialog open={isModulesOpen} onOpenChange={setIsModulesOpen}>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{hub.name} — Service Modules</DialogTitle>
+              <DialogDescription>
+                How to get started: four strategic sprints from initial diagnostic to ongoing optimization
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 sm:grid-cols-2 mt-2">
+              {HUB_MODULES[hub.id]!.map((mod) => (
+                <div key={mod.name} className="rounded-lg border border-border bg-card p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-foreground leading-snug">{mod.name}</h4>
+                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap">
+                      {mod.duration}
+                    </span>
+                  </div>
+                  <p className="text-xs italic text-muted-foreground">"{mod.challenge}"</p>
+                  <ul className="space-y-1">
+                    {mod.outcomes.map((o) => (
+                      <li key={o} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/40" />
+                        {o}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
