@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ConstellationDiagram from "@/components/ConstellationDiagram";
+import HubFinder from "@/components/HubFinder";
 
 const definition = {
   title: "Management Consulting Services",
@@ -507,6 +508,7 @@ export default function MCServices() {
         {/* Section nav */}
         <nav className="flex gap-2 flex-wrap border-b border-border pb-4">
           {[
+            { label: "Hub Finder", href: "#hub-finder" },
             { label: "Introduction", href: "#introduction" },
             { label: "Services Web", href: "#services-web" },
             { label: "Go-to-Market Materials", href: "#gtm-materials" },
@@ -521,6 +523,11 @@ export default function MCServices() {
             </a>
           ))}
         </nav>
+
+        {/* Hub Service Finder */}
+        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6">
+          <HubFinder />
+        </section>
 
         {/* Introduction - Definition + Service Portfolio side by side */}
         <div id="introduction" className="fade-in grid gap-8 lg:grid-cols-5">
