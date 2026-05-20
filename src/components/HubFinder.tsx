@@ -803,6 +803,43 @@ export default function HubFinder() {
 
           <p className="text-sm text-muted-foreground">{hub.rationale}</p>
 
+          <div className="flex flex-wrap gap-4 pt-1">
+            <a
+              href={hub.sellersSheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Seller's Sheet
+            </a>
+            <a
+              href={hub.docUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Overview Deck
+            </a>
+            <a
+              href={hub.diagnosticUrl}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              Run Diagnostic
+            </a>
+            {HUB_MODULES[hub.id] && (
+              <button
+                onClick={() => setIsModulesOpen(true)}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Service Modules
+              </button>
+            )}
+          </div>
+
           {/* Adjacent services from the services web */}
           {(HUB_ADJACENTS[hub.id].universals.length > 0 || HUB_ADJACENTS[hub.id].secondaries.length > 0) && (
             <div className="border-t border-border pt-3 space-y-2">
@@ -862,42 +899,6 @@ export default function HubFinder() {
             </div>
           )}
 
-          <div className="flex flex-wrap gap-4 pt-1">
-            <a
-              href={hub.sellersSheetUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Seller's Sheet
-            </a>
-            <a
-              href={hub.docUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Overview Deck
-            </a>
-            <a
-              href={hub.diagnosticUrl}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <BarChart3 className="h-3.5 w-3.5" />
-              Run Diagnostic
-            </a>
-            {HUB_MODULES[hub.id] && (
-              <button
-                onClick={() => setIsModulesOpen(true)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Service Modules
-              </button>
-            )}
-          </div>
         </div>
       ) : (
         <p className="mt-4 text-xs italic text-muted-foreground/60">
