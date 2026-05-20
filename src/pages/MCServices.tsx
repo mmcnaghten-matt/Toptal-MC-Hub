@@ -525,12 +525,12 @@ export default function MCServices() {
         </nav>
 
         {/* MC Service Offering Finder */}
-        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6">
+        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6 scroll-mt-20">
           <HubFinder />
         </section>
 
         {/* Introduction - Definition + Service Portfolio side by side */}
-        <div id="introduction" className="fade-in grid gap-8 lg:grid-cols-5">
+        <div id="introduction" className="fade-in grid gap-8 lg:grid-cols-5 scroll-mt-20">
           {/* Left: Definition (slide 4) */}
           <section className="lg:col-span-2 rounded-lg border border-border bg-card p-6">
             <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Introduction</p>
@@ -573,7 +573,7 @@ export default function MCServices() {
         </div>
 
         {/* MC Services Web */}
-        <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6">
+        <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
           <div className="grid gap-6 lg:grid-cols-5 items-start">
             <div className="lg:col-span-2">
               <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -596,7 +596,7 @@ export default function MCServices() {
         </section>
 
         {/* GTM Materials (slide 7) */}
-        <section id="gtm-materials" className="fade-in rounded-lg border border-border bg-card p-6">
+        <section id="gtm-materials" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
           <div className="mb-4 flex items-center gap-2">
             <Presentation className="h-4 w-4 text-primary" />
             <h2 className="text-xl font-bold text-card-foreground">Go-to-Market Materials</h2>
@@ -709,7 +709,7 @@ export default function MCServices() {
         </section>
 
         {/* Sales Motion Documents (slide 8) */}
-        <section id="sales-motion" className="fade-in rounded-lg border border-border bg-card p-6">
+        <section id="sales-motion" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
           <div className="mb-4 flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-primary" />
             <h2 className="text-xl font-bold text-card-foreground">Sales Motion Documents &amp; Assets</h2>
