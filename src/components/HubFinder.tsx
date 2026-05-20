@@ -48,6 +48,7 @@ interface BuyerGroup {
 interface ServiceModule {
   name: string;
   challenge: string;
+  objective: string;
   duration: string;
   outcomes: string[];
 }
@@ -277,6 +278,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Growth Diagnostic & Market Pulse",
       challenge: "Market Volatility / Competitive Pressure",
+      objective: "A comprehensive analysis of the current state and market conditions to identify core challenges and 'low-hanging fruit' growth opportunities.",
       duration: "2–4 weeks",
       outcomes: [
         "Current State Assessment: report on core competencies and market position",
@@ -287,6 +289,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "The Growth Strategy Blueprint",
       challenge: "Resource Constraints / Lack of a Plan",
+      objective: "Formulating a tailored, data-driven strategy that defines exactly how to expand, whether through market penetration, product development, or diversification.",
       duration: "4–6 weeks",
       outcomes: [
         "Tailored Strategic Plan: actionable roadmap aligned with long-term goals",
@@ -297,6 +300,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Execution Enablement & Sales Alignment",
       challenge: "Internal Resistance / Siloed Teams",
+      objective: "Ensuring the strategy doesn't just sit on a shelf by aligning marketing and sales teams and building internal capabilities.",
       duration: "8–12 weeks",
       outcomes: [
         "Marketing & Sales Optimization: unified processes to drive lead intent and profitability",
@@ -307,6 +311,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Performance & Optimization Audit",
       challenge: "Stagnant Results / Need for ROI",
+      objective: "Continuous tracking of growth initiatives to ensure sustained momentum and data-driven adjustments.",
       duration: "Monthly or Quarterly Retainer",
       outcomes: [
         "KPI Dashboard & Reporting: real-time visibility into growth objective progress",
@@ -319,6 +324,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Transformation Vision & Ambition Sprint",
       challenge: "Our business model is outdated and we don't have a plan for AI",
+      objective: "A strategic review of the business's current baseline to define a bold future 'ideal state' and a compelling narrative that secures organizational buy-in.",
       duration: "2–4 weeks",
       outcomes: [
         "Current State Diagnostic Map: fact-based overview of internal pain points and market position",
@@ -329,6 +335,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Initiative Prioritization & Impact Assessment",
       challenge: "We have 50 projects going on, but none of them are moving the needle",
+      objective: "Brainstorming, quantifying, and ranking transformation opportunities based on their ability to deliver against strategic pillars and financial goals.",
       duration: "4–6 weeks",
       outcomes: [
         "Prioritized Initiative Heat Map: visual ranking of projects based on ROI and feasibility",
@@ -339,6 +346,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Transformation Roadmap & Resourcing Blueprint",
       challenge: "We know what we want to do, but we haven't budgeted the people to do it",
+      objective: "Translating prioritized initiatives into a logical, time-phased sequence while formalizing the budget and personnel needed for execution.",
       duration: "4–6 weeks",
       outcomes: [
         "Integrated Transformation Roadmap: phased timeline with clear milestones and dependencies",
@@ -349,6 +357,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Results Orchestration & PMO Governance",
       challenge: "Our transformations always fail because of internal resistance and lack of tracking",
+      objective: "Establishing the rigorous Project Management Office (PMO) and governance required to manage delivery, track impact, and resolve roadblocks in real-time.",
       duration: "Monthly or Quarterly Retainer",
       outcomes: [
         "Governance Framework & PMO Charter: documentation of escalation processes and intervention levels",
@@ -361,6 +370,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Finance Diagnostic & Digital Maturity Audit",
       challenge: "Our reporting is manual and full of errors",
+      objective: "A deep-dive evaluation of the existing ERP/EPM landscape and core financial cycles (R2R, P2P) to identify bottlenecks and data integrity gaps.",
       duration: "3–4 weeks",
       outcomes: [
         "Finance Diagnostic Heat Map: prioritized list of opportunities and risks",
@@ -371,6 +381,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Finance Transformation Blueprint & ROI Roadmap",
       challenge: "We need to modernize, but don't know where to start",
+      objective: "Designing the Target Operating Model (TOM) and technology architecture while building a rigorous financial case for change.",
       duration: "4–6 weeks",
       outcomes: [
         "Finance Strategic Plan (Blueprint): recommended policies and service delivery models",
@@ -381,6 +392,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Operational Enablement & System Integration",
       challenge: "We bought a new ERP but our team can't use it effectively",
+      objective: "Executing the re-engineering of financial workflows and deploying recommended technology stacks (Hyperion, SAP, Power BI, etc.).",
       duration: "12–20 weeks",
       outcomes: [
         "Live Tech Solutions: deployed and integrated ERP/EPM tools in the production environment",
@@ -391,6 +403,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Performance Excellence & Scalability Retainer",
       challenge: "We've modernized, but want to leverage AI for predictive forecasting",
+      objective: "Establishing continuous improvement frameworks and sustainability scorecards to ensure the transformation delivers long-term, scalable value.",
       duration: "Monthly or Quarterly Retainer",
       outcomes: [
         "Sustainability Scorecard: tool to track long-term effectiveness of finance changes",
@@ -403,6 +416,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "High-Performance Baseline & Gap Analysis",
       challenge: "Our teams are busy, but we aren't seeing the results in the bottom line",
+      objective: "A holistic audit across all seven building blocks to identify root causes of friction, structural redundancies, and technical debt.",
       duration: "3–4 weeks",
       outcomes: [
         "Current State Process Maps: identification of delays, inefficiencies, and manual workarounds",
@@ -413,6 +427,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "The Operational Excellence Blueprint",
       challenge: "We have dozens of improvement ideas but don't know where to start",
+      objective: "Architecting a future-state model that defines performance targets, optimized cross-functional workflows, and technical requirements.",
       duration: "4–6 weeks",
       outcomes: [
         "Strategic Roadmap: sequenced project plan prioritized by business value and ease of implementation",
@@ -423,6 +438,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Silo-Breaking & Efficiency Integration",
       challenge: "Our departments don't talk to each other, and everything takes too long",
+      objective: "Executing prioritized project plans and tech upgrades while delivering role-specific training to improve interaction among divisions.",
       duration: "8–16 weeks",
       outcomes: [
         "Implemented Performance Frameworks: standardized reporting cycles for project ROI and cash flow",
@@ -433,6 +449,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Continuous Optimization & Value Retainer",
       challenge: "We've made improvements before, but they never seem to stick",
+      objective: "Establishing rigorous monitoring systems and 'improvement loops' to ensure operational gains are maintained and scaled.",
       duration: "Monthly or Quarterly Retainer",
       outcomes: [
         "Real-Time Performance Dashboards: visibility into progress vs. goals for immediate course correction",
@@ -445,6 +462,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Supply Chain Baseline & Network Gap Analysis",
       challenge: "We hit massive tracking blind spots and supplier delays, but don't know where our network is leaking money",
+      objective: "A holistic audit across core pillars utilizing SCOR-based value stream mapping to evaluate legacy visibility gaps, inventory policy health, and supplier footprint risks.",
       duration: "3–4 weeks",
       outcomes: [
         "Current State Network Diagnostic Map: visualization of hidden delays, lead-time slips, and data siloing",
@@ -455,6 +473,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "The Resilient Supply Chain Blueprint",
       challenge: "We want to digitize and optimize our logistics, but our systems are too siloed",
+      objective: "Architecting a future-state network model, localized inventory segmentation rules, and optimized cross-functional routing parameters to build agility.",
       duration: "4–6 weeks",
       outcomes: [
         "Phased Optimization Roadmap: sequenced action blueprint with timelines and technical interdependencies",
@@ -465,6 +484,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Logistics & Analytics Optimization Integration",
       challenge: "Our warehouses and transport processes run on manual workflows, and customer lead times are slipping",
+      objective: "Executing prioritized project plans, data integrations, and automated parameters across warehouse and tracking systems while running pilot implementations.",
       duration: "8–16 weeks",
       outcomes: [
         "Implemented Operational Adjustments: streamlined order processing, warehouse, and logistics configurations",
@@ -475,6 +495,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
     {
       name: "Sustainable Supply Chain & Continuous Optimization Retainer",
       challenge: "We achieve quick savings from individual fixes, but our network quickly decays when new disruptions hit",
+      objective: "Establishing robust monitoring frameworks, continuous improvement loops, and sustainability metrics to protect long-term efficiency.",
       duration: "Monthly or Quarterly Retainer",
       outcomes: [
         "Self-Sustaining Operations Blueprint: institutionalized monitoring rules protecting structural resilience",
@@ -715,6 +736,7 @@ export default function HubFinder() {
                     </span>
                   </div>
                   <p className="text-xs italic text-muted-foreground">"{mod.challenge}"</p>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{mod.objective}</p>
                   <ul className="space-y-1">
                     {mod.outcomes.map((o) => (
                       <li key={o} className="flex items-start gap-1.5 text-xs text-muted-foreground">
