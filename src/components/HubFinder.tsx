@@ -700,6 +700,7 @@ export default function HubFinder() {
   const [isMatching, setIsMatching]             = useState(false);
   const [matchError, setMatchError]             = useState<string | null>(null);
   const [matchExplanation, setMatchExplanation] = useState<string | null>(null);
+  const [isFreeFormOpen, setIsFreeFormOpen]     = useState(false);
 
   const selectedSignal = signals.find((s) => s.id === selectedSignalId);
   const hub = selectedSignal ? hubs[selectedSignal.hub] : null;
@@ -744,6 +745,7 @@ export default function HubFinder() {
       setSelectedSignalId(data.signalId);
       setMatchExplanation(data.reason);
       setIsModulesOpen(false);
+      setIsFreeFormOpen(false);
     } catch (e: unknown) {
       setMatchError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
@@ -808,38 +810,17 @@ export default function HubFinder() {
             })}
           </SelectContent>
         </Select>
-      </div>
 
-      {/* Free-form AI matcher */}
-      <div className="mt-4">
-        <div className="flex items-center gap-3 my-3">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">or describe the challenge in your own words</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-        <div className="flex gap-2 items-end">
-          <Textarea
-            value={freeFormText}
-            onChange={(e) => { setFreeFormText(e.target.value); setMatchError(null); }}
-            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleFreeFormMatch(); }}
-            placeholder="e.g. Our leadership team keeps asking for updated financials but we can't close the books fast enough…"
-            className="resize-none text-sm min-h-[72px]"
-          />
-          <Button
-            onClick={handleFreeFormMatch}
-            disabled={!freeFormText.trim() || isMatching}
-            size="sm"
-            className="shrink-0 self-end gap-1.5"
-          >
-            {isMatching
-              ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Matching…</>
-              : <><Wand2  className="h-3.5 w-3.5" />Find My Match</>
-            }
-          </Button>
-        </div>
-        {matchError && (
-          <p className="mt-1.5 text-xs text-destructive">{matchError}</p>
-        )}
+        <span className="whitespace-nowrap font-bold text-sm uppercase tracking-wider text-foreground">
+          OR
+        </span>
+        <button
+          onClick={() => { setIsFreeFormOpen(true); setMatchError(null); }}
+          className="whitespace-nowrap text-sm font-medium text-primary hover:underline inline-flex items-center gap-1"
+        >
+          <Wand2 className="h-3.5 w-3.5" />
+          Describe the challenge in your own words
+        </button>
       </div>
 
       {/* Result card — shown as soon as a signal is selected */}
@@ -1014,6 +995,50 @@ export default function HubFinder() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Free-form AI matcher modal */}
+      <Dialog open={isFreeFormOpen} onOpenChange={setIsFreeFormOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4 text-primary" />
+              Describe the Challenge
+            </DialogTitle>
+            <DialogDescription>
+              Describe what you're hearing from the client in your own words — the AI will match it to the closest buying signal and identify the best-fit hub offering.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 mt-1">
+            <Textarea
+              value={freeFormText}
+              onChange={(e) => { setFreeFormText(e.target.value); setMatchError(null); }}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleFreeFormMatch(); }}
+              placeholder="e.g. Our leadership team keeps asking for updated financials but we can't close the books fast enough…"
+              className="resize-none text-sm min-h-[100px]"
+              autoFocus
+            />
+            {matchError && (
+              <p className="text-xs text-destructive">{matchError}</p>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setIsFreeFormOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleFreeFormMatch}
+                disabled={!freeFormText.trim() || isMatching}
+                size="sm"
+                className="gap-1.5"
+              >
+                {isMatching
+                  ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Matching…</>
+                  : <><Wand2  className="h-3.5 w-3.5" />Find My Match</>
+                }
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
