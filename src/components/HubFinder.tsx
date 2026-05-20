@@ -504,7 +504,52 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
       ],
     },
   ],
-  // workforce: no Section 7 sprints table in seller sheet
+  workforce: [
+    {
+      name: "The Workforce Capability Baseline & AI Readiness Sprint",
+      challenge: "Our workers are swamped, but we don't actually know which tasks can be automated with AI.",
+      objective: "A deep-dive audit of the current talent landscape paired with an automation diagnostic to pinpoint where AI can immediately replace or augment workflows.",
+      duration: "3–4 weeks",
+      outcomes: [
+        "Current State Capability Matrix: A fact-based blueprint tracking current internal skills and specific capability gaps.",
+        "AI Integration & Automation Heatmap: A visual matrix identifying high-impact areas for AI agent deployment or human task augmentation.",
+        "Workforce Vision Statement: A formalized plan aligning executive leadership on target transformation goals and AI ambitions.",
+      ],
+    },
+    {
+      name: "The Human-AI Target Operating Model (TOM) & Skill Architecture",
+      challenge: "We bought an enterprise AI platform, but our old departmental silos are preventing us from using it.",
+      objective: "Redesigning organizational structures away from traditional, siloed job roles and toward an agile operating model built on fluid skill ecosystems.",
+      duration: "4–6 weeks",
+      outcomes: [
+        "AI-Integrated Operating Model Blueprint: A structural plan defining exactly how human workers and autonomous AI agents interact and collaborate.",
+        "Upskilling & Recruitment Framework: A precise strategy to bridge technical and cognitive skill gaps through internal training and strategic talent acquisition.",
+        "Prioritized Initiative Roadmap: A phased timeline mapping out training, operational change milestones, and clear ownership.",
+      ],
+    },
+    {
+      name: "High-Impact Workforce Transformation Pilot",
+      challenge: "We want to change our workflow model, but our legacy culture is heavily resisting it.",
+      objective: "Launching and running targeted, cross-functional experiments in specific business units to test new human-AI workflows and minimize execution risks before scaling enterprise-wide.",
+      duration: "8–12 weeks",
+      outcomes: [
+        "Pilot Performance Dashboard: Real-time visibility into productivity metrics, employee adaptation rates, and workflow bottlenecks.",
+        "Refined Implementation Playbook: An optimized operational manual built from direct pilot feedback and field testing.",
+        "Stakeholder Validation Report: Quantified business case results used to justify broader enterprise deployment.",
+      ],
+    },
+    {
+      name: "Continuous Learning & Scalable Talent Retainer",
+      challenge: "We need to rapidly inject specialized technical or strategic skills into our team, but we can't afford to hire full-time headcount.",
+      objective: "Implementing a permanent framework for enterprise-wide upskilling while integrating elastic on-demand talent networks to keep the workforce highly responsive to market updates.",
+      duration: "Monthly or Quarterly Retainer",
+      outcomes: [
+        "Scalable Talent Supply Chain: A structured model blending core internal employees with an on-demand network of elite Toptal subject matter experts.",
+        "Continuous Learning Architecture: A permanent infrastructure for ongoing corporate upskilling and leadership alignment cadences.",
+        "Transformation Impact Report: Longitudinal evaluation measuring long-term organizational agility, cost optimization, and net innovation capacity.",
+      ],
+    },
+  ],
 };
 
 // ── Buyer groups (from seller sheet buyer definitions) ────────────────────────
