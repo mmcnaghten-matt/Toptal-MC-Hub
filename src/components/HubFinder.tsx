@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, FileText, BarChart3, LayoutGrid, Loader2, Wand2, HelpCircle, MessageSquare } from "lucide-react";
+import { ExternalLink, FileText, LayoutGrid, Loader2, Wand2, HelpCircle, MessageSquare } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -973,14 +973,7 @@ export default function HubFinder() {
               <ExternalLink className="h-3.5 w-3.5" />
               Overview Deck
             </a>
-            <a
-              href={hub.diagnosticUrl}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <BarChart3 className="h-3.5 w-3.5" />
-              Run Diagnostic
-            </a>
-            {HUB_MODULES[hub.id] && (
+{HUB_MODULES[hub.id] && (
               <button
                 onClick={() => setIsModulesOpen(true)}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
