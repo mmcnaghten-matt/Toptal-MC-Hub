@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, FileText, BarChart3, LayoutGrid, Loader2, Wand2 } from "lucide-react";
+import { ExternalLink, FileText, BarChart3, LayoutGrid, Loader2, Wand2, HelpCircle, MessageSquare } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -60,6 +60,12 @@ interface AdjacentService {
   name: string;
   type: "universal" | "secondary";
   docUrl?: string;
+}
+
+interface HubQuestion {
+  question: string;
+  insight?: string;
+  detail?: string;
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -204,6 +210,94 @@ const HUB_ADJACENTS: Record<HubId, { universals: AdjacentService[]; secondaries:
     secondaries: [
       { name: "Organizational Design", type: "secondary" }, // no dedicated overview deck
       { name: "Talent Management",     type: "secondary" }, // no dedicated overview deck
+    ],
+  },
+};
+
+// ── Hook & Open-Ended Questions per hub (sourced from seller sheets) ──────────
+
+const HUB_QUESTIONS: Record<HubId, { hook: HubQuestion[]; openEnded: HubQuestion[] }> = {
+  growth: {
+    hook: [
+      { question: "Do you have a formally documented growth strategy with SMART objectives that is aligned and socialized across your entire organization?", insight: "Strategic Fragmentation", detail: "A \"no\" indicates growth efforts are likely ad-hoc and reactive, leading to wasted resources and inconsistent performance." },
+      { question: "Is your organization currently using AI-powered predictive analytics to anticipate market shifts and customer behavior before they happen?", insight: "Intelligence Gap", detail: "Relying on backward-looking reporting means you are always reacting to the past rather than proactively shaping your future growth." },
+      { question: "Are your marketing and sales teams operating as a unified force with shared data sources and integrated processes?", insight: "Execution Friction", detail: "Disconnected departments create operational bottlenecks that severely hinder scaling and erode acquisition ROI." },
+      { question: "Does your current operating model allow you to pivot rapidly and respond dynamically to market changes without significant internal resistance?", insight: "Agility Weakness", detail: "In a disrupted market, standing still is equivalent to falling behind. Internal inertia is a primary obstacle to sustainable growth." },
+    ],
+    openEnded: [
+      { question: "What are the three biggest internal or external obstacles currently preventing you from reaching your expansion targets?", insight: "Roadblock Discovery" },
+      { question: "How has your competitive landscape shifted in the last 12 months, and what data are you using to decide how to pivot your product offerings?", insight: "Competitive Agility" },
+      { question: "If you had to enter a new market today, what specific data insights are you currently missing that would make that decision 'low-risk'?", insight: "Intelligence Readiness" },
+      { question: "If your customer demand doubled overnight, where would your infrastructure fail first—in your technology, your sales processes, or your talent pool?", insight: "Scaling Stress-Test" },
+    ],
+  },
+  business: {
+    hook: [
+      { question: "Do you have a board-approved transformation roadmap that explicitly links your strategic goals to specific P&L levers and KPI improvements?", insight: "Strategic Disconnect", detail: "Without this link, the transformation is likely a series of \"random acts of change\" that won't produce breakthrough financial results." },
+      { question: "Does your organization have a compelling 'Change Narrative' that has secured genuine buy-in from employees at all levels?", insight: "Cultural Resistance", detail: "Transformations fail when personnel don't understand the \"what's in it for me,\" leading to passive or active resistance." },
+      { question: "Is your transformation governed by a PMO that has the authority to resolve execution roadblocks and decommission initiatives that aren't delivering?", insight: "Execution Risk", detail: "Lack of rigorous tracking and governance leads to mediocre results and wasted effort on projects that don't move the needle." },
+      { question: "Do your transformation leaders have 'skin in the game'—meaning they are directly accountable for the KPIs the transformation is meant to improve?", insight: "Lack of Accountability", detail: "When leaders are too high-level and not responsible for results, the pace of delivery inevitably slows down." },
+    ],
+    openEnded: [
+      { question: "If your business continues on its current trajectory for the next 24 months without a major change, where will you be relative to your top two competitors?", insight: "The Trajectory Question" },
+      { question: "When your transformation initiatives stall, is it typically due to a lack of technical capability, cultural resistance, or a failure in the governance process?", insight: "The Bottleneck Question" },
+      { question: "How are you currently balancing the need to 'run the business' with the intensive talent requirements needed to 'transform the business'?", insight: "The Resource Question" },
+    ],
+  },
+  finance: {
+    hook: [
+      { question: "Can your finance team currently close the books and deliver comprehensive reports within 5 business days?", insight: "Efficiency Gap", detail: "A \"no\" points to manual workflows and legacy bottlenecks that prevent the organization from making agile, timely decisions." },
+      { question: "Do you have a unified financial data ecosystem that seamlessly integrates your ERP, CRM, and HRIS for a single source of truth?", insight: "Intelligence Gap", detail: "Disconnected systems lead to high error rates and prevent the use of predictive analytics for scenario planning." },
+      { question: "Is your finance function currently perceived by other departments as a strategic partner that actively drives business growth?", insight: "Value Gap", detail: "If finance is viewed only as a cost center, the client is missing the Strategic Shift required to remain competitive in a dynamic market." },
+      { question: "Are you confident your current finance processes could scale to support a 20-30% growth rate next year without a significant increase in headcount?", insight: "Scalability Risk", detail: "A \"no\" suggests the client is hitting a ceiling where manual effort will eventually break under the pressure of business expansion." },
+    ],
+    openEnded: [
+      { question: "How has the role of your finance department evolved over the last two years, and where do you feel it is still falling short of being a true strategic partner?", insight: "Strategic Role" },
+      { question: "If you could automate one manual financial process today to free up your team for high-value analysis, which one would it be and why?", insight: "Process Pain" },
+      { question: "When the CEO asks for a real-time update on cash flow or unit economics, how much manual 'massaging' of data is required before you can give an answer?", insight: "Data Visibility" },
+      { question: "As you look at your growth goals for the next 18 months, what is the biggest 'hidden' risk in your current financial infrastructure that could stall that progress?", insight: "Growth Readiness" },
+    ],
+  },
+  perf: {
+    hook: [
+      { question: "Do you have a clear, data-driven map of your end-to-end operational processes that identifies exactly where your biggest bottlenecks and costs are located?", insight: "Visibility Gap", detail: "A \"no\" means the client is likely firefighting symptoms rather than solving root causes, leading to recurring inefficiencies." },
+      { question: "Are your current technology investments delivering measurable, double-digit improvements in productivity or cost-to-serve?", insight: "ROI Disconnect", detail: "If technology isn't moving the needle, they likely have Tech Debt or a misalignment between their tools and their actual business processes." },
+      { question: "Does your organization have a formal, continuous improvement culture where teams are empowered to identify and eliminate waste in real-time?", insight: "Cultural Stagnation", detail: "A \"no\" suggests that even if processes are fixed once, they will eventually decay back into inefficiency without cultural buy-in." },
+      { question: "Is your organizational structure optimized for speed, or do you find that decision-making is often stalled by excessive layers of hierarchy and manual hand-offs?", insight: "Structural Drag", detail: "Excessive layers create hidden costs, indicating a need for organizational restructuring to restore agility and reduce overhead." },
+    ],
+    openEnded: [
+      { question: "If you could eliminate the single most frustrating manual process your team deals with every day, what would that save you in terms of time and employee morale?", insight: "The Inefficiency Tax" },
+      { question: "How much of your current IT budget is spent maintaining legacy 'fixes' versus building the tools that will actually drive your future growth?", insight: "Tech Alignment" },
+      { question: "If your business volume grew by 20% next month, would your current operations scale seamlessly, or would your overhead costs grow even faster than your revenue?", insight: "The Scalability Stress Test" },
+      { question: "How do you currently track the 'cost-to-serve' for your products or customers, and where do you feel that data is currently incomplete or misleading?", insight: "The Accountability Question" },
+    ],
+  },
+  supply: {
+    hook: [
+      { question: "Are you fully confident that your supply chain is resilient enough to absorb market disruptions and adjust performance under sudden external pressures?", insight: "Extreme Vulnerability", detail: "73% of supply chains will face disruption this year, yet only 22% are prepared to adapt. A \"no\" indicates the client is running on unmitigated macro risk that threatens business continuity." },
+      { question: "Does your leadership team possess real-time, end-to-end shipment visibility across your entire global logistics network without system fragmentation?", insight: "Blinded Execution", detail: "Fragmented data across multiple systems isolates operations and forces teams into reactive firefighting rather than predictive issue resolution." },
+      { question: "Are your current investments in AI, IoT, or supply chain automation delivering a proven, measurable lift in throughput or drop in inventory carry costs?", insight: "Value Disconnect", detail: "Tech adoption should not be an expensive buzzword. A \"no\" implies an execution gap where custom engineering is needed to convert software tools into concrete dollar savings." },
+      { question: "Have you successfully integrated public decarbonization and ESG metrics directly into your live logistics routing and supplier scorecard logic?", insight: "Regulatory & Brand Exposure", detail: "The market is punishing legacy logistics. A \"no\" signals high compliance exposure and a fundamental gap in future-proofing the brand's global ecosystem." },
+    ],
+    openEnded: [
+      { question: "Where are the primary bottlenecks currently impacting your operational throughput, order cycle speed, and overall lead times?", insight: "Fulfillment Barriers" },
+      { question: "How much of your current logistics and vendor management data is completely locked inside siloed legacy architectures, and how is that fragmentation slowing down daily executive decision-making?", insight: "Silo Impact" },
+      { question: "If a major geopolitical event or sudden regional shutdown hits your tier-one supplier network tomorrow, what manual workarounds or automated safety buffers kick in to preserve inventory availability?", insight: "Resilience Reality" },
+      { question: "When you evaluate your last major technology investment—whether a warehouse or transport management system—where did it fall short in terms of driving down operational overhead or improving delivery tracking?", insight: "Investment Performance" },
+    ],
+  },
+  workforce: {
+    hook: [
+      { question: "Do you have a formally documented skills-first workforce strategy that explicitly aligns your talent composition with your 3–5 year business goals?", insight: "Strategic Fragmentation", detail: "A \"no\" indicates talent decisions are likely ad-hoc or headcount-driven, leading to critical skill gaps as job requirements shift rapidly." },
+      { question: "Have you mapped your core business processes to identify specific workflows that are eligible for replacement or enhancement by Agentic AI?", insight: "Operational Inefficiency", detail: "Missing this step means the client is forgoing potential 80% efficiency gains realized by AI-augmented workforces." },
+      { question: "Is your current organizational structure flexible enough to dynamically allocate talent to projects based on real-time skills rather than rigid job titles?", insight: "Structural Rigidity", detail: "Fixed roles are obsolete in the new operating model; rigid hierarchies hinder agility and slow market response times." },
+      { question: "Does your leadership team have the formal training and 'AI-fluency' required to lead a dispersed, hybrid, and human-AI augmented workforce?", insight: "Leadership Fragility", detail: "74% of employees will leave roles lacking development; leadership is the core operating system for integrating technology and culture." },
+    ],
+    openEnded: [
+      { question: "Given that 85% of jobs in 2030 haven't been invented yet, which of your current core roles are most at risk of becoming obsolete due to rapid technological change?", insight: "The 2030 Question" },
+      { question: "If you introduced a broad AI-augmentation plan today, where would you encounter the most significant cultural inertia or pushback within your organization?", insight: "Cultural Resistance" },
+      { question: "If your customer demand doubled overnight, where would your workforce infrastructure fail first—in your rigid job roles, your leadership's digital fluency, or your manual processes?", insight: "The Scaling Stress Test" },
+      { question: "How are you currently measuring the impact of your workforce development programs on your long-term operational agility and market competitiveness?", insight: "ROI Alignment" },
     ],
   },
 };
@@ -700,7 +794,9 @@ export default function HubFinder() {
   const [isMatching, setIsMatching]             = useState(false);
   const [matchError, setMatchError]             = useState<string | null>(null);
   const [matchExplanation, setMatchExplanation] = useState<string | null>(null);
-  const [isFreeFormOpen, setIsFreeFormOpen]     = useState(false);
+  const [isFreeFormOpen, setIsFreeFormOpen]         = useState(false);
+  const [isHookQuestionsOpen, setIsHookQuestionsOpen] = useState(false);
+  const [isOpenEndedOpen, setIsOpenEndedOpen]         = useState(false);
 
   const selectedSignal = signals.find((s) => s.id === selectedSignalId);
   const hub = selectedSignal ? hubs[selectedSignal.hub] : null;
@@ -893,6 +989,20 @@ export default function HubFinder() {
                 Service Modules
               </button>
             )}
+            <button
+              onClick={() => setIsHookQuestionsOpen(true)}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+              Hook Questions
+            </button>
+            <button
+              onClick={() => setIsOpenEndedOpen(true)}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Open-Ended Questions
+            </button>
           </div>
 
           {/* Adjacent services from the services web */}
@@ -992,6 +1102,59 @@ export default function HubFinder() {
                 </div>
               ))}
             </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Hook Questions modal */}
+      {hub && (
+        <Dialog open={isHookQuestionsOpen} onOpenChange={setIsHookQuestionsOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{hub.name} — Hook Questions</DialogTitle>
+              <DialogDescription>
+                Diagnostic yes/no questions that surface pain and create urgency. A "no" answer opens the door to a deeper conversation.
+              </DialogDescription>
+            </DialogHeader>
+            <ol className="mt-3 space-y-4">
+              {HUB_QUESTIONS[hub.id].hook.map((q, i) => (
+                <li key={i} className="space-y-1">
+                  <p className="text-sm font-medium text-foreground leading-snug">
+                    {i + 1}. "{q.question}"
+                  </p>
+                  {q.insight && (
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-semibold text-primary/80">{q.insight}:</span>{" "}
+                      {q.detail}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Open-Ended Questions modal */}
+      {hub && (
+        <Dialog open={isOpenEndedOpen} onOpenChange={setIsOpenEndedOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{hub.name} — Open-Ended Questions</DialogTitle>
+              <DialogDescription>
+                Use these to deepen the conversation, uncover the full scope of the challenge, and qualify the opportunity.
+              </DialogDescription>
+            </DialogHeader>
+            <ol className="mt-3 space-y-3">
+              {HUB_QUESTIONS[hub.id].openEnded.map((q, i) => (
+                <li key={i} className="space-y-0.5">
+                  {q.insight && (
+                    <p className="text-xs font-semibold uppercase tracking-wide text-primary/70">{q.insight}</p>
+                  )}
+                  <p className="text-sm text-foreground leading-snug">"{q.question}"</p>
+                </li>
+              ))}
+            </ol>
           </DialogContent>
         </Dialog>
       )}
