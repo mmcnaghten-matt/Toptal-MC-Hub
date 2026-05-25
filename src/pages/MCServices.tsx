@@ -497,7 +497,7 @@ export default function MCServices() {
               <h1 className="text-lg font-semibold tracking-tight text-primary-foreground">
                 Management Consulting Services
               </h1>
-              <p className="text-xs text-primary-foreground/80">Q1 2026 · Confidential</p>
+              <p className="text-xs text-primary-foreground/80">Q2 2026 · Confidential</p>
             </div>
           </div>
           <ToptalLogo className="h-8" />
