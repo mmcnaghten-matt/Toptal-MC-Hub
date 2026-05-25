@@ -49,7 +49,7 @@ const Index = () => {
               </button>
             <div>
               <h1 className="text-lg font-semibold tracking-tight text-primary-foreground">Management Consulting: Industry Insights</h1>
-              <p className="text-xs text-primary-foreground">Q1 2026 · Confidential</p>
+              <p className="text-xs text-primary-foreground">Q2 2026 · Confidential</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
