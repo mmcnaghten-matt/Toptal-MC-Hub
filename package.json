@@ -10,7 +10,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "docker:build": "docker build -t your-app-name .",
+    "docker:run": "docker run -p 3000:8080 your-app-name",
+    "docker:run-detached": "docker run -d -p 3000:8080 your-app-name",
+    "deploy:cloudrun": "npm run build && gcloud run deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
