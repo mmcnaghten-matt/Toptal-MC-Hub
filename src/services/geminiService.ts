@@ -95,3 +95,4 @@ export async function performResearch(companyName: string, deepResearch: boolean
 
   return data as ResearchResult;
 }
+// Testing pipeline automation fix
