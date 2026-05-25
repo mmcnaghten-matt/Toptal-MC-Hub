@@ -33,3 +33,7 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/toptal-mc-hub:$COMMIT_SHA'
+
+# ⚠️ ADD THIS SECTION AT THE VERY BOTTOM:
+options:
+  logging: CLOUD_LOGGING_ONLY
