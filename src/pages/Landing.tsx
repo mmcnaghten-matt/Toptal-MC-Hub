@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Workflow, BarChart3, Building2, ArrowRight } from "lucide-react";
+import { Briefcase, Workflow, BarChart3, Building2, ArrowRight, X } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import SignOutButton from "@/components/SignOutButton";
 
@@ -36,6 +37,15 @@ const sections = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => localStorage.getItem("vercel-migration-banner-dismissed") === "true"
+  );
+  const showBanner = window.location.hostname.includes("vercel.app") && !bannerDismissed;
+
+  const dismissBanner = () => {
+    localStorage.setItem("vercel-migration-banner-dismissed", "true");
+    setBannerDismissed(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,6 +63,30 @@ export default function Landing() {
           </div>
         </div>
       </header>
+
+      {showBanner && (
+        <div className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-6 py-3">
+          <p className="text-sm text-amber-800">
+            <strong>Heads up:</strong> This site is moving to a new URL. Please bookmark{" "}
+            <a
+              href="https://mc-hub.toptal.tech/"
+              className="font-semibold underline hover:text-amber-900"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              mc-hub.toptal.tech
+            </a>{" "}
+            — this Vercel deployment will be retired soon.
+          </p>
+          <button
+            onClick={dismissBanner}
+            className="ml-4 flex-shrink-0 text-amber-600 hover:text-amber-800"
+            aria-label="Dismiss"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       <main className="mx-auto max-w-7xl px-6 py-12">
         <div className="fade-in mb-12 max-w-2xl">
