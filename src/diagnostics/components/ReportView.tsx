@@ -67,6 +67,9 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
     const el = reportRef.current;
     if (!el) return;
 
+    // Allow Recharts SVG to finish rendering before capture
+    await new Promise(r => setTimeout(r, 300));
+
     // Inject branded header into the capture area, then remove it after
     const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
     const header = document.createElement('div');
@@ -101,12 +104,18 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       <div className="flex justify-end mb-4">
         <button
           onClick={handleExportPDF}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium hover:bg-muted transition-colors"
+          disabled={recLoading}
+          title={recLoading ? "Waiting for recommendations to finish generating…" : undefined}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-muted"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          Export PDF
+          {recLoading ? (
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          )}
+          {recLoading ? "Generating recommendations…" : "Export PDF"}
         </button>
       </div>
 
