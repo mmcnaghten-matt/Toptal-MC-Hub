@@ -89,8 +89,20 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       const pdf = new jsPDF('p', 'mm', 'a4');
       const props = pdf.getImageProperties(dataUrl);
       const pdfW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
       const pdfH = (props.height * pdfW) / props.width;
-      pdf.addImage(dataUrl, 'PNG', 0, 0, pdfW, pdfH);
+
+      if (pdfH <= pageH) {
+        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfW, pdfH);
+      } else {
+        let yOffset = 0;
+        while (yOffset < pdfH) {
+          if (yOffset > 0) pdf.addPage();
+          pdf.addImage(dataUrl, 'PNG', 0, -yOffset, pdfW, pdfH);
+          yOffset += pageH;
+        }
+      }
+
       pdf.save(`${config.slug}-report.pdf`);
     } catch (err) {
       console.error('PDF export failed:', err);
