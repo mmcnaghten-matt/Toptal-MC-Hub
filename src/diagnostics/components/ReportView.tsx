@@ -70,10 +70,9 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
     // Allow Recharts SVG to finish rendering before capture
     await new Promise(r => setTimeout(r, 300));
 
-    // Inject branded header into the capture area, then remove it after
     const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
     const header = document.createElement('div');
-    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:hsl(${primaryColor});border-radius:12px;margin-bottom:24px;`;
+    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:hsl(${primaryColor});border-radius:12px;`;
     const titleSpan = document.createElement('span');
     titleSpan.style.cssText = 'font-weight:600;color:white;font-size:14px;font-family:inherit;';
     titleSpan.textContent = compositeLabel ? `${config.title} Composite Report` : `${config.title} Report`;
@@ -82,32 +81,38 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
     logo.style.cssText = 'height:28px;';
     header.appendChild(titleSpan);
     header.appendChild(logo);
-    el.prepend(header);
 
     try {
-      const dataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' });
+      // Capture header at full report width, then remove before capturing body
+      el.prepend(header);
+      const headerDataUrl = await toPng(header, { pixelRatio: 2, backgroundColor: '#ffffff' });
+      el.removeChild(header);
+
+      // Capture body content (no header)
+      const bodyDataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' });
+
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const props = pdf.getImageProperties(dataUrl);
       const pdfW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const pdfH = (props.height * pdfW) / props.width;
 
-      if (pdfH <= pageH) {
-        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfW, pdfH);
-      } else {
-        let yOffset = 0;
-        while (yOffset < pdfH) {
-          if (yOffset > 0) pdf.addPage();
-          pdf.addImage(dataUrl, 'PNG', 0, -yOffset, pdfW, pdfH);
-          yOffset += pageH;
-        }
+      const headerMM = (pdf.getImageProperties(headerDataUrl).height * pdfW) / pdf.getImageProperties(headerDataUrl).width;
+      const bodyMM = (pdf.getImageProperties(bodyDataUrl).height * pdfW) / pdf.getImageProperties(bodyDataUrl).width;
+      const gap = 6; // mm between header and body on each page
+      const bodyPerPage = pageH - headerMM - gap;
+
+      let yOffset = 0;
+      let page = 0;
+      while (yOffset < bodyMM) {
+        if (page > 0) pdf.addPage();
+        pdf.addImage(headerDataUrl, 'PNG', 0, 0, pdfW, headerMM);
+        pdf.addImage(bodyDataUrl, 'PNG', 0, headerMM + gap - yOffset, pdfW, bodyMM);
+        yOffset += bodyPerPage;
+        page++;
       }
 
       pdf.save(`${config.slug}-report.pdf`);
     } catch (err) {
       console.error('PDF export failed:', err);
-    } finally {
-      if (el.contains(header)) el.removeChild(header);
     }
   };
 
