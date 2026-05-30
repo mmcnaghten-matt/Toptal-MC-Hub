@@ -33,6 +33,7 @@ export interface ExportReportParams {
   respondent: { full_name: string; enterprise: string; role: string; department: string } | null;
   compositeLabel?: string;
   chartDataUrl?: string;
+  logoDataUrl?: string;
 }
 
 export function exportReportPdf({
@@ -48,6 +49,7 @@ export function exportReportPdf({
   respondent,
   compositeLabel,
   chartDataUrl,
+  logoDataUrl,
 }: ExportReportParams) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -59,21 +61,32 @@ export function exportReportPdf({
     ? `${config.title} Composite Report`
     : `${config.title} Report`;
 
-  const drawHeader = (pageNum?: number) => {
+  // Logo aspect ratio from the SVG viewBox (2254 × 947)
+  const LOGO_ASPECT = 2254 / 947;
+  const LOGO_H = 9;    // mm — height in the header band
+  const LOGO_W = LOGO_H * LOGO_ASPECT;
+
+  const drawHeader = () => {
     doc.setFillColor(TOPTAL_BLUE[0], TOPTAL_BLUE[1], TOPTAL_BLUE[2]);
     doc.rect(0, 0, pageW, HEADER_H, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text("TOPTAL", MARGIN, 11);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 220, 255);
-    doc.text(`  |  ${reportTitle}`, MARGIN + 18, 11);
-    if (pageNum !== undefined) {
-      doc.setFontSize(7);
+    const midY = HEADER_H / 2;
+    if (logoDataUrl) {
+      // White logo image, vertically centred in the band
+      doc.addImage(logoDataUrl, "PNG", MARGIN, midY - LOGO_H / 2, LOGO_W, LOGO_H);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
       doc.setTextColor(200, 220, 255);
-      doc.text(`${pageNum}`, pageW - MARGIN, 11, { align: "right" });
+      doc.text(`  |  ${reportTitle}`, MARGIN + LOGO_W + 2, midY + 1.5);
+    } else {
+      // Fallback: text logo
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text("TOPTAL", MARGIN, midY + 1.5);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(200, 220, 255);
+      doc.text(`  |  ${reportTitle}`, MARGIN + 20, midY + 1.5);
     }
   };
 
@@ -217,9 +230,11 @@ export function exportReportPdf({
     y += chartH + 8;
   }
 
-  // ── Strategic recommendations ──
+  // ── Strategic recommendations — always start on a fresh page ──
   if (recommendation?.recommendations && recommendation.recommendations.length > 0) {
-    ensureSpace(20);
+    doc.addPage();
+    drawHeader();
+    y = HEADER_H + 8;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(DARK[0], DARK[1], DARK[2]);
@@ -308,17 +323,10 @@ export function exportReportPdf({
   const dateStr = new Date().toLocaleDateString();
   for (let p = 1; p <= pageCount; p++) {
     doc.setPage(p);
-    // Stamp page number in header
-    doc.setFillColor(TOPTAL_BLUE[0], TOPTAL_BLUE[1], TOPTAL_BLUE[2]);
-    doc.rect(pageW - MARGIN - 8, 4, 12, 10, "F"); // clear patch to overdraw
-    doc.setFontSize(7);
-    doc.setTextColor(200, 220, 255);
-    doc.text(`${p} / ${pageCount}`, pageW - MARGIN, 11, { align: "right" });
-    // Footer line
     doc.setFontSize(7);
     doc.setTextColor(LIGHT_MUTED[0], LIGHT_MUTED[1], LIGHT_MUTED[2]);
     doc.text(
-      `Generated ${dateStr} · Toptal ${config.title} Maturity Report`,
+      `Generated ${dateStr} · Toptal ${config.title} Maturity Report · Page ${p} of ${pageCount}`,
       pageW / 2,
       pageH - 6,
       { align: "center" },

@@ -3,6 +3,7 @@ import { toPng } from "html-to-image";
 import ScoreChart from "./ScoreChart";
 import type { DiagnosticConfig, RecommendationContent } from "../types";
 import { exportReportPdf } from "../lib/exportReportPdf";
+import logoWhiteUrl from "@/assets/toptal-logo-white.svg";
 
 interface Props {
   config: DiagnosticConfig;
@@ -67,6 +68,26 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
     // Allow Recharts SVG to finish rendering before capture
     await new Promise(r => setTimeout(r, 300));
 
+    // Convert white SVG logo to PNG for jsPDF embedding
+    let logoDataUrl: string | undefined;
+    try {
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 450;
+          canvas.height = Math.round(450 * (947 / 2254));
+          canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          logoDataUrl = canvas.toDataURL('image/png');
+          resolve();
+        };
+        img.onerror = () => resolve();
+        img.src = logoWhiteUrl;
+      });
+    } catch {
+      // fall through — exportReportPdf will render text fallback
+    }
+
     let chartDataUrl: string | undefined;
     if (chartRef.current) {
       try {
@@ -89,6 +110,7 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
       respondent,
       compositeLabel,
       chartDataUrl,
+      logoDataUrl,
     });
   };
 
