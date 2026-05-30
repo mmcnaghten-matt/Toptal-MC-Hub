@@ -1,9 +1,8 @@
 import { useRef } from "react";
 import { toPng } from "html-to-image";
-import jsPDF from "jspdf";
 import ScoreChart from "./ScoreChart";
-import logoSvg from "@/assets/toptal-logo-white.svg";
 import type { DiagnosticConfig, RecommendationContent } from "../types";
+import { exportReportPdf } from "../lib/exportReportPdf";
 
 interface Props {
   config: DiagnosticConfig;
@@ -49,6 +48,7 @@ function computeMaturityLevel(raw: number, maxRaw: number): RecommendationConten
 
 export default function ReportView({ config, answers, scoreSummary, respondent, recommendation, recLoading, recError, compositeLabel }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const scoreDisplay = config.scoreDisplay ?? 'raw';
   const pillarStats = computePillarStats(config, answers);
@@ -64,78 +64,32 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
     : 1;
 
   const handleExportPDF = async () => {
-    const el = reportRef.current;
-    if (!el) return;
-
     // Allow Recharts SVG to finish rendering before capture
     await new Promise(r => setTimeout(r, 300));
 
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-    const header = document.createElement('div');
-    header.style.cssText = `display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:hsl(${primaryColor});border-radius:12px;margin-bottom:24px;`;
-    const titleSpan = document.createElement('span');
-    titleSpan.style.cssText = 'font-weight:600;color:white;font-size:14px;font-family:inherit;';
-    titleSpan.textContent = compositeLabel ? `${config.title} Composite Report` : `${config.title} Report`;
-    const logo = document.createElement('img');
-    logo.src = logoSvg;
-    logo.style.cssText = 'height:28px;';
-    header.appendChild(titleSpan);
-    header.appendChild(logo);
-    el.prepend(header);
-
-    try {
-      // Measure before capturing so layout is live
-      const hdrH = header.offsetHeight; // CSS px, excludes margin
-      const elH = el.offsetHeight;
-      const elW = el.offsetWidth;
-
-      // Capture full element (header + body) — the proven-working path
-      const fullDataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' });
-      el.removeChild(header);
-
-      // Extract the header slice from the full capture via canvas
-      const tmpImg = new Image();
-      tmpImg.src = fullDataUrl;
-      await new Promise<void>(r => { tmpImg.onload = () => r(); });
-      const imgW = tmpImg.naturalWidth;
-      const imgH = tmpImg.naturalHeight;
-      const hdrPx = Math.round((hdrH / elH) * imgH);
-      const canvas = document.createElement('canvas');
-      canvas.width = imgW;
-      canvas.height = hdrPx;
-      const ctx = canvas.getContext('2d');
-      if (ctx) ctx.drawImage(tmpImg, 0, 0, imgW, hdrPx, 0, 0, imgW, hdrPx);
-      const hdrDataUrl = canvas.toDataURL('image/png');
-
-      // Capture body without header
-      const bodyDataUrl = await toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' });
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-
-      const hdrMM = (hdrH / elW) * pdfW;
-      const bodyProps = pdf.getImageProperties(bodyDataUrl);
-      const bodyMM = (bodyProps.height * pdfW) / bodyProps.width;
-      const gap = 4; // mm between header and body on each page
-      const bodyPerPage = pageH - hdrMM - gap;
-
-      let yOffset = 0;
-      let page = 0;
-      while (yOffset < bodyMM) {
-        if (page > 0) pdf.addPage();
-        pdf.addImage(hdrDataUrl, 'PNG', 0, 0, pdfW, hdrMM);
-        pdf.addImage(bodyDataUrl, 'PNG', 0, hdrMM + gap - yOffset, pdfW, bodyMM);
-        yOffset += bodyPerPage;
-        page++;
+    let chartDataUrl: string | undefined;
+    if (chartRef.current) {
+      try {
+        chartDataUrl = await toPng(chartRef.current, { pixelRatio: 2, backgroundColor: '#ffffff' });
+      } catch {
+        // chart capture is best-effort; PDF will still generate without it
       }
-
-      pdf.save(`${config.slug}-report.pdf`);
-    } catch (err) {
-      console.error('PDF export failed:', err);
-    } finally {
-      if (el.contains(header)) el.removeChild(header);
     }
+
+    exportReportPdf({
+      config,
+      pillarStats,
+      scoreSummary,
+      maturityLevel,
+      totalRaw,
+      maxRaw,
+      avgScore,
+      scoreDisplay,
+      recommendation,
+      respondent,
+      compositeLabel,
+      chartDataUrl,
+    });
   };
 
   return (
@@ -229,7 +183,7 @@ export default function ReportView({ config, answers, scoreSummary, respondent, 
         </div>
 
         {/* Radar chart — full width gives labels room to render */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div ref={chartRef} className="bg-card border border-border rounded-xl p-5">
           <h3 className="font-semibold text-foreground text-sm mb-3">Dimension Profile</h3>
           <ScoreChart dimensions={config.dimensions} scoreSummary={scoreSummary} />
         </div>
