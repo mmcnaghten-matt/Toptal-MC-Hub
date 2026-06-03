@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Workflow, BarChart3, Building2, Target, ArrowRight, X } from "lucide-react";
+import { Briefcase, Workflow, BarChart3, Building2, ArrowRight, X } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import SignOutButton from "@/components/SignOutButton";
 
@@ -32,13 +32,6 @@ const sections = [
     description: "AI-powered company research generating executive summaries, competitive landscape analysis, strategic frameworks, and MC opportunity mapping.",
     icon: Building2,
     path: "/client-insights",
-  },
-  {
-    id: "mc-plan",
-    title: "MC Plan",
-    description: "Professional Services Transformation — context, hub strategy, marketing approach, and the three-phase execution plan.",
-    icon: Target,
-    path: "/mc-plan",
   },
 ];
 
