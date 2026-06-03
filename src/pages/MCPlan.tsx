@@ -571,7 +571,7 @@ export default function MCPlan() {
               },
             ].map((col) => (
               <div key={col.phase} className="bg-white/8 border border-white/15 rounded-xl p-6 flex flex-col">
-                <p className="text-base font-bold uppercase tracking-widest text-blue-400 mb-1">{col.phase}</p>
+                <p className="text-base font-bold uppercase tracking-widest text-blue-400 mb-1 whitespace-nowrap">{col.phase}</p>
                 <p className="text-sm text-blue-300/70 mb-3">{col.timeframe}</p>
                 <h3 className="text-base font-bold text-white mb-4">{col.title}</h3>
                 <ul className="space-y-2.5 flex-1 mb-6">
