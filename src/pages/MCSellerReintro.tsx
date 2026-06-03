@@ -232,10 +232,10 @@ const pursuitStages = [
     owner: "Squad Lead + Pursuit Ops",
     yours: false,
     items: [
-      "Owns all discovery & scoping calls",
+      "Drives discovery & scoping calls",
       "Right-sizes the engagement fast",
       "Deploys diagnostic tools",
-      "Engages TCP if needed",
+      "Engages additional TCP if needed",
     ],
   },
   {
@@ -342,7 +342,7 @@ export default function MCSellerReintro() {
           </div>
           <div className="mt-8 bg-[#eff6ff] border border-[#bfdbfe] rounded-xl px-6 py-5">
             <p className="text-sm text-[#1e40af] leading-relaxed">
-              <strong>The opportunity is real.</strong> Toptal MC has closed engagements at Owens Corning, Corning, CAT, 3M, Comcast and more — with senior consultants from MBB, Big 4, and industry. The model works. Now we scale it.
+              <strong>The opportunity is real.</strong> Toptal MC has closed engagements at Owens Corning and more — with senior consultants from MBB, Big 4, and industry. The model works. Now we scale it.
             </p>
           </div>
         </Container>
@@ -354,7 +354,7 @@ export default function MCSellerReintro() {
           <SectionLabel>Vision: A New Model - Less is More!</SectionLabel>
           <SectionHeading>You find the door. MC experts walk through it.</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            This isn't more work — it's a cleaner motion. Spot the signal, make the warm intro, stay in the relationship. The squad lead handles everything from qualification to proposal.
+            This isn't more work — it's a cleaner motion. Spot the signal, make the warm intro, stay in the relationship. The squad lead, with pursuit ops help, handles everything from qualification to proposal.
           </Body>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="border-[#2563eb]/30">
@@ -386,7 +386,7 @@ export default function MCSellerReintro() {
                 {[
                   "Qualification and discovery calls",
                   "Scoping and solutioning the engagement",
-                  "Proposal drafting and pricing",
+                  "Proposal drafting and effort estimation",
                   "Presenting in client orals",
                   "Delivery ownership and client success",
                 ].map((item) => (

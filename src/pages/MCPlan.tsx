@@ -181,7 +181,7 @@ export default function MCPlan() {
               },
               {
                 title: "Seller mismatch",
-                body: "Sales and CPs are great at closing talent deals. PS selling is a different motion — longer, more complex, lower close rate.",
+                body: "Sales and CPs are great at closing talent deals. MC is selling is a different motion — longer, more complex, lower close rate.",
               },
               {
                 title: "Incentive mismatch",
@@ -221,7 +221,7 @@ export default function MCPlan() {
               <ul className="space-y-3">
                 {[
                   "Sales/CP owns the client relationship and pursuit",
-                  "MC expertise held back in a pre-sales support role",
+                  "MC expertise often backstage helping in a pre-sales support role",
                   'Generic "Toptal" brand carries credibility weight',
                   "40+ services create confusion; sellers disengage",
                   "Proposals too large, too slow, too costly to build",
@@ -239,8 +239,8 @@ export default function MCPlan() {
               <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-4">Future State</p>
               <ul className="space-y-3">
                 {[
-                  "Squad leads (domain experts) own MC client relationships",
-                  "Sales finds the lead; expert runs the pursuit",
+                  "Squad leads (domain experts) own MC engagement on pursuit efforts",
+                  "Sales finds the lead; expert drives the pursuit",
                   "Individual expert credibility drives trust and close",
                   "6 hub offerings — one clear conversation per door",
                   "Fast, right-sized proposals built by domain owners",
@@ -379,7 +379,7 @@ export default function MCPlan() {
           <div className="border-l-4 border-[#2563eb] bg-white rounded-r-xl p-6 mb-12 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-3">The positioning only Toptal owns</p>
             <p className="text-base font-medium text-[#0f172a] leading-relaxed italic">
-              "Senior consultants from the firms you trust — assembled around your problem, not our pyramid.
+              "Senior level consultants from the firms you trust — assembled around your problem, not our pyramid.
               No billing juniors at senior rates. No utilization pressure. Experts in, outcome out."
             </p>
             <p className="text-xs text-[#6b7280] mt-3">This is the brief for every hub POV asset and every squad lead post.</p>
@@ -397,7 +397,7 @@ export default function MCPlan() {
               },
               {
                 title: "Diagnostic tools as lead gen",
-                body: "The assessments you've already built are marketing assets. 10-min 'AI readiness' check → personalized output → conversation starter. Brand before a meeting.",
+                body: "Our existing assessments are marketing assets. 10-min 'AI readiness' check → personalized output → conversation starter. Brand before a meeting.",
               },
               {
                 title: "PS campaign under Services",
@@ -538,10 +538,10 @@ export default function MCPlan() {
                 owner: "Squad Lead + Pursuit Ops",
                 phase: "Pursue & solution",
                 items: [
-                  "Squad lead owns client calls",
+                  "Squad lead leads client calls",
                   "Fast scoping, right-sized scope",
                   "AI diagnostic tools deployed",
-                  "Additional TCP use as warranted",
+                  "Additional TCP used as warranted",
                 ],
               },
               {
@@ -627,7 +627,7 @@ export default function MCPlan() {
                   "Squad leads begin LinkedIn POV content by hub",
                   "One anchor POV document per hub in market",
                   "Case study pipeline: document every win immediately",
-                  "Latch onto PS outbound campaign under Robert",
+                  "Latch onto PS outbound campaign under professional services launch",
                 ],
                 outcome: "First branded case studies. Pipeline via existing relationships.",
               },
@@ -639,7 +639,6 @@ export default function MCPlan() {
                   "Squad leads transition 'ownership'",
                   "AI diagnostic tools live as lead-gen marketing assets",
                   "Formalize AI-differentiated delivery story",
-                  "Push for intl LinkedIn/marketing spend parity",
                   "Squad-to-region pairings for international coverage",
                 ],
                 outcome: "Self-sustaining practice with expert-led growth engine.",
