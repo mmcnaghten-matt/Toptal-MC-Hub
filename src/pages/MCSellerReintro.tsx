@@ -524,7 +524,7 @@ export default function MCSellerReintro() {
           <SectionLabel>How it works</SectionLabel>
           <SectionHeading>The pursuit model: your role and the handoff</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            You own stages 1 and 4. The squad lead owns everything in between. You never lose the client — you gain a consulting win in your account.
+            You own stages 1 and 4. The squad lead drives everything in between. You never lose the client — you gain a consulting win in your account.
           </Body>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
             {pursuitStages.map((stage) => (
