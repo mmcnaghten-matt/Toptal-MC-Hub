@@ -1,46 +1,47 @@
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
 
-const SectionLabel = ({ children, light = false }: { children: React.ReactNode; light?: boolean }) => (
+const SectionLabel = ({ children, light = false }: { children: ReactNode; light?: boolean }) => (
   <p className={`text-xs font-semibold uppercase tracking-[0.15em] mb-3 ${light ? "text-blue-300" : "text-[#2563eb]"}`}>
     {children}
   </p>
 );
 
-const SectionHeading = ({ children, light = false }: { children: React.ReactNode; light?: boolean }) => (
+const SectionHeading = ({ children, light = false }: { children: ReactNode; light?: boolean }) => (
   <h2 className={`text-4xl font-extrabold leading-tight mb-5 ${light ? "text-white" : "text-[#0f172a]"}`}>
     {children}
   </h2>
 );
 
-const Body = ({ children, light = false, className = "" }: { children: React.ReactNode; light?: boolean; className?: string }) => (
+const Body = ({ children, light = false, className = "" }: { children: ReactNode; light?: boolean; className?: string }) => (
   <p className={`text-base leading-relaxed ${light ? "text-blue-100" : "text-[#374151]"} ${className}`}>
     {children}
   </p>
 );
 
-const Tag = ({ children }: { children: React.ReactNode }) => (
+const Tag = ({ children }: { children: ReactNode }) => (
   <span className="inline-block text-xs bg-[#dbeafe] text-[#1e40af] rounded px-2 py-0.5 font-medium">
     {children}
   </span>
 );
 
-const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const Card = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
   <div className={`bg-white border border-[#e2e8f0] rounded-xl p-6 ${className}`}>
     {children}
   </div>
 );
 
-const InnerCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const InnerCard = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
   <div className={`bg-[#eff6ff] rounded-lg p-4 ${className}`}>
     {children}
   </div>
 );
 
-const Container = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const Container = ({ children, className = "" }: { children: ReactNode; className?: string }) => (
   <div className={`max-w-5xl mx-auto px-6 ${className}`}>
     {children}
   </div>
