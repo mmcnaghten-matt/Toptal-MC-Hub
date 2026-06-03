@@ -318,7 +318,7 @@ export default function MCSellerReintro() {
           <SectionLabel>Context</SectionLabel>
           <SectionHeading>MC has a branding and motion problem,<br />not a capability problem</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Limited market recognition means we're fighting for credibility before the conversation even starts — and we've asked sellers built for speed and relationship to carry a pursuit motion that requires deep domain expertise. <strong>That's not a people problem. It's a model problem.</strong>
+            <strong>Our consultants are excellent. The challenge is structural</strong> — and we've asked sellers built for speed and relationship to carry a pursuit motion that requires deep domain expertise. That's not a people problem. It's a model problem.
           </Body>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Card>
