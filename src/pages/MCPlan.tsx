@@ -67,7 +67,7 @@ export default function MCPlan() {
               Hub
             </button>
             <div className="w-px h-4 bg-white/20" />
-            <ToptalLogo className="h-7" />
+            <ToptalLogo className="h-9" />
           </div>
           <p className="text-sm font-semibold uppercase tracking-[0.15em] text-blue-300/80">
             MC Plan · Confidential
