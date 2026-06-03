@@ -147,7 +147,7 @@ export default function MCPlan() {
             ✦ Toptal Management Consulting
           </p>
           <h1 className="text-5xl sm:text-6xl font-extrabold text-white leading-tight max-w-3xl mb-4">
-            Professional Services Transformation
+            MC Model Transformation
           </h1>
           <p className="text-lg text-blue-200 mb-10">Context · Vision · Marketing · Plan</p>
           <div className="flex flex-wrap gap-3">

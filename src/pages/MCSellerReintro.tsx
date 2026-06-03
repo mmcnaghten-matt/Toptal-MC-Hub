@@ -300,7 +300,7 @@ export default function MCSellerReintro() {
           <h1 className="text-5xl font-extrabold text-white leading-tight mb-6 max-w-3xl">
             Management Consulting
           </h1>
-          <p className="text-2xl text-blue-200 font-medium mb-8">A Guide for Client Partners &amp; Sellers</p>
+          <p className="text-2xl text-blue-200 font-medium mb-8">A New Way to Win with MC</p>
           <div className="flex flex-wrap gap-3">
             {["What we sell", "How to spot it", "How to hand it off"].map((pill) => (
               <span key={pill} className="flex items-center gap-2 bg-white/10 text-white text-sm font-medium rounded-full px-4 py-1.5">
