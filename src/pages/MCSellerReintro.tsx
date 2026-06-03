@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
@@ -415,8 +415,9 @@ export default function MCSellerReintro() {
               return (
                 <Card key={hub.name}>
                   <div className="flex items-center gap-2 mb-4">
-                    <button onClick={() => setOpenHub(hub.name)} className="text-left">
+                    <button onClick={() => setOpenHub(hub.name)} className="flex items-center gap-1.5 text-left">
                       <HubTag hub={hub.name} />
+                      <Info size={13} className="text-[#6b7280] opacity-50 shrink-0" />
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-4">

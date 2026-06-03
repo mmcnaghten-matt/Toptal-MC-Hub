@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
@@ -313,11 +313,12 @@ export default function MCPlan() {
               <Card key={hub.name} className="flex flex-col">
                 <p className="text-xs font-semibold text-[#2563eb] mb-1">{hub.tagline}</p>
                 <h3
-                  className="text-base font-bold mb-2 cursor-pointer hover:underline underline-offset-2"
+                  className="text-base font-bold mb-2 cursor-pointer hover:underline underline-offset-2 flex items-center gap-1.5"
                   style={{ color: hub.color }}
                   onClick={() => setOpenHub(hub.name)}
                 >
                   {hub.name}
+                  <Info size={13} className="opacity-40 shrink-0" />
                 </h3>
                 <p className="text-sm text-[#374151] leading-relaxed flex-1 mb-4">{hub.body}</p>
                 <div className="flex flex-wrap gap-1.5">
