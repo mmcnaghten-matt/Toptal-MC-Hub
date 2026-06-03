@@ -525,7 +525,7 @@ export default function MCPlan() {
           <SectionLabel light>Plan on a Page</SectionLabel>
           <SectionHeading light>Three phases. Clear owners. Measurable momentum.</SectionHeading>
           <Body light className="max-w-2xl mb-14">
-            Sequenced to build — not everything at once. Phase 1 unlocks Phase 2. Phase 2 earns <span className="whitespace-nowrap">Phase 3.</span>
+            Sequenced to build — not everything at once.<br />Phase 1 unlocks Phase 2. Phase 2 earns Phase 3.
           </Body>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
