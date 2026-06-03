@@ -209,30 +209,35 @@ export default function MCPlan() {
                 tagline: "Growth in a constrained market",
                 body: "Which bets to stop. Which to double down on. Profitable growth without adding headcount.",
                 tags: ["Profitable growth", "Portfolio rationalization", "Pricing power"],
+                color: "#2B44D4",
               },
               {
                 name: "Business Transformation",
                 tagline: "Operating model for the AI era",
                 body: "Who does what when AI changes the work? Redesign the model — not just adopt the tools.",
                 tags: ["AI operating model", "Workforce redesign", "Process intelligence"],
+                color: "#2B44D4",
               },
               {
                 name: "Finance Transformation",
                 tagline: "The CFO's AI agenda",
                 body: "Build the AI business case, measure ROI, and translate it to the board. We've done it.",
                 tags: ["AI ROI", "FP&A modernization", "Finance automation"],
+                color: "#0CA678",
               },
               {
                 name: "Performance Improvement",
                 tagline: "Do more with what you have",
                 body: "Post-cut productivity gap. Processes designed for a bigger team — never redesigned.",
                 tags: ["Operational productivity", "Process mining", "AI-assisted ops"],
+                color: "#E86B4A",
               },
               {
                 name: "Supply Chain",
                 tagline: "Resilience and AI visibility",
                 body: "Tariffs and disruption made optimization insufficient. Build redundancy and sensing.",
                 tags: ["Supply resilience", "Nearshoring", "AI demand sensing"],
+                color: "#E86B4A",
               },
               {
                 name: "Workforce Transformation",
@@ -243,7 +248,7 @@ export default function MCPlan() {
             ].map((hub) => (
               <Card key={hub.name} className="flex flex-col">
                 <p className="text-xs font-semibold text-[#2563eb] mb-1">{hub.tagline}</p>
-                <h3 className="text-base font-bold text-[#0f172a] mb-2">{hub.name}</h3>
+                <h3 className="text-base font-bold mb-2" style={{ color: hub.color }}>{hub.name}</h3>
                 <p className="text-sm text-[#374151] leading-relaxed flex-1 mb-4">{hub.body}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {hub.tags.map((t) => <Tag key={t}>{t}</Tag>)}
