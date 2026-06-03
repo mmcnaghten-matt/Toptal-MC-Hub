@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
@@ -590,6 +590,19 @@ export default function MCPlan() {
           </div>
         </Container>
       </section>
+
+      {/* ── Seller Reintro link ── */}
+      <div className="bg-[#0d1b40] border-t border-white/5 py-5">
+        <Container className="flex items-center justify-end">
+          <Link
+            to="/mc-seller-reintro"
+            className="flex items-center gap-2 text-sm text-blue-300/70 hover:text-blue-200 transition-colors"
+          >
+            MC Sellers Reintro
+            <ArrowRight size={14} />
+          </Link>
+        </Container>
+      </div>
 
       {/* ── Footer ── */}
       <footer className="bg-[#0a1628] border-t border-white/10 py-6">
