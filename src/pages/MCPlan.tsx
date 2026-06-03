@@ -67,9 +67,9 @@ export default function MCPlan() {
               Hub
             </button>
             <div className="w-px h-4 bg-white/20" />
-            <ToptalLogo className="h-5" />
+            <ToptalLogo className="h-7" />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-300/80">
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-blue-300/80">
             MC Plan · Confidential
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function MCPlan() {
               },
             ].map((item) => (
               <Card key={item.title}>
-                <h3 className="text-sm font-bold text-[#0f172a] mb-2">{item.title}</h3>
+                <h3 className="text-base font-bold text-[#2563eb] mb-2">{item.title}</h3>
                 <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
               </Card>
             ))}
@@ -294,7 +294,7 @@ export default function MCPlan() {
               },
             ].map((item) => (
               <Card key={item.title}>
-                <h3 className="text-sm font-bold text-[#0f172a] mb-2">{item.title}</h3>
+                <h3 className="text-sm font-bold text-[#2563eb] mb-2">{item.title}</h3>
                 <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
               </Card>
             ))}
@@ -351,7 +351,7 @@ export default function MCPlan() {
                   },
                 ].map((row) => (
                   <tr key={row.engagement} className="hover:bg-[#fafcff] transition-colors">
-                    <td className="px-5 py-4 text-[#374151] font-medium align-top">{row.engagement}</td>
+                    <td className="px-5 py-4 text-[#2563eb] font-bold align-top">{row.engagement}</td>
                     <td className="px-5 py-4 text-[#374151] italic align-top">{row.trigger}</td>
                     <td className="px-5 py-4 align-top">
                       <Tag>{row.hub}</Tag>
@@ -515,8 +515,8 @@ export default function MCPlan() {
               },
             ].map((col) => (
               <div key={col.phase} className="bg-white/8 border border-white/15 rounded-xl p-6 flex flex-col">
-                <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-1">{col.phase}</p>
-                <p className="text-xs text-blue-300/70 mb-3">{col.timeframe}</p>
+                <p className="text-base font-bold uppercase tracking-widest text-blue-400 mb-1">{col.phase}</p>
+                <p className="text-sm text-blue-300/70 mb-3">{col.timeframe}</p>
                 <h3 className="text-base font-bold text-white mb-4">{col.title}</h3>
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {col.items.map((item) => (
