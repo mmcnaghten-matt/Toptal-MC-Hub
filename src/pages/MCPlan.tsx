@@ -158,7 +158,7 @@ export default function MCPlan() {
                 {[
                   "Sales/CP owns the client relationship and pursuit",
                   "MC expertise held back in a pre-sales support role",
-                  "Generic "Toptal" brand carries credibility weight",
+                  'Generic "Toptal" brand carries credibility weight',
                   "40+ services create confusion; sellers disengage",
                   "Proposals too large, too slow, too costly to build",
                 ].map((item) => (
