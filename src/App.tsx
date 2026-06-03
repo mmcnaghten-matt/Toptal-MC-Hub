@@ -15,6 +15,7 @@ import DiagnosticsHub from "./pages/DiagnosticsHub";
 import MCServicesWeb from "./pages/MCServicesWeb";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
+import MCPlan from "./pages/MCPlan";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/client-insights" element={<AccountMarketIntel />} />
                 <Route path="/diagnostics-hub" element={<DiagnosticsHub />} />
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
+                <Route path="/mc-plan" element={<MCPlan />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
