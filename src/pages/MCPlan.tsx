@@ -239,7 +239,7 @@ export default function MCPlan() {
               <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-4">Future State</p>
               <ul className="space-y-3">
                 {[
-                  "Squad leads (domain experts) own MC engagement on pursuit efforts",
+                  "Squad leads (domain experts) drive MC engagement on pursuit efforts",
                   "Sales finds the lead; expert drives the pursuit",
                   "Individual expert credibility drives trust and close",
                   "6 hub offerings — one clear conversation per door",
