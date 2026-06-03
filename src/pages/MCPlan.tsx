@@ -460,7 +460,7 @@ export default function MCPlan() {
                   "Squad lead owns client calls",
                   "Fast scoping, right-sized scope",
                   "AI diagnostic tools deployed",
-                  "TCP used as warranted",
+                  "Additional TCP use as warranted",
                 ],
               },
               {
