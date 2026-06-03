@@ -287,7 +287,7 @@ export default function MCSellerReintro() {
               </p>
             </Card>
             <Card>
-              <h3 className="text-base font-bold text-[#0f172a] mb-3">Why it hasn't been your focus</h3>
+              <h3 className="text-base font-bold text-[#0f172a] mb-3">A model that asked too much</h3>
               <p className="text-sm text-[#374151] leading-relaxed">
                 Selling MC requires solutioning, scoping and pursuing complex engagements — on top of your core talent work. We've been asking you to do two hard jobs at once. That's changing.
               </p>
