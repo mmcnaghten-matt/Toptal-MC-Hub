@@ -351,7 +351,7 @@ export default function MCSellerReintro() {
       {/* ── Section 3: Your Role ── */}
       <section className="py-20 bg-[#f8fafc]">
         <Container>
-          <SectionLabel>Your role in the new model</SectionLabel>
+          <SectionLabel>Vision: A New Model - Less is More!</SectionLabel>
           <SectionHeading>You find the door. MC experts walk through it.</SectionHeading>
           <Body className="max-w-2xl mb-12">
             This isn't more work — it's a cleaner motion. Spot the signal, make the warm intro, stay in the relationship. The squad lead handles everything from qualification to proposal.
