@@ -335,7 +335,7 @@ export default function MCPlan() {
       <section className="bg-white py-20">
         <Container>
           <SectionLabel>Land & Expand</SectionLabel>
-          <SectionHeading>The fastest path to MC growth: your tech services accounts</SectionHeading>
+          <SectionHeading>The fastest path to MC growth: our tech services accounts and engagements</SectionHeading>
           <Body className="max-w-2xl mb-12">
             Every tech engagement creates downstream business problems. Train CPs to spot the trigger —
             then hand off to the right squad lead(s).
