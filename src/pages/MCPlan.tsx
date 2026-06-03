@@ -127,10 +127,9 @@ export default function MCPlan() {
       <section className="bg-white py-20">
         <Container>
           <SectionLabel>Context</SectionLabel>
-          <SectionHeading>MC has a motion problem, not a capability problem</SectionHeading>
+          <SectionHeading>MC has a branding and motion problem, not a capability problem</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Our consultants are excellent. The challenge is structural — the wrong people selling consulting
-            in the wrong way to the wrong buyers.
+            Our consultants are excellent. The challenge is structural — limited market recognition, the wrong people selling consulting in the wrong way to the wrong buyers.
           </Body>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
