@@ -517,8 +517,7 @@ export default function MCPlan() {
           <SectionLabel>Future Model</SectionLabel>
           <SectionHeading>The future value chain: find to deliver</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Sales surfaces the signal and lead. MC squad leads own everything from qualification through
-            delivery and expansion.
+            CP/Seller surfaces the signal and lead. MC squad leads and pursuit ops drive everything from qualification through delivery and expansion.
           </Body>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
@@ -536,7 +535,7 @@ export default function MCPlan() {
               },
               {
                 num: "2",
-                owner: "Squad lead + Sales",
+                owner: "Squad Lead + Pursuit Ops",
                 phase: "Pursue & solution",
                 items: [
                   "Squad lead owns client calls",
@@ -547,7 +546,7 @@ export default function MCPlan() {
               },
               {
                 num: "3",
-                owner: "Squad lead",
+                owner: "Squad Lead + Pursuit Ops",
                 phase: "Propose & win",
                 items: [
                   "Squad lead presents in orals",
@@ -570,7 +569,7 @@ export default function MCPlan() {
             ].map((phase) => (
               <div key={phase.num} className="rounded-xl border border-[#e2e8f0] bg-white p-5">
                 <span className="text-3xl font-extrabold text-[#cbd5e1] mb-1 block">{phase.num}</span>
-                <p className="text-sm font-bold text-[#0f172a] mb-0.5">{phase.phase}</p>
+                <p className="text-sm font-bold text-[#2563eb] mb-0.5">{phase.phase}</p>
                 <p className="text-xs text-[#6b7280] mb-4">{phase.owner}</p>
                 <ul className="space-y-2">
                   {phase.items.map((item) => (
