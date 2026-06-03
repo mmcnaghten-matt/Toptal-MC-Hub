@@ -47,6 +47,30 @@ const Container = ({ children, className = "" }: { children: ReactNode; classNam
   </div>
 );
 
+// ── Hub color map (matches ConstellationDiagram light-mode palette) ────────────
+
+const HUB_COLORS: Record<string, { bg: string; text: string }> = {
+  "Growth Strategy":         { bg: "#EEF2FF", text: "#2B44D4" },
+  "Business Transformation": { bg: "#EEF2FF", text: "#2B44D4" },
+  "Finance Transformation":  { bg: "#ECFDF5", text: "#0CA678" },
+  "Performance Improvement": { bg: "#FFF7ED", text: "#E86B4A" },
+  "Supply Chain":            { bg: "#FFF7ED", text: "#E86B4A" },
+  "Workforce Transformation":{ bg: "#EDE9FE", text: "#5C6BC0" },
+  "Change Management":       { bg: "#F1F5F9", text: "#475569" },
+};
+
+const HubTag = ({ hub }: { hub: string }) => {
+  const c = HUB_COLORS[hub] ?? { bg: "#F1F5F9", text: "#374151" };
+  return (
+    <span
+      className="inline-block text-xs font-semibold rounded px-2.5 py-1 whitespace-nowrap"
+      style={{ backgroundColor: c.bg, color: c.text }}
+    >
+      {hub}
+    </span>
+  );
+};
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function MCPlan() {
@@ -311,68 +335,95 @@ export default function MCPlan() {
       <section className="bg-white py-20">
         <Container>
           <SectionLabel>Land & Expand</SectionLabel>
-          <SectionHeading>The fastest path to MC growth: Our tech services accounts</SectionHeading>
+          <SectionHeading>The fastest path to MC growth: your tech services accounts</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Every tech engagement creates a downstream business problem. Train CPs to spot the trigger —
-            then hand off to the right squad lead.
+            Every tech engagement creates downstream business problems. Train CPs to spot the trigger —
+            then hand off to the right squad lead(s).
           </Body>
 
           {/* Table */}
           <div className="overflow-x-auto rounded-xl border border-[#e2e8f0] mb-8">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
                   <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Tech engagement</th>
                   <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question CP asks</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">MC hub entry point</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">MC hub entry point(s)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f1f5f9]">
-                {[
+              <tbody>
+                {([
                   {
-                    engagement: "Cloud migration / app modernization",
-                    trigger: '"Now that infrastructure changed — how are your processes and team model keeping up?"',
-                    hub: "Business Transformation",
+                    engagement: "ERP / platform / Salesforce implementation",
+                    pairs: [
+                      { trigger: '"How are you thinking about adoption — do your people have what they need to actually change how they work?"', hub: "Change Management" },
+                      { trigger: '"Now that the system is live, are your processes and team model keeping up?"', hub: "Business Transformation" },
+                    ],
                   },
                   {
                     engagement: "AI / ML implementation",
-                    trigger: '"When your CFO asks if this is working — do you have a way to measure ROI yet?"',
-                    hub: "Finance Transformation",
+                    pairs: [
+                      { trigger: '"When your CFO asks if this is working — do you have a way to measure ROI yet?"', hub: "Finance Transformation" },
+                      { trigger: '"The tools are live — are people actually using them? What\'s the resistance looking like?"', hub: "Change Management" },
+                    ],
+                  },
+                  {
+                    engagement: "Agile / product model transformation",
+                    pairs: [
+                      { trigger: '"Now that the model is in place — are you confident you\'re building the right things?"', hub: "Growth Strategy" },
+                      { trigger: '"Are the team behaviors and structure actually keeping up with the new model?"', hub: "Change Management" },
+                    ],
+                  },
+                  {
+                    engagement: "Cloud migration / app modernization",
+                    pairs: [
+                      { trigger: '"Now that infrastructure changed — how are your processes and team model keeping up?"', hub: "Business Transformation" },
+                    ],
                   },
                   {
                     engagement: "Large-scale tech talent deployment (10+ resources)",
-                    trigger: '"How are you thinking about your long-term talent model as AI changes what engineers do?"',
-                    hub: "Workforce Transformation",
-                  },
-                  {
-                    engagement: "Agile / product model work",
-                    trigger: '"Now that the model is in place — are you confident you\'re building the right things?"',
-                    hub: "Growth Strategy",
+                    pairs: [
+                      { trigger: '"How are you thinking about your long-term talent model as AI changes what your engineers do?"', hub: "Workforce Transformation" },
+                    ],
                   },
                   {
                     engagement: "Supply chain / ERP / ops systems",
-                    trigger: '"Do you have visibility into where AI could automate in your value chain today?"',
-                    hub: "Performance Improvement / Supply Chain",
+                    pairs: [
+                      { trigger: '"Do you have visibility into where AI could automate in your value chain today?"', hub: "Performance Improvement" },
+                      { trigger: '"How resilient is your supply chain if your primary supplier or region gets disrupted?"', hub: "Supply Chain" },
+                    ],
                   },
-                ].map((row) => (
-                  <tr key={row.engagement} className="hover:bg-[#fafcff] transition-colors">
-                    <td className="px-5 py-4 text-[#2563eb] font-bold align-top">{row.engagement}</td>
-                    <td className="px-5 py-4 text-[#374151] italic align-top">{row.trigger}</td>
-                    <td className="px-5 py-4 align-top">
-                      <Tag>{row.hub}</Tag>
-                    </td>
-                  </tr>
-                ))}
+                ] as { engagement: string; pairs: { trigger: string; hub: string }[] }[]).map((row) =>
+                  row.pairs.map((pair, pairIdx) => (
+                    <tr
+                      key={`${row.engagement}-${pairIdx}`}
+                      className={`hover:bg-[#fafcff] transition-colors ${pairIdx === 0 ? "border-t border-[#e2e8f0]" : "border-t border-[#f1f5f9]"}`}
+                    >
+                      {pairIdx === 0 && (
+                        <td
+                          rowSpan={row.pairs.length}
+                          className="px-5 py-4 text-[#2563eb] font-bold align-top border-r border-[#f1f5f9] w-1/4"
+                        >
+                          {row.engagement}
+                        </td>
+                      )}
+                      <td className="px-5 py-4 text-[#374151] italic align-top">{pair.trigger}</td>
+                      <td className="px-5 py-4 align-top w-40">
+                        <HubTag hub={pair.hub} />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Mechanism */}
           <InnerCard>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Mechanism</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Key insight</p>
             <p className="text-sm text-[#374151] leading-relaxed">
-              Build a one-page "MC trigger guide" for every tech CP — one trigger question per hub with
-              handoff language to the right squad lead. Make it a habit, not an exception.
+              Change management is a wedge, not just a follow-on — smaller scope, faster close, immediate
+              trust-builder. Every tech implementation creates the need automatically.
             </p>
           </InnerCard>
         </Container>
