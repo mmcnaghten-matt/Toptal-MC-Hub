@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
@@ -45,6 +46,45 @@ const HUB_COLORS: Record<string, { bg: string; text: string }> = {
   "Supply Chain":            { bg: "#FFF7ED", text: "#E86B4A" },
   "Workforce Transformation":{ bg: "#EDE9FE", text: "#5C6BC0" },
   "Change Management":       { bg: "#F1F5F9", text: "#475569" },
+};
+
+const HUB_DETAILS: Record<string, { definition: string; buyer: string; buyingCenter: string; rationale: string }> = {
+  "Growth Strategy": {
+    definition: "Identifies and exploits expansion through market penetration, product development, and diversification.",
+    buyer: "CSO / CMO",
+    buyingCenter: "Strategy & Marketing",
+    rationale: "Develop a structured expansion roadmap, align marketing and sales teams, and unlock new market opportunities.",
+  },
+  "Business Transformation": {
+    definition: "Enterprise-wide change to improve performance, competitiveness, and adaptability.",
+    buyer: "CEO / COO",
+    buyingCenter: "C-Suite / Strategy",
+    rationale: "Build a clear transformation vision, prioritize high-impact initiatives, and drive measurable results enterprise-wide.",
+  },
+  "Finance Transformation": {
+    definition: "Modernizes finance from a cost center to a strategic partner across five pillars: Strategy & Vision, Performance Management, Process Optimization, Org & Governance, and Data & Technology.",
+    buyer: "CFO",
+    buyingCenter: "Finance",
+    rationale: "Modernize financial operations, eliminate manual bottlenecks, and elevate finance into a true strategic partner.",
+  },
+  "Performance Improvement": {
+    definition: "Drives EBITDA growth, cost reduction, and operational efficiency by rewiring core processes through digital strategy, change management, and AI.",
+    buyer: "C-Level / Ops",
+    buyingCenter: "Operations",
+    rationale: "Diagnose operational drag, eliminate value leakage, and deliver sustainable efficiency and EBITDA gains.",
+  },
+  "Supply Chain": {
+    definition: "Optimizes operations and logistics for resilience, transparency, and efficiency — integrating digital capabilities, AI, and risk management across end-to-end supply chain.",
+    buyer: "COO",
+    buyingCenter: "Operations / Procurement",
+    rationale: "Build resilience, integrate digital capabilities, and optimize end-to-end logistics and procurement performance.",
+  },
+  "Workforce Transformation": {
+    definition: "Evolves talent strategy, organizational structure, and culture to meet future business needs — with strong connection to AI reskilling, change management, and HR technology.",
+    buyer: "CHRO / CPO",
+    buyingCenter: "Human Resources / People",
+    rationale: "Align talent strategy, close skill gaps, and prepare your organization for the human-AI era.",
+  },
 };
 
 const HubTag = ({ hub }: { hub: string }) => {
@@ -228,6 +268,7 @@ const pursuitStages = [
 
 export default function MCSellerReintro() {
   const navigate = useNavigate();
+  const [openHub, setOpenHub] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen font-sans antialiased">
@@ -374,7 +415,9 @@ export default function MCSellerReintro() {
               return (
                 <Card key={hub.name}>
                   <div className="flex items-center gap-2 mb-4">
-                    <HubTag hub={hub.name} />
+                    <button onClick={() => setOpenHub(hub.name)} className="text-left">
+                      <HubTag hub={hub.name} />
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -392,6 +435,41 @@ export default function MCSellerReintro() {
               );
             })}
           </div>
+
+          <Dialog open={openHub !== null} onOpenChange={(open) => { if (!open) setOpenHub(null); }}>
+            <DialogContent className="max-w-md">
+              {openHub && (() => {
+                const detail = HUB_DETAILS[openHub];
+                const c = HUB_COLORS[openHub] ?? { bg: "#F1F5F9", text: "#374151" };
+                return (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>
+                        <span className="inline-block text-sm font-semibold rounded px-2.5 py-1" style={{ backgroundColor: c.bg, color: c.text }}>
+                          {openHub}
+                        </span>
+                      </DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-[#374151] leading-relaxed mt-1">{detail.definition}</p>
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Key buyers</p>
+                        <span className="inline-block bg-[#dbeafe] text-[#1e40af] text-xs font-semibold rounded-full px-3 py-1">{detail.buyer}</span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-[#6b7280] mb-1">Buying center</p>
+                        <p className="text-sm text-[#374151]">{detail.buyingCenter}</p>
+                      </div>
+                      <div className="bg-[#f8fafc] rounded-lg p-3 border border-[#e2e8f0]">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-[#2563eb] mb-1">The pitch</p>
+                        <p className="text-sm text-[#374151] italic leading-relaxed">{detail.rationale}</p>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </DialogContent>
+          </Dialog>
         </Container>
       </section>
 
