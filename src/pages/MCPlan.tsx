@@ -129,7 +129,7 @@ export default function MCPlan() {
           <SectionLabel>Context</SectionLabel>
           <SectionHeading>MC has a branding and motion problem, not a capability problem</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Our consultants are excellent. The challenge is structural — limited market recognition, the wrong people selling consulting in the wrong way to the wrong buyers.
+            Our consultants are excellent. The challenge is structural — limited market recognition means we're fighting for credibility before the conversation even starts, and we've asked sellers built for speed and relationship to carry a pursuit motion that requires deep domain expertise. That's not a people problem. It's a model problem.
           </Body>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
