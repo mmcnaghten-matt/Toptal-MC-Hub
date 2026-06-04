@@ -164,51 +164,10 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 2: Context ── */}
+      {/* ── Section 2: MC by the Numbers ── */}
       <section className="bg-white py-20">
         <Container>
-          <SectionLabel>Context</SectionLabel>
-          <SectionHeading>MC has a branding and motion problem, not a capability problem</SectionHeading>
-          <Body className="max-w-2xl mb-12">
-            <strong>Our consultants are excellent. The challenge is structural</strong> — limited market recognition means we're fighting for credibility before the conversation even starts, and we've asked sellers built for speed and relationship to carry a pursuit motion that requires deep domain expertise. <strong>That's not a people problem. It's a model problem.</strong>
-          </Body>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                title: "Brand mismatch",
-                body: "Toptal is perceived as a talent network. Enterprise buyers don't search for consulting this way — paid search misses them entirely.",
-              },
-              {
-                title: "Seller mismatch",
-                body: "Sales and CPs are great at closing talent deals. MC is selling is a different motion — longer, more complex, lower close rate.",
-              },
-              {
-                title: "Incentive mismatch",
-                body: "Current comp rewards deal speed. Professional services deals are slower with limited personal upside for sellers today.",
-              },
-              {
-                title: "Complexity overload",
-                body: "40+ services across 4 practices, plus tech and marketing. Too much to carry — sellers disengage before they start.",
-              },
-              {
-                title: "Credibility gap",
-                body: 'Enterprise buyers ask for 3 case studies. "Our consultant was at Accenture" isn\'t enough yet. We\'re building that track record.',
-              },
-            ].map((item) => (
-              <Card key={item.title}>
-                <h3 className="text-base font-bold text-[#2563eb] mb-2">{item.title}</h3>
-                <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
-              </Card>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      {/* ── Section 3: By the Numbers ── */}
-      <section className="bg-[#f8fafc] py-20">
-        <Container>
-          <SectionLabel>By the Numbers</SectionLabel>
+          <SectionLabel>MC by the Numbers</SectionLabel>
           <SectionHeading>The business at a glance</SectionHeading>
 
           {/* KPI stat bar */}
@@ -220,8 +179,8 @@ export default function MCPlan() {
               { label: "ENT YoY Growth (Q1 '26)", value: "+25%", sub: "$4.16M → $5.22M gross", subColor: "text-emerald-600", valueColor: "text-emerald-600" },
               { label: "SMB YoY Trend", value: "–16%", sub: "5 consecutive quarters declining", subColor: "text-red-500", valueColor: "text-red-500" },
             ] as { label: string; value: string; sub: string; subColor: string; valueColor: string }[]).map((stat) => (
-              <div key={stat.label} className="bg-white border border-[#e2e8f0] rounded-xl p-4">
-                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2 leading-snug">{stat.label}</p>
+              <div key={stat.label} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide leading-snug h-8 flex items-start">{stat.label}</p>
                 <p className={`text-2xl font-extrabold mb-1 ${stat.valueColor}`}>{stat.value}</p>
                 <p className={`text-xs font-medium ${stat.subColor}`}>{stat.sub}</p>
               </div>
@@ -266,6 +225,47 @@ export default function MCPlan() {
                 <span className="text-3xl font-extrabold text-[#e2e8f0] leading-none block mb-3">{insight.num}</span>
                 <h3 className={`text-base font-bold mb-2 ${insight.titleColor}`}>{insight.title}</h3>
                 <p className="text-sm text-[#374151] leading-relaxed">{insight.body}</p>
+              </Card>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* ── Section 3: Context ── */}
+      <section className="bg-[#f8fafc] py-20">
+        <Container>
+          <SectionLabel>Context</SectionLabel>
+          <SectionHeading>MC has a branding and motion problem, not a capability problem</SectionHeading>
+          <Body className="max-w-2xl mb-12">
+            <strong>Our consultants are excellent. The challenge is structural</strong> — limited market recognition means we're fighting for credibility before the conversation even starts, and we've asked sellers built for speed and relationship to carry a pursuit motion that requires deep domain expertise. <strong>That's not a people problem. It's a model problem.</strong>
+          </Body>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                title: "Brand mismatch",
+                body: "Toptal is perceived as a talent network. Enterprise buyers don't search for consulting this way — paid search misses them entirely.",
+              },
+              {
+                title: "Seller mismatch",
+                body: "Sales and CPs are great at closing talent deals. MC is selling is a different motion — longer, more complex, lower close rate.",
+              },
+              {
+                title: "Incentive mismatch",
+                body: "Current comp rewards deal speed. Professional services deals are slower with limited personal upside for sellers today.",
+              },
+              {
+                title: "Complexity overload",
+                body: "40+ services across 4 practices, plus tech and marketing. Too much to carry — sellers disengage before they start.",
+              },
+              {
+                title: "Credibility gap",
+                body: 'Enterprise buyers ask for 3 case studies. "Our consultant was at Accenture" isn\'t enough yet. We\'re building that track record.',
+              },
+            ].map((item) => (
+              <Card key={item.title}>
+                <h3 className="text-base font-bold text-[#2563eb] mb-2">{item.title}</h3>
+                <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
               </Card>
             ))}
           </div>
