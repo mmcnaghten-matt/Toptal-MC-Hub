@@ -205,8 +205,72 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 3: The Shift Required ── */}
+      {/* ── Section 3: Business Performance ── */}
       <section className="bg-[#f8fafc] py-20">
+        <Container>
+          <SectionLabel>Business Performance</SectionLabel>
+          <SectionHeading>The signal in the numbers</SectionHeading>
+          <Body className="max-w-2xl mb-12">
+            Five data-backed observations that define where we're strong, where we're at risk, and where the highest-quality growth is hiding.
+          </Body>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            {([
+              {
+                num: "01",
+                title: "ENT is the growth engine",
+                metric: "+38% net revenue · 35%→43% margin",
+                body: "Net revenue up +38% over three quarters (Q2 2025 → Q1 2026: $1.5M → $2.1M). Margin expanding from 35% to 43%. ENT now represents ~70% of total gross.",
+              },
+              {
+                num: "02",
+                title: "Professional Services is the margin lever",
+                metric: "4% → 14% of gross · 65–84% margins",
+                body: "PS has grown from 4% to 14% of gross revenue in one year. At 65–84% net margins vs. Talent's 37%, it's nearly twice as valuable per dollar. People Consulting ($888K net, 68% margin) and Strategy Consulting ($659K net, 71% margin) are the highest-quality PS engagements.",
+              },
+              {
+                num: "03",
+                title: "Strategy Consulting is the practice anchor",
+                metric: "44% margin · 112 active engagements",
+                body: "Highest margins (44%), largest live engagement base (112 active in Fulfillment), deepest pre-Fulfillment pipeline. Undermonetized relative to its pipeline footprint.",
+              },
+              {
+                num: "04",
+                title: "SMB is the risk",
+                metric: "4 consecutive quarters flat-to-declining",
+                body: "Four consecutive quarters of flat-to-declining revenue. No single account over $200K net. Healthcare-heavy and fragmented. Without deliberate action, SMB is likely to continue drifting as ENT commands attention.",
+              },
+              {
+                num: "05",
+                title: "Pipeline quality is improving, not just growing",
+                metric: "12% → 27% ENT conversion · 122 new opps in Q1",
+                body: "ENT conversion rate has doubled (12% → 27%) over five quarters. Q1 2026 set the record for new ENT opportunity creation (122). The 83 opportunities in Solutioning are the most actionable H2 target.",
+              },
+            ] as { num: string; title: string; metric: string; body: string }[]).map((insight) => (
+              <Card key={insight.num}>
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <span className="text-3xl font-extrabold text-[#e2e8f0] leading-none">{insight.num}</span>
+                  <span className="text-xs font-semibold bg-[#dbeafe] text-[#1e40af] rounded px-2.5 py-1 text-right leading-snug">{insight.metric}</span>
+                </div>
+                <h3 className="text-base font-bold text-[#2563eb] mb-2">{insight.title}</h3>
+                <p className="text-sm text-[#374151] leading-relaxed">{insight.body}</p>
+              </Card>
+            ))}
+          </div>
+
+          <InnerCard>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Key account insight</p>
+            <p className="text-sm text-[#374151] leading-relaxed">
+              <strong>Schneider Electric</strong> (18 active jobs, $417K net) is your most deeply penetrated anchor.{" "}
+              <strong>Owens Corning</strong> (100% margin, two buying centers) is your highest-quality account.{" "}
+              <strong>PepsiCo</strong> is your largest volume account.
+            </p>
+          </InnerCard>
+        </Container>
+      </section>
+
+      {/* ── Section 4: The Shift Required ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>The Shift Required</SectionLabel>
           <SectionHeading>Fix the center of gravity: from institution to expert</SectionHeading>
@@ -256,8 +320,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 4: Hub Offerings ── */}
-      <section className="bg-white py-20">
+      {/* ── Section 5: Hub Offerings ── */}
+      <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Hub Offerings</SectionLabel>
           <SectionHeading>Six hubs — sharpened to where the market is right now</SectionHeading>
@@ -365,8 +429,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 5: Marketing & Positioning ── */}
-      <section className="bg-[#f8fafc] py-20">
+      {/* ── Section 6: Marketing & Positioning ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>Marketing & Positioning</SectionLabel>
           <SectionHeading>Build the brand through experts, not the institution</SectionHeading>
@@ -413,8 +477,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 6: Land & Expand ── */}
-      <section className="bg-white py-20">
+      {/* ── Section 7: Land & Expand ── */}
+      <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Land & Expand</SectionLabel>
           <SectionHeading>The fastest path to MC growth: our tech services accounts and engagements</SectionHeading>
@@ -511,8 +575,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 7: Future Model ── */}
-      <section className="bg-[#f8fafc] py-20">
+      {/* ── Section 8: Future Model ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>Future Model</SectionLabel>
           <SectionHeading>The future value chain: find to deliver</SectionHeading>
