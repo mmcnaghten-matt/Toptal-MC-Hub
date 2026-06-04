@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ArrowRight, Brain, Layers, KeyRound } from "lucide-react";
+import { ChevronLeft, ArrowRight, Brain, Layers, KeyRound, Shield } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 const mcDiagnostics = [
@@ -74,6 +74,15 @@ const mcDiagnostics = [
     pillars: ["Strategy & Targeting", "Data & Workflows", "Telemetry & Control", "Org & Steerage", "Tech Lifecycle"],
     path: "/diagnostics/ai-value-realization",
     password: "AVR2026",
+  },
+  {
+    slug: "ai-governance-maturity",
+    title: "Execution-Layer AI Governance: Tactical Maturity",
+    description:
+      "Assess your organization's AI governance maturity across six execution-layer pillars — Strategy & Blueprinting, Data & Vector Security, Build-Time Compliance, Runtime Enforcement, Telemetry, and Org Topology — and receive a personalized GovOps roadmap.",
+    pillars: ["Strategy", "Data Security", "Build & AIBOM", "Runtime", "Telemetry", "Org & Culture"],
+    path: "/diagnostics/ai-governance-maturity",
+    password: "AG2026",
   },
 ];
 
