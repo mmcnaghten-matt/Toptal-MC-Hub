@@ -205,8 +205,75 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 4: The Shift Required ── */}
+      {/* ── Section 3: By the Numbers ── */}
       <section className="bg-[#f8fafc] py-20">
+        <Container>
+          <SectionLabel>By the Numbers</SectionLabel>
+          <SectionHeading>The business at a glance</SectionHeading>
+
+          {/* KPI stat bar */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+            {([
+              { label: "12-Month Gross Revenue", value: "$26.9M", sub: "+9.2% vs prior year", subColor: "text-emerald-600", valueColor: "text-[#0f172a]" },
+              { label: "12-Month Net Revenue", value: "$9.75M", sub: "+7.1% vs prior year", subColor: "text-emerald-600", valueColor: "text-[#0f172a]" },
+              { label: "Blended Margin", value: "36.2%", sub: "Stable band 34–37%", subColor: "text-[#6b7280]", valueColor: "text-[#0f172a]" },
+              { label: "ENT YoY Growth (Q1 '26)", value: "+25%", sub: "$4.16M → $5.22M gross", subColor: "text-emerald-600", valueColor: "text-emerald-600" },
+              { label: "SMB YoY Trend", value: "–16%", sub: "5 consecutive quarters declining", subColor: "text-red-500", valueColor: "text-red-500" },
+            ] as { label: string; value: string; sub: string; subColor: string; valueColor: string }[]).map((stat) => (
+              <div key={stat.label} className="bg-white border border-[#e2e8f0] rounded-xl p-4">
+                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2 leading-snug">{stat.label}</p>
+                <p className={`text-2xl font-extrabold mb-1 ${stat.valueColor}`}>{stat.value}</p>
+                <p className={`text-xs font-medium ${stat.subColor}`}>{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Insight points */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {([
+              {
+                num: "01",
+                title: "ENT is the growth engine",
+                body: "+25% YoY gross in Q1 2026, now 68% of total gross. Consistent 12–25% YoY growth for five quarters.",
+                titleColor: "text-emerald-700",
+              },
+              {
+                num: "02",
+                title: "SMB is declining",
+                body: "Down 16–34% YoY every quarter for five consecutive quarters. Not a blip.",
+                titleColor: "text-red-600",
+              },
+              {
+                num: "03",
+                title: "PS is growing as a revenue stream",
+                body: "Expanding from 4% to 14% of gross. Margins (31–36%) are in line with Talent (~35%).",
+                titleColor: "text-[#2563eb]",
+              },
+              {
+                num: "04",
+                title: "Margins are stable, not expanding",
+                body: "Blended margin has been in the 34–37% band throughout the period.",
+                titleColor: "text-[#2563eb]",
+              },
+              {
+                num: "05",
+                title: "Pipeline is healthy and conversion is improving",
+                body: "532 active opportunities, $35.5M weighted gross pipeline. ENT conversion rate has doubled from 12% to 27% over five quarters.",
+                titleColor: "text-[#2563eb]",
+              },
+            ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight) => (
+              <Card key={insight.num}>
+                <span className="text-3xl font-extrabold text-[#e2e8f0] leading-none block mb-3">{insight.num}</span>
+                <h3 className={`text-base font-bold mb-2 ${insight.titleColor}`}>{insight.title}</h3>
+                <p className="text-sm text-[#374151] leading-relaxed">{insight.body}</p>
+              </Card>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* ── Section 4: The Shift Required ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>The Shift Required</SectionLabel>
           <SectionHeading>Fix the center of gravity: from institution to expert</SectionHeading>
@@ -256,8 +323,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 4: Hub Offerings ── */}
-      <section className="bg-white py-20">
+      {/* ── Section 5: Hub Offerings ── */}
+      <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Hub Offerings</SectionLabel>
           <SectionHeading>Six hubs — sharpened to where the market is right now</SectionHeading>
@@ -365,8 +432,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 5: Marketing & Positioning ── */}
-      <section className="bg-[#f8fafc] py-20">
+      {/* ── Section 6: Marketing & Positioning ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>Marketing & Positioning</SectionLabel>
           <SectionHeading>Build the brand through experts, not the institution</SectionHeading>
@@ -413,8 +480,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 6: Land & Expand ── */}
-      <section className="bg-white py-20">
+      {/* ── Section 7: Land & Expand ── */}
+      <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Land & Expand</SectionLabel>
           <SectionHeading>The fastest path to MC growth: our tech services accounts and engagements</SectionHeading>
@@ -511,8 +578,8 @@ export default function MCPlan() {
         </Container>
       </section>
 
-      {/* ── Section 7: Future Model ── */}
-      <section className="bg-[#f8fafc] py-20">
+      {/* ── Section 8: Future Model ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>Future Model</SectionLabel>
           <SectionHeading>The future value chain: find to deliver</SectionHeading>
