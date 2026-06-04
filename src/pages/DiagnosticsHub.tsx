@@ -2,25 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ArrowRight, Brain, Layers, KeyRound, Shield } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
-const mcDiagnostics = [
-  {
-    slug: "ai-maturity",
-    title: "AI Maturity Checkup",
-    description:
-      "Assess your organization's AI readiness across six critical pillars — Strategy, Data & Technology, Development, Talent, Governance, and Change Management — and receive a personalized transformation roadmap.",
-    pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
-    path: "/diagnostics/ai-maturity",
-    password: "AI2026",
-  },
-  {
-    slug: "finance-transformation",
-    title: "Finance Transformation Maturity Checkup",
-    description:
-      "Assess your organization's finance function maturity across five capability pillars — Strategy & Vision, Performance Management, Process Optimization, Organization & Governance, and Data & Technology — and receive a personalized transformation roadmap.",
-    pillars: ["Strategy & Vision", "Performance Management", "Process Optimization", "Org & Governance", "Data & Technology"],
-    path: "/diagnostics/finance-transformation",
-    password: "FT2026",
-  },
+const mcHubDiagnostics = [
   {
     slug: "growth-strategy",
     title: "Growth Strategy Maturity Checkup",
@@ -38,6 +20,15 @@ const mcDiagnostics = [
     pillars: ["Strategy & Gov.", "Process", "Data & Tech", "Org & Culture", "Customer"],
     path: "/diagnostics/business-transformation",
     password: "BT2026",
+  },
+  {
+    slug: "finance-transformation",
+    title: "Finance Transformation Maturity Checkup",
+    description:
+      "Assess your organization's finance function maturity across five capability pillars — Strategy & Vision, Performance Management, Process Optimization, Organization & Governance, and Data & Technology — and receive a personalized transformation roadmap.",
+    pillars: ["Strategy & Vision", "Performance Management", "Process Optimization", "Org & Governance", "Data & Technology"],
+    path: "/diagnostics/finance-transformation",
+    password: "FT2026",
   },
   {
     slug: "performance-improvement",
@@ -65,6 +56,18 @@ const mcDiagnostics = [
     pillars: ["Org Transformation", "Digital Workforce", "Leadership", "Culture", "Process"],
     path: "/diagnostics/workforce-transformation",
     password: "WT2026",
+  },
+];
+
+const mcUniversalDiagnostics = [
+  {
+    slug: "ai-maturity",
+    title: "AI Maturity Checkup",
+    description:
+      "Assess your organization's AI readiness across six critical pillars — Strategy, Data & Technology, Development, Talent, Governance, and Change Management — and receive a personalized transformation roadmap.",
+    pillars: ["AI Strategy & Vision", "Data & Technology", "Development & Deployment", "Talent & Org", "Responsible AI", "Change Management"],
+    path: "/diagnostics/ai-maturity",
+    password: "AI2026",
   },
   {
     slug: "ai-value-realization",
@@ -173,15 +176,27 @@ export default function DiagnosticsHub() {
           </p>
         </div>
 
-        {/* Management Consulting Diagnostics */}
+        {/* MC Hub Offerings Diagnostics */}
         <section>
           <div className="flex items-center gap-2 mb-1">
             <Layers className="h-4 w-4 text-primary shrink-0" />
-            <h3 className="text-xl font-semibold text-foreground">Management Consulting Diagnostics</h3>
+            <h3 className="text-xl font-semibold text-foreground">Management Consulting Hub Offerings Diagnostics</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-5 ml-6">Cross-industry assessments supporting the MC engagement lifecycle.</p>
+          <p className="text-sm text-muted-foreground mb-5 ml-6">Cross-industry assessments aligned to the six MC hub offerings.</p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {mcDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
+            {mcHubDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
+          </div>
+        </section>
+
+        {/* MC Universal & Secondary Services Diagnostics */}
+        <section>
+          <div className="flex items-center gap-2 mb-1">
+            <Layers className="h-4 w-4 text-primary shrink-0" />
+            <h3 className="text-xl font-semibold text-foreground">Management Consulting Universal &amp; Secondary Services Diagnostics</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-5 ml-6">Assessments supporting AI maturity, governance, and value realization across any engagement.</p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {mcUniversalDiagnostics.map((d) => <DiagnosticCard key={d.slug} d={d} />)}
           </div>
         </section>
 
