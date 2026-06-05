@@ -209,35 +209,34 @@ export default function MCPlan() {
               <p className="text-[10px] text-[#6b7280]">5 qtrs consistent</p>
             </div>
 
-            {/* ENT vs SMB — LTM Split */}
+            {/* ENT vs SMB — YoY Growth */}
             <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">ENT vs SMB — LTM Split</p>
-              <div className="flex items-baseline gap-1.5 mb-1.5">
-                <span className="text-xl font-extrabold text-[#1d4ed8]">ENT 69%</span>
-                <span className="text-xs text-[#d1d5db]">|</span>
-                <span className="text-xl font-extrabold text-[#ea580c]">SMB 31%</span>
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">ENT vs SMB — Q1 '26 YoY</p>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-xl font-extrabold text-emerald-600">ENT +25%</span>
+                <span className="text-xl font-extrabold text-red-500">SMB –16%</span>
               </div>
-              <p className="text-[10px] text-[#374151] mb-0.5"><span className="font-semibold text-emerald-600">ENT +25%</span> &nbsp;$4.2M → $5.2M</p>
-              <p className="text-[10px] text-[#374151] mb-1.5"><span className="font-semibold text-red-500">SMB –16%</span> &nbsp;$2.7M → $2.2M</p>
-              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Q1 '26 vs Q1 '25 YoY</p>
+              <p className="text-[10px] text-[#374151] mb-1">$4.2M → $5.2M &nbsp;·&nbsp; $2.7M → $2.2M</p>
+              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Mix: ENT 69% · SMB 31% of LTM gross</p>
             </div>
 
             {/* Delivery Model Mix */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-[#6b7280] mb-2">Delivery Model Mix — Q1 '26</p>
-              <div className="flex gap-2 mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#6b7280] mb-1.5">Delivery Model Mix — Q1 '26</p>
+              <div className="flex gap-2 mb-1.5">
                 <div className="flex-1 bg-white border border-[#e2e8f0] rounded-lg p-2 text-center">
                   <p className="text-xl font-extrabold text-[#0f172a]">86%</p>
-                  <p className="text-[10px] text-[#6b7280] mt-0.5">Talent</p>
+                  <p className="text-[10px] text-[#6b7280]">Talent</p>
                   <p className="text-[10px] font-medium text-[#374151]">$6.42M</p>
                 </div>
                 <div className="flex-1 bg-white border border-[#7c3aed]/30 rounded-lg p-2 text-center">
                   <p className="text-xl font-extrabold text-[#7c3aed]">14%</p>
-                  <p className="text-[10px] text-[#6b7280] mt-0.5">Prof. Services</p>
+                  <p className="text-[10px] text-[#6b7280]">Prof. Services</p>
                   <p className="text-[10px] font-medium text-[#374151]">$1.04M</p>
                 </div>
               </div>
-              <p className="text-[10px] text-[#9ca3af] leading-relaxed italic mt-auto">Margins ~31–36% for both. PS growth reflects revenue diversification.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic">Margins ~31–36% for both.</p>
+              <p className="text-[10px] font-medium text-[#7c3aed] mt-0.5">PS share: 4% → 14% in 4 quarters</p>
             </div>
 
           </div>
@@ -246,9 +245,9 @@ export default function MCPlan() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
 
             {/* Practice Mix */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-4">Gross Revenue % by Practice — LTM & Trend</p>
-              <div className="space-y-3.5 flex-1">
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-2">Gross Revenue % by Practice — LTM & Trend</p>
+              <div className="space-y-1.5 flex-1">
                 {([
                   { name: "People",     pct: 38, trend: "↓ 38→37%", trendUp: false, color: "#7c3aed" },
                   { name: "Finance",    pct: 30, trend: "↑ 28→31%", trendUp: true,  color: "#2563eb" },
@@ -257,22 +256,22 @@ export default function MCPlan() {
                 ]).map((row) => (
                   <div key={row.name} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
-                    <span className="text-sm text-[#374151] w-20 shrink-0">{row.name}</span>
-                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
-                      <div className="h-2 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.5 }} />
+                    <span className="text-xs text-[#374151] w-20 shrink-0">{row.name}</span>
+                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.5 }} />
                     </div>
-                    <span className="text-sm font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
-                    <span className={`text-xs w-16 text-right shrink-0 ${row.trendUp ? "text-emerald-600" : "text-[#9ca3af]"}`}>{row.trend}</span>
+                    <span className="text-xs font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
+                    <span className={`text-[10px] w-16 text-right shrink-0 ${row.trendUp ? "text-emerald-600" : "text-[#9ca3af]"}`}>{row.trend}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-2">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
             </div>
 
             {/* Industry Vertical */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-4">Gross Revenue by Industry Vertical — LTM</p>
-              <div className="space-y-3.5 flex-1">
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-2">Gross Revenue by Industry Vertical — LTM</p>
+              <div className="space-y-1.5 flex-1">
                 {([
                   { name: "IPS",   pct: 30, val: "$8.4M", color: "#2563eb" },
                   { name: "CPS",   pct: 21, val: "$5.7M", color: "#f97316" },
@@ -283,16 +282,16 @@ export default function MCPlan() {
                 ]).map((row) => (
                   <div key={row.name} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
-                    <span className="text-sm text-[#374151] w-10 shrink-0">{row.name}</span>
-                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
-                      <div className="h-2 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.45 }} />
+                    <span className="text-xs text-[#374151] w-10 shrink-0">{row.name}</span>
+                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.45 }} />
                     </div>
-                    <span className="text-sm font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
-                    <span className="text-xs text-[#6b7280] w-12 text-right shrink-0">{row.val}</span>
+                    <span className="text-xs font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
+                    <span className="text-[10px] text-[#6b7280] w-12 text-right shrink-0">{row.val}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-2">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
             </div>
 
             {/* Active Pipeline */}
