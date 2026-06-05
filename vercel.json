@@ -1,11 +1,9 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "headers": [
+  "redirects": [
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "source": "/(.*)",
+      "destination": "https://mc-hub.toptal.tech/",
+      "permanent": true
     }
   ]
 }
