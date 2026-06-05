@@ -190,32 +190,39 @@ export default function MCPlan() {
           {/* Detail cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
 
-            {/* PS Growth */}
+            {/* Delivery Model Mix */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Professional Services — YoY Growth</p>
-              <p className="text-4xl font-extrabold text-[#0f172a] mb-1">+294%</p>
-              <p className="text-xs text-[#6b7280] mb-3">Q2 '25 → Q1 '26 quarterly growth rate</p>
-              <div className="bg-emerald-50 border border-emerald-100 rounded px-3 py-1.5 mb-4">
-                <p className="text-xs font-semibold text-emerald-700">Share of gross: 4% → 14% in 4 quarters</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Delivery Model Mix — Q1 '26</p>
+              <div className="flex gap-4 mb-4">
+                <div className="flex-1 bg-white border border-[#e2e8f0] rounded-lg p-3 text-center">
+                  <p className="text-2xl font-extrabold text-[#0f172a]">86%</p>
+                  <p className="text-xs text-[#6b7280] mt-0.5">Talent</p>
+                  <p className="text-xs font-medium text-[#374151]">$6.42M gross</p>
+                </div>
+                <div className="flex-1 bg-white border border-[#7c3aed]/30 rounded-lg p-3 text-center">
+                  <p className="text-2xl font-extrabold text-[#7c3aed]">14%</p>
+                  <p className="text-xs text-[#6b7280] mt-0.5">Prof. Services</p>
+                  <p className="text-xs font-medium text-[#374151]">$1.04M gross</p>
+                </div>
               </div>
-              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-3">Quarterly PS Gross Revenue</p>
-              <div className="space-y-2.5 mb-4">
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">PS share of gross — quarterly</p>
+              <div className="space-y-2 mb-4">
                 {([
-                  { q: "Q2 '25", val: "$263K", pct: 25 },
-                  { q: "Q3 '25", val: "$454K", pct: 44 },
-                  { q: "Q4 '25", val: "$872K", pct: 84 },
-                  { q: "Q1 '26", val: "$1,037K", pct: 100 },
+                  { q: "Q2 '25", pct: 4 },
+                  { q: "Q3 '25", pct: 7 },
+                  { q: "Q4 '25", pct: 13 },
+                  { q: "Q1 '26", pct: 14 },
                 ]).map((row) => (
                   <div key={row.q} className="flex items-center gap-2">
                     <span className="text-xs text-[#6b7280] w-12 shrink-0">{row.q}</span>
                     <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
-                      <div className="bg-[#7c3aed] h-2 rounded-full" style={{ width: `${row.pct}%` }} />
+                      <div className="bg-[#7c3aed] h-2 rounded-full" style={{ width: `${row.pct * 7}%` }} />
                     </div>
-                    <span className="text-xs font-semibold text-[#374151] w-16 text-right shrink-0">{row.val}</span>
+                    <span className="text-xs font-semibold text-[#7c3aed] w-8 text-right shrink-0">{row.pct}%</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">PS margins 31–36%, in line with Talent. Growth reflects revenue diversification, not margin premium.</p>
+              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">Talent and PS margins both ~31–36%. PS growth reflects revenue diversification, not a margin premium.</p>
             </div>
 
             {/* Practice Mix */}
@@ -270,8 +277,87 @@ export default function MCPlan() {
 
           </div>
 
+          {/* Pipeline sub-section */}
+          <div className="mb-12">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb] mb-4">Pipeline Snapshot — Q2 2026</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+              {/* Active Pipeline */}
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Active Pipeline (Q2 '26)</p>
+                <div className="mb-3">
+                  <p className="text-3xl font-extrabold text-[#0f172a]">567</p>
+                  <p className="text-xs text-[#6b7280]">total opportunities (536 ENT · 31 SMB)</p>
+                </div>
+                <div className="space-y-2 mb-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">ENT unweighted</span>
+                    <span className="font-bold text-[#0f172a]">$20.7M</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6b7280]">ENT weighted</span>
+                    <span className="font-bold text-[#2563eb]">$13.2M</span>
+                  </div>
+                </div>
+                <div className="bg-[#7c3aed]/8 rounded-lg px-3 py-2">
+                  <p className="text-xs font-semibold text-[#7c3aed]">PS pipeline: $2.7M unweighted</p>
+                  <p className="text-xs text-[#6b7280]">+36% vs Q4 '25 · 16% of weighted ENT</p>
+                </div>
+              </div>
+
+              {/* Pipeline Trend */}
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Pipeline Trend</p>
+                <div className="w-full text-xs">
+                  <div className="grid grid-cols-4 gap-1 mb-2 text-[#6b7280] font-semibold">
+                    <span></span><span className="text-center">Q4 '25</span><span className="text-center">Q1 '26</span><span className="text-center">Q2 '26</span>
+                  </div>
+                  {([
+                    { label: "Opptys", vals: ["544", "569", "567"], highlight: [false, true, false] },
+                    { label: "ENT wtd", vals: ["$11.3M", "$13.9M", "$13.2M"], highlight: [false, true, false] },
+                    { label: "PS wtd", vals: ["$1.25M", "$2.06M", "$2.10M"], highlight: [false, false, true] },
+                  ]).map((row) => (
+                    <div key={row.label} className="grid grid-cols-4 gap-1 py-1.5 border-t border-[#e2e8f0]">
+                      <span className="text-[#6b7280]">{row.label}</span>
+                      {row.vals.map((v, i) => (
+                        <span key={i} className={`text-center font-semibold ${row.highlight[i] ? "text-emerald-600" : "text-[#374151]"}`}>{v}</span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-[#9ca3af] mt-3 italic">Snapshots: Dec 31 / Mar 31 / Apr 8.</p>
+              </div>
+
+              {/* Weighted Breakdown */}
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Q2 '26 Weighted Breakdown</p>
+                <div className="space-y-3 mb-4">
+                  {([
+                    { label: "ENT Talent", val: "$11.1M", pct: 84, color: "#2563eb" },
+                    { label: "ENT Proj. Services", val: "$2.1M", pct: 16, color: "#7c3aed" },
+                  ]).map((row) => (
+                    <div key={row.label}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-semibold" style={{ color: row.color }}>{row.label}</span>
+                        <span className="font-bold text-[#374151]">{row.val} <span className="text-[#6b7280] font-normal">({row.pct}%)</span></span>
+                      </div>
+                      <div className="bg-[#e2e8f0] rounded-full h-1.5">
+                        <div className="h-1.5 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-[#f1f5f9] rounded-lg px-3 py-2">
+                  <p className="text-xs text-[#6b7280]"><span className="font-semibold text-[#374151]">SMB:</span> 31 opptys — $ values not systematically tracked in Salesforce.</p>
+                </div>
+                <p className="text-xs text-[#9ca3af] mt-3 italic">Stage weights: Fulfillment 90%, Closing 75%, Solutioning 50%, Qualifying 25%, Identified 10%.</p>
+              </div>
+
+            </div>
+          </div>
+
           {/* Insight points */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
             {([
               {
                 num: "01",
@@ -288,7 +374,7 @@ export default function MCPlan() {
               {
                 num: "03",
                 title: "PS is growing as a revenue stream",
-                body: "Expanding from 4% to 14% of gross. Margins (31–36%) are in line with Talent (~35%).",
+                body: "Expanding from 4% to 14% of gross in four quarters. Margins (31–36%) are in line with Talent.",
                 titleColor: "text-[#2563eb]",
               },
               {
@@ -299,8 +385,8 @@ export default function MCPlan() {
               },
               {
                 num: "05",
-                title: "Pipeline is healthy and conversion is improving",
-                body: "532 active opportunities, $35.5M weighted gross pipeline. ENT conversion rate has doubled from 12% to 27% over five quarters.",
+                title: "Pipeline is healthy and PS share is growing",
+                body: "567 active opportunities (Q2 '26), $13.2M ENT weighted pipeline. PS pipeline +36% vs Q4 '25 — now 16% of weighted ENT.",
                 titleColor: "text-[#2563eb]",
               },
             ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight) => (
@@ -310,6 +396,18 @@ export default function MCPlan() {
                 <p className="text-sm text-[#374151] leading-relaxed">{insight.body}</p>
               </Card>
             ))}
+          </div>
+
+          <div className="flex justify-end">
+            <a
+              href="/mc-state-of-business.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-sm text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
+            >
+              View full State of the Business report
+              <ArrowRight size={14} />
+            </a>
           </div>
         </Container>
       </section>
