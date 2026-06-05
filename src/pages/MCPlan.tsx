@@ -333,61 +333,56 @@ export default function MCPlan() {
 
           {/* Narrative */}
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2563eb] mb-3">Narrative</p>
-          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 mb-6">
-            <ul className="space-y-3">
-              {([
-                {
-                  num: "01",
-                  title: "Record Growth — The Business Is Compounding",
-                  body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. This isn't a recovery — it's a compounding trend.",
-                  titleColor: "text-emerald-700",
-                },
-                {
-                  num: "02",
-                  title: "Enterprise Is the Engine — and the Flywheel Is Working",
-                  body: "ENT grew 25% YoY, now represents 70% of gross revenue, and conversion rate has doubled from 12% to 27% over five quarters. New opportunity creation hit a record 122 in Q1 2026 — structural improvement, not luck.",
-                  titleColor: "text-emerald-700",
-                },
-                {
-                  num: "03",
-                  title: "SMB Is in Structural Decline — This Requires a Decision",
-                  body: "Five consecutive quarters of YoY decline (−16% to −34%), no account above $200K net in 12 months, and a pipeline with 31 open opportunities and essentially zero tracked value. ENT is masking it — but without deliberate intervention, SMB will continue drifting.",
-                  titleColor: "text-red-600",
-                },
-                {
-                  num: "04",
-                  title: "Professional Services Is the Right Bet — With the Right Pitch",
-                  body: "PS grew from 4% to 14% of gross in one year. The value is strategic positioning and client stickiness — not margin expansion; PS margins run 31–36%, in line with Talent.",
-                  titleColor: "text-[#2563eb]",
-                },
-                {
-                  num: "05",
-                  title: "The Pipeline Is Deep — and PS Is Gaining Ground",
-                  body: "$13.2M weighted ENT pipeline entering Q2 2026. PS weighted pipeline has grown 68% over three quarters — as it converts, it cements MC's identity as a full-service practice.",
-                  titleColor: "text-[#2563eb]",
-                },
-                {
-                  num: "06",
-                  title: "Margins Are Stable — H2 Is a Top-Line Story",
-                  body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift. There is no further margin lever to pull — H2 2026 is about revenue volume: more ENT wins, converting the 83 Solutioning opportunities, and a deliberate call on SMB.",
-                  titleColor: "text-[#2563eb]",
-                },
-              ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight, i, arr) => (
-                <li key={insight.num} className={`flex gap-3 text-sm text-[#374151] leading-relaxed ${i < arr.length - 1 ? "pb-3 border-b border-[#e2e8f0]" : ""}`}>
-                  <span className="font-extrabold text-[#d1d5db] w-5 shrink-0 select-none">{insight.num}</span>
-                  <p>
-                    <span className={`font-bold ${insight.titleColor}`}>{insight.title}</span>
-                    {" — "}
-                    {insight.body}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <div className="flex justify-end mt-4 pt-3 border-t border-[#e2e8f0]">
-              <Link to="/mc-narrative" className="text-xs text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">
-                Deeper analysis →
-              </Link>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            {([
+              {
+                num: "01",
+                title: "Record Growth — The Business Is Compounding",
+                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. This isn't a recovery — it's a compounding trend.",
+                titleColor: "text-emerald-700",
+              },
+              {
+                num: "02",
+                title: "Enterprise Is the Engine — and the Flywheel Is Working",
+                body: "ENT grew 25% YoY, now represents 70% of gross revenue, and conversion rate has doubled from 12% to 27% over five quarters. New opportunity creation hit a record 122 in Q1 2026 — structural improvement, not luck.",
+                titleColor: "text-emerald-700",
+              },
+              {
+                num: "03",
+                title: "SMB Is in Structural Decline — This Requires a Decision",
+                body: "Five consecutive quarters of YoY decline (−16% to −34%), no account above $200K net in 12 months, and a pipeline with 31 open opportunities and essentially zero tracked value. ENT is masking it — but without deliberate intervention, SMB will continue drifting.",
+                titleColor: "text-red-600",
+              },
+              {
+                num: "04",
+                title: "Professional Services Is the Right Bet — With the Right Pitch",
+                body: "PS grew from 4% to 14% of gross in one year. The value is strategic positioning and client stickiness — not margin expansion; PS margins run 31–36%, in line with Talent.",
+                titleColor: "text-[#2563eb]",
+              },
+              {
+                num: "05",
+                title: "The Pipeline Is Deep — and PS Is Gaining Ground",
+                body: "$13.2M weighted ENT pipeline entering Q2 2026. PS weighted pipeline has grown 68% over three quarters — as it converts, it cements MC's identity as a full-service practice.",
+                titleColor: "text-[#2563eb]",
+              },
+              {
+                num: "06",
+                title: "Margins Are Stable — H2 Is a Top-Line Story",
+                body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift. There is no further margin lever to pull — H2 2026 is about revenue volume: more ENT wins, converting the 83 Solutioning opportunities, and a deliberate call on SMB.",
+                titleColor: "text-[#2563eb]",
+              },
+            ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight) => (
+              <div key={insight.num} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+                <span className="text-2xl font-extrabold text-[#e2e8f0] leading-none mb-2 select-none">{insight.num}</span>
+                <h3 className={`text-sm font-bold mb-1.5 ${insight.titleColor}`}>{insight.title}</h3>
+                <p className="text-xs text-[#374151] leading-relaxed">{insight.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end mb-6">
+            <Link to="/mc-narrative" className="text-xs text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">
+              Deeper analysis →
+            </Link>
           </div>
 
         </Container>
