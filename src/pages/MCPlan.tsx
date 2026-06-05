@@ -171,79 +171,79 @@ export default function MCPlan() {
           <SectionHeading>The business at a glance</SectionHeading>
 
           {/* KPI stat bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
 
             {/* Gross Revenue — LTM + Projected */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">12-Month Gross Revenue</p>
-              <p className="text-2xl font-extrabold text-[#0f172a] mb-0.5">$27.9M</p>
-              <p className="text-xs text-[#374151] mb-0.5">Jun '25 – May '26</p>
-              <p className="text-xs font-medium text-emerald-600 mb-3">Q1 '26: +9% YoY</p>
-              <div className="border-t border-[#e2e8f0] pt-3">
-                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1">Projected 2026 Gross</p>
-                <p className="text-xl font-extrabold text-emerald-600 mb-0.5">~$29.8M</p>
-                <p className="text-xs text-[#6b7280] mb-0.5">vs $26.3M actual 2025</p>
-                <p className="text-xs font-medium text-emerald-600">+13% YoY</p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">12-Month Gross Revenue</p>
+              <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$27.9M</p>
+              <p className="text-[10px] text-[#374151] mb-0.5">Jun '25 – May '26</p>
+              <p className="text-[10px] font-medium text-emerald-600 mb-2">Q1 '26: +9% YoY</p>
+              <div className="border-t border-[#e2e8f0] pt-2">
+                <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-0.5">Projected 2026 Gross</p>
+                <p className="text-lg font-extrabold text-emerald-600 mb-0.5">~$29.8M</p>
+                <p className="text-[10px] text-[#6b7280] mb-0.5">vs $26.3M actual 2025</p>
+                <p className="text-[10px] font-medium text-emerald-600">+13% YoY</p>
               </div>
             </div>
 
             {/* Net Revenue — LTM + Projected */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">12-Month Net Revenue</p>
-              <p className="text-2xl font-extrabold text-[#0f172a] mb-0.5">$9.9M</p>
-              <p className="text-xs text-[#374151] mb-0.5">36.2% blended margin</p>
-              <p className="text-xs font-medium text-emerald-600 mb-3">Q1 '26: +5% YoY</p>
-              <div className="border-t border-[#e2e8f0] pt-3">
-                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1">Projected 2026 Net</p>
-                <p className="text-xl font-extrabold text-emerald-600 mb-0.5">~$10.7M</p>
-                <p className="text-xs text-[#6b7280] mb-0.5">vs $9.4M actual 2025</p>
-                <p className="text-xs font-medium text-emerald-600">+14% YoY</p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">12-Month Net Revenue</p>
+              <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$9.9M</p>
+              <p className="text-[10px] text-[#374151] mb-0.5">36.2% blended margin</p>
+              <p className="text-[10px] font-medium text-emerald-600 mb-2">Q1 '26: +5% YoY</p>
+              <div className="border-t border-[#e2e8f0] pt-2">
+                <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-0.5">Projected 2026 Net</p>
+                <p className="text-lg font-extrabold text-emerald-600 mb-0.5">~$10.7M</p>
+                <p className="text-[10px] text-[#6b7280] mb-0.5">vs $9.4M actual 2025</p>
+                <p className="text-[10px] font-medium text-emerald-600">+14% YoY</p>
               </div>
             </div>
 
             {/* Blended Margin */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">Blended Margin</p>
-              <p className="text-2xl font-extrabold text-[#0f172a] mb-1">36.2%</p>
-              <p className="text-xs text-[#6b7280]">Stable band 34–37%</p>
-              <p className="text-xs text-[#6b7280]">5 qtrs consistent</p>
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Blended Margin</p>
+              <p className="text-xl font-extrabold text-[#0f172a] mb-1">36.2%</p>
+              <p className="text-[10px] text-[#6b7280]">Stable band 34–37%</p>
+              <p className="text-[10px] text-[#6b7280]">5 qtrs consistent</p>
             </div>
 
             {/* ENT vs SMB — LTM Split */}
-            <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex flex-col">
-              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">ENT vs SMB — LTM Split</p>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-2xl font-extrabold text-[#1d4ed8]">ENT 69%</span>
-                <span className="text-sm text-[#d1d5db]">|</span>
-                <span className="text-2xl font-extrabold text-[#ea580c]">SMB 31%</span>
+            <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col">
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">ENT vs SMB — LTM Split</p>
+              <div className="flex items-baseline gap-1.5 mb-1.5">
+                <span className="text-xl font-extrabold text-[#1d4ed8]">ENT 69%</span>
+                <span className="text-xs text-[#d1d5db]">|</span>
+                <span className="text-xl font-extrabold text-[#ea580c]">SMB 31%</span>
               </div>
-              <p className="text-xs text-[#374151] mb-0.5"><span className="font-semibold text-emerald-600">ENT +25%</span> &nbsp;$4.2M → $5.2M</p>
-              <p className="text-xs text-[#374151] mb-2"><span className="font-semibold text-red-500">SMB –16%</span> &nbsp;$2.7M → $2.2M</p>
-              <p className="text-xs text-[#9ca3af] italic mt-auto">Q1 '26 vs Q1 '25 YoY</p>
+              <p className="text-[10px] text-[#374151] mb-0.5"><span className="font-semibold text-emerald-600">ENT +25%</span> &nbsp;$4.2M → $5.2M</p>
+              <p className="text-[10px] text-[#374151] mb-1.5"><span className="font-semibold text-red-500">SMB –16%</span> &nbsp;$2.7M → $2.2M</p>
+              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Q1 '26 vs Q1 '25 YoY</p>
+            </div>
+
+            {/* Delivery Model Mix */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#6b7280] mb-2">Delivery Model Mix — Q1 '26</p>
+              <div className="flex gap-2 mb-2">
+                <div className="flex-1 bg-white border border-[#e2e8f0] rounded-lg p-2 text-center">
+                  <p className="text-xl font-extrabold text-[#0f172a]">86%</p>
+                  <p className="text-[10px] text-[#6b7280] mt-0.5">Talent</p>
+                  <p className="text-[10px] font-medium text-[#374151]">$6.42M</p>
+                </div>
+                <div className="flex-1 bg-white border border-[#7c3aed]/30 rounded-lg p-2 text-center">
+                  <p className="text-xl font-extrabold text-[#7c3aed]">14%</p>
+                  <p className="text-[10px] text-[#6b7280] mt-0.5">Prof. Services</p>
+                  <p className="text-[10px] font-medium text-[#374151]">$1.04M</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-[#9ca3af] leading-relaxed italic mt-auto">Margins ~31–36% for both. PS growth reflects revenue diversification.</p>
             </div>
 
           </div>
 
           {/* Detail cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
-
-            {/* Delivery Model Mix */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Delivery Model Mix — Q1 '26</p>
-              <div className="flex gap-4 mb-4">
-                <div className="flex-1 bg-white border border-[#e2e8f0] rounded-lg p-3 text-center">
-                  <p className="text-2xl font-extrabold text-[#0f172a]">86%</p>
-                  <p className="text-xs text-[#6b7280] mt-0.5">Talent</p>
-                  <p className="text-xs font-medium text-[#374151]">$6.42M gross</p>
-                </div>
-                <div className="flex-1 bg-white border border-[#7c3aed]/30 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-extrabold text-[#7c3aed]">14%</p>
-                  <p className="text-xs text-[#6b7280] mt-0.5">Prof. Services</p>
-                  <p className="text-xs font-medium text-[#374151]">$1.04M gross</p>
-                </div>
-              </div>
-              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">Talent and PS margins both ~31–36%. PS growth reflects revenue diversification, not a margin premium.</p>
-            </div>
 
             {/* Practice Mix */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
@@ -295,85 +295,29 @@ export default function MCPlan() {
               <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
             </div>
 
-          </div>
-
-          {/* Pipeline sub-section */}
-          <div className="mb-12">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb] mb-4">Pipeline Snapshot — Q2 2026</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-              {/* Active Pipeline */}
-              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Active Pipeline (Q2 '26)</p>
-                <div className="mb-3">
-                  <p className="text-3xl font-extrabold text-[#0f172a]">567</p>
-                  <p className="text-xs text-[#6b7280]">total opportunities (536 ENT · 31 SMB)</p>
+            {/* Active Pipeline */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb] mb-3">Active Pipeline — Q2 '26</p>
+              <div className="mb-3">
+                <p className="text-3xl font-extrabold text-[#0f172a]">567</p>
+                <p className="text-xs text-[#6b7280]">opportunities (536 ENT · 31 SMB)</p>
+              </div>
+              <div className="space-y-2 mb-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#6b7280]">ENT unweighted</span>
+                  <span className="font-bold text-[#0f172a]">$20.7M</span>
                 </div>
-                <div className="space-y-2 mb-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">ENT unweighted</span>
-                    <span className="font-bold text-[#0f172a]">$20.7M</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#6b7280]">ENT weighted</span>
-                    <span className="font-bold text-[#2563eb]">$13.2M</span>
-                  </div>
-                </div>
-                <div className="bg-[#7c3aed]/8 rounded-lg px-3 py-2">
-                  <p className="text-xs font-semibold text-[#7c3aed]">PS pipeline: $2.7M unweighted</p>
-                  <p className="text-xs text-[#6b7280]">+36% vs Q4 '25 · 16% of weighted ENT</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#6b7280]">ENT weighted</span>
+                  <span className="font-bold text-[#2563eb]">$13.2M</span>
                 </div>
               </div>
-
-              {/* Pipeline Trend */}
-              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Pipeline Trend</p>
-                <div className="w-full text-xs">
-                  <div className="grid grid-cols-4 gap-1 mb-2 text-[#6b7280] font-semibold">
-                    <span></span><span className="text-center">Q4 '25</span><span className="text-center">Q1 '26</span><span className="text-center">Q2 '26</span>
-                  </div>
-                  {([
-                    { label: "Opptys", vals: ["544", "569", "567"], highlight: [false, true, false] },
-                    { label: "ENT wtd", vals: ["$11.3M", "$13.9M", "$13.2M"], highlight: [false, true, false] },
-                    { label: "PS wtd", vals: ["$1.25M", "$2.06M", "$2.10M"], highlight: [false, false, true] },
-                  ]).map((row) => (
-                    <div key={row.label} className="grid grid-cols-4 gap-1 py-1.5 border-t border-[#e2e8f0]">
-                      <span className="text-[#6b7280]">{row.label}</span>
-                      {row.vals.map((v, i) => (
-                        <span key={i} className={`text-center font-semibold ${row.highlight[i] ? "text-emerald-600" : "text-[#374151]"}`}>{v}</span>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-[#9ca3af] mt-3 italic">Snapshots: Dec 31 / Mar 31 / Apr 8.</p>
+              <div className="bg-[#7c3aed]/8 rounded-lg px-3 py-2 mt-auto">
+                <p className="text-xs font-semibold text-[#7c3aed]">PS pipeline: $2.7M unweighted</p>
+                <p className="text-xs text-[#6b7280]">+36% vs Q4 '25 · 16% of weighted ENT</p>
               </div>
-
-              {/* Weighted Breakdown */}
-              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Q2 '26 Weighted Breakdown</p>
-                <div className="space-y-3 mb-4">
-                  {([
-                    { label: "ENT Talent", val: "$11.1M", pct: 84, color: "#2563eb" },
-                    { label: "ENT Proj. Services", val: "$2.1M", pct: 16, color: "#7c3aed" },
-                  ]).map((row) => (
-                    <div key={row.label}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="font-semibold" style={{ color: row.color }}>{row.label}</span>
-                        <span className="font-bold text-[#374151]">{row.val} <span className="text-[#6b7280] font-normal">({row.pct}%)</span></span>
-                      </div>
-                      <div className="bg-[#e2e8f0] rounded-full h-1.5">
-                        <div className="h-1.5 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-[#f1f5f9] rounded-lg px-3 py-2">
-                  <p className="text-xs text-[#6b7280]"><span className="font-semibold text-[#374151]">SMB:</span> 31 opptys — $ values not systematically tracked in Salesforce.</p>
-                </div>
-                <p className="text-xs text-[#9ca3af] mt-3 italic">Stage weights: Fulfillment 90%, Closing 75%, Solutioning 50%, Qualifying 25%, Identified 10%.</p>
-              </div>
-
             </div>
+
           </div>
 
           {/* Insight points */}
@@ -418,17 +362,6 @@ export default function MCPlan() {
             ))}
           </div>
 
-          <div className="flex justify-end">
-            <a
-              href="/mc-state-of-business.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
-            >
-              View full State of the Business report
-              <ArrowRight size={14} />
-            </a>
-          </div>
         </Container>
       </section>
 
