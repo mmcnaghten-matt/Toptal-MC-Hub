@@ -383,6 +383,11 @@ export default function MCPlan() {
                 </li>
               ))}
             </ul>
+            <div className="flex justify-end mt-4 pt-3 border-t border-[#e2e8f0]">
+              <Link to="/mc-narrative" className="text-xs text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">
+                Deeper analysis →
+              </Link>
+            </div>
           </div>
 
         </Container>

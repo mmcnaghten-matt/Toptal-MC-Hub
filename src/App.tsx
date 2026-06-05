@@ -18,6 +18,7 @@ import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 import MCPlan from "./pages/MCPlan";
 import MCSellerReintro from "./pages/MCSellerReintro";
 import MCPipelineDetail from "./pages/MCPipelineDetail";
+import MCNarrativeDetail from "./pages/MCNarrativeDetail";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/mc-plan" element={<MCPlan />} />
                 <Route path="/mc-seller-reintro" element={<MCSellerReintro />} />
                 <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
+                <Route path="/mc-narrative" element={<MCNarrativeDetail />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

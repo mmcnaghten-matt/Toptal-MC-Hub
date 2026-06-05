@@ -4,23 +4,40 @@ import ToptalLogo from "@/components/ToptalLogo";
 
 export default function MCPipelineDetail() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <div className="border-b border-[#e2e8f0] px-8 py-4 flex items-center justify-between">
-        <ToptalLogo />
-        <Link
-          to="/mc-plan"
-          className="flex items-center gap-1.5 text-sm text-[#6b7280] hover:text-[#2563eb] transition-colors"
-        >
-          <ArrowLeft size={14} />
-          Back to MC Plan
-        </Link>
+    <div className="min-h-screen font-sans antialiased bg-white">
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-[#0d1b40] border-b border-white/10">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              to="/mc-plan"
+              className="text-blue-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to MC Plan
+            </Link>
+            <div className="w-px h-4 bg-white/20" />
+            <ToptalLogo className="h-9" />
+          </div>
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-blue-300/80">
+            MC Plan · Confidential
+          </p>
+        </div>
+      </header>
+
+      {/* Page heading */}
+      <div className="bg-[#0d1b40] border-b border-white/10 pb-10 pt-10">
+        <div className="max-w-7xl mx-auto px-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-400 mb-3">
+            MC Business at a Glance
+          </p>
+          <h1 className="text-3xl font-extrabold text-white">Pipeline Detail</h1>
+          <p className="text-blue-300/70 text-sm mt-2">Q4 2025 → Q1 2026 → Q2 2026</p>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-8 py-10">
-        <h1 className="text-2xl font-extrabold text-[#1e3a8a] mb-8">
-          Pipeline — Q4 2025 → Q1 2026 → Q2 2026
-        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
