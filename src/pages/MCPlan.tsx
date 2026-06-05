@@ -167,8 +167,8 @@ export default function MCPlan() {
       {/* ── Section 2: MC by the Numbers ── */}
       <section className="bg-white py-20">
         <Container>
-          <SectionLabel>MC by the Numbers</SectionLabel>
-          <SectionHeading>The business at a glance</SectionHeading>
+          <SectionLabel>MC Business at a Glance</SectionLabel>
+          <SectionHeading>By the Numbers</SectionHeading>
 
           {/* KPI stat bar */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
@@ -331,46 +331,52 @@ export default function MCPlan() {
 
           </div>
 
-          {/* Insight points */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-            {([
-              {
-                num: "01",
-                title: "ENT is the growth engine",
-                body: "+25% YoY gross in Q1 2026, now 68% of total Gross Revenue. Consistent 12–25% YoY growth for five quarters.",
-                titleColor: "text-emerald-700",
-              },
-              {
-                num: "02",
-                title: "SMB is declining",
-                body: "Down 16–34% YoY every quarter for five consecutive quarters. Not a blip.",
-                titleColor: "text-red-600",
-              },
-              {
-                num: "03",
-                title: "PS is growing as a revenue stream",
-                body: "Expanding from 4% to 14% of gross in four quarters. Margins (31–36%) are in line with Talent.",
-                titleColor: "text-[#2563eb]",
-              },
-              {
-                num: "04",
-                title: "Margins are stable, not expanding",
-                body: "Blended margin has been in the 34–37% band throughout the period.",
-                titleColor: "text-[#2563eb]",
-              },
-              {
-                num: "05",
-                title: "Pipeline is healthy and PS share is growing",
-                body: "567 active opportunities (Q2 '26), $13.2M ENT weighted pipeline. PS pipeline +36% vs Q4 '25 — now 16% of weighted ENT.",
-                titleColor: "text-[#2563eb]",
-              },
-            ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight) => (
-              <Card key={insight.num}>
-                <span className="text-3xl font-extrabold text-[#e2e8f0] leading-none block mb-3">{insight.num}</span>
-                <h3 className={`text-base font-bold mb-2 ${insight.titleColor}`}>{insight.title}</h3>
-                <p className="text-sm text-[#374151] leading-relaxed">{insight.body}</p>
-              </Card>
-            ))}
+          {/* Narrative */}
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2563eb] mb-3">Narrative</p>
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 mb-6">
+            <ul className="space-y-3">
+              {([
+                {
+                  num: "01",
+                  title: "ENT is the growth engine",
+                  body: "+25% YoY gross in Q1 2026, now 68% of total Gross Revenue. Consistent 12–25% YoY growth for five quarters.",
+                  titleColor: "text-emerald-700",
+                },
+                {
+                  num: "02",
+                  title: "SMB is declining",
+                  body: "Down 16–34% YoY every quarter for five consecutive quarters. Not a blip.",
+                  titleColor: "text-red-600",
+                },
+                {
+                  num: "03",
+                  title: "PS is growing as a revenue stream",
+                  body: "Expanding from 4% to 14% of gross in four quarters. Margins (31–36%) are in line with Talent.",
+                  titleColor: "text-[#2563eb]",
+                },
+                {
+                  num: "04",
+                  title: "Margins are stable, not expanding",
+                  body: "Blended margin has been in the 34–37% band throughout the period.",
+                  titleColor: "text-[#2563eb]",
+                },
+                {
+                  num: "05",
+                  title: "Pipeline is healthy and PS share is growing",
+                  body: "567 active opportunities (Q2 '26), $13.2M ENT weighted pipeline. PS pipeline +36% vs Q4 '25 — now 16% of weighted ENT.",
+                  titleColor: "text-[#2563eb]",
+                },
+              ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight, i, arr) => (
+                <li key={insight.num} className={`flex gap-3 text-sm text-[#374151] leading-relaxed ${i < arr.length - 1 ? "pb-3 border-b border-[#e2e8f0]" : ""}`}>
+                  <span className="font-extrabold text-[#d1d5db] w-5 shrink-0 select-none">{insight.num}</span>
+                  <p>
+                    <span className={`font-bold ${insight.titleColor}`}>{insight.title}</span>
+                    {" — "}
+                    {insight.body}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
 
         </Container>
