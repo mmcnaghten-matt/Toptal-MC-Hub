@@ -171,20 +171,57 @@ export default function MCPlan() {
           <SectionHeading>The business at a glance</SectionHeading>
 
           {/* KPI stat bar */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            {([
-              { label: "12-Month Gross Revenue", value: "$27.9M", sub: "Q1 '26: +9% YoY", subColor: "text-[#374151]", valueColor: "text-[#0f172a]" },
-              { label: "12-Month Net Revenue", value: "$9.9M", sub: "36.2% blended margin", subColor: "text-emerald-600", valueColor: "text-[#0f172a]" },
-              { label: "Blended Margin", value: "36.2%", sub: "Stable band 34–37%", subColor: "text-[#6b7280]", valueColor: "text-[#0f172a]" },
-              { label: "ENT YoY Growth (Q1 '26)", value: "+25%", sub: "$4.16M → $5.22M gross", subColor: "text-emerald-600", valueColor: "text-emerald-600" },
-              { label: "SMB YoY Trend", value: "–16%", sub: "5 consecutive quarters declining", subColor: "text-red-500", valueColor: "text-red-500" },
-            ] as { label: string; value: string; sub: string; subColor: string; valueColor: string }[]).map((stat) => (
-              <div key={stat.label} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide leading-snug h-8 flex items-start">{stat.label}</p>
-                <p className={`text-2xl font-extrabold mb-1 ${stat.valueColor}`}>{stat.value}</p>
-                <p className={`text-xs font-medium ${stat.subColor}`}>{stat.sub}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+
+            {/* Gross Revenue — LTM + Projected */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">12-Month Gross Revenue</p>
+              <p className="text-2xl font-extrabold text-[#0f172a] mb-0.5">$27.9M</p>
+              <p className="text-xs text-[#374151] mb-0.5">Jun '25 – May '26</p>
+              <p className="text-xs font-medium text-emerald-600 mb-3">Q1 '26: +9% YoY</p>
+              <div className="border-t border-[#e2e8f0] pt-3">
+                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1">Projected 2026 Gross</p>
+                <p className="text-xl font-extrabold text-emerald-600 mb-0.5">~$29.8M</p>
+                <p className="text-xs text-[#6b7280] mb-0.5">vs $26.3M actual 2025</p>
+                <p className="text-xs font-medium text-emerald-600">+13% YoY</p>
               </div>
-            ))}
+            </div>
+
+            {/* Net Revenue — LTM + Projected */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">12-Month Net Revenue</p>
+              <p className="text-2xl font-extrabold text-[#0f172a] mb-0.5">$9.9M</p>
+              <p className="text-xs text-[#374151] mb-0.5">36.2% blended margin</p>
+              <p className="text-xs font-medium text-emerald-600 mb-3">Q1 '26: +5% YoY</p>
+              <div className="border-t border-[#e2e8f0] pt-3">
+                <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-1">Projected 2026 Net</p>
+                <p className="text-xl font-extrabold text-emerald-600 mb-0.5">~$10.7M</p>
+                <p className="text-xs text-[#6b7280] mb-0.5">vs $9.4M actual 2025</p>
+                <p className="text-xs font-medium text-emerald-600">+14% YoY</p>
+              </div>
+            </div>
+
+            {/* Blended Margin */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">Blended Margin</p>
+              <p className="text-2xl font-extrabold text-[#0f172a] mb-1">36.2%</p>
+              <p className="text-xs text-[#6b7280]">Stable band 34–37%</p>
+              <p className="text-xs text-[#6b7280]">5 qtrs consistent</p>
+            </div>
+
+            {/* ENT vs SMB — LTM Split */}
+            <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex flex-col">
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">ENT vs SMB — LTM Split</p>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-2xl font-extrabold text-[#1d4ed8]">ENT 69%</span>
+                <span className="text-sm text-[#d1d5db]">|</span>
+                <span className="text-2xl font-extrabold text-[#ea580c]">SMB 31%</span>
+              </div>
+              <p className="text-xs text-[#374151] mb-0.5"><span className="font-semibold text-emerald-600">ENT +25%</span> &nbsp;$4.2M → $5.2M</p>
+              <p className="text-xs text-[#374151] mb-2"><span className="font-semibold text-red-500">SMB –16%</span> &nbsp;$2.7M → $2.2M</p>
+              <p className="text-xs text-[#9ca3af] italic mt-auto">Q1 '26 vs Q1 '25 YoY</p>
+            </div>
+
           </div>
 
           {/* Detail cards */}
@@ -204,23 +241,6 @@ export default function MCPlan() {
                   <p className="text-xs text-[#6b7280] mt-0.5">Prof. Services</p>
                   <p className="text-xs font-medium text-[#374151]">$1.04M gross</p>
                 </div>
-              </div>
-              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-2">PS share of gross — quarterly</p>
-              <div className="space-y-2 mb-4">
-                {([
-                  { q: "Q2 '25", pct: 4 },
-                  { q: "Q3 '25", pct: 7 },
-                  { q: "Q4 '25", pct: 13 },
-                  { q: "Q1 '26", pct: 14 },
-                ]).map((row) => (
-                  <div key={row.q} className="flex items-center gap-2">
-                    <span className="text-xs text-[#6b7280] w-12 shrink-0">{row.q}</span>
-                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
-                      <div className="bg-[#7c3aed] h-2 rounded-full" style={{ width: `${row.pct * 7}%` }} />
-                    </div>
-                    <span className="text-xs font-semibold text-[#7c3aed] w-8 text-right shrink-0">{row.pct}%</span>
-                  </div>
-                ))}
               </div>
               <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">Talent and PS margins both ~31–36%. PS growth reflects revenue diversification, not a margin premium.</p>
             </div>
