@@ -17,6 +17,7 @@ import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 import MCPlan from "./pages/MCPlan";
 import MCSellerReintro from "./pages/MCSellerReintro";
+import MCPipelineDetail from "./pages/MCPipelineDetail";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
                 <Route path="/mc-plan" element={<MCPlan />} />
                 <Route path="/mc-seller-reintro" element={<MCSellerReintro />} />
+                <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

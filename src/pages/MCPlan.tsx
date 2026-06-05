@@ -296,7 +296,10 @@ export default function MCPlan() {
 
             {/* Active Pipeline */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb] mb-3">Active Pipeline — Q2 '26</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Active Pipeline — Q2 '26</p>
+                <Link to="/mc-pipeline" className="text-[10px] text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">Full detail →</Link>
+              </div>
               <div className="mb-3">
                 <p className="text-3xl font-extrabold text-[#0f172a]">567</p>
                 <p className="text-xs text-[#6b7280]">opportunities (536 ENT · 31 SMB)</p>
