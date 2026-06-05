@@ -212,12 +212,10 @@ export default function MCPlan() {
             {/* ENT vs SMB — YoY Growth */}
             <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col">
               <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">ENT vs SMB — Q1 '26 YoY</p>
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-xl font-extrabold text-emerald-600 whitespace-nowrap">ENT +25%</span>
-                <span className="text-xl font-extrabold text-red-500 whitespace-nowrap">SMB –16%</span>
-              </div>
-              <p className="text-[10px] text-[#374151] whitespace-nowrap">$4.2M → $5.2M</p>
-              <p className="text-[10px] text-[#374151] mb-1 whitespace-nowrap">$2.7M → $2.2M</p>
+              <p className="text-xl font-extrabold text-emerald-600">ENT +25%</p>
+              <p className="text-[10px] text-[#374151] mb-2">$4.2M → $5.2M</p>
+              <p className="text-xl font-extrabold text-red-500">SMB –16%</p>
+              <p className="text-[10px] text-[#374151] mb-1">$2.7M → $2.2M</p>
               <p className="text-[10px] text-[#9ca3af] italic mt-auto">Mix: ENT 69% · SMB 31% of LTM gross</p>
             </div>
 
