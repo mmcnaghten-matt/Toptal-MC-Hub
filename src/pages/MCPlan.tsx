@@ -167,8 +167,8 @@ export default function MCPlan() {
       {/* ── Section 2: MC by the Numbers ── */}
       <section className="bg-white py-20">
         <Container>
-          <SectionLabel>MC Business at a Glance</SectionLabel>
-          <SectionHeading>By the Numbers</SectionHeading>
+          <h2 className="text-2xl font-semibold text-[#9ca3af] mb-6">MC Business at a Glance</h2>
+          <SectionLabel>By the Numbers</SectionLabel>
 
           {/* KPI stat bar */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
