@@ -244,9 +244,9 @@ export default function MCPlan() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
 
             {/* Practice Mix */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-2">Gross Revenue % by Practice — LTM & Trend</p>
-              <div className="space-y-1.5 flex-1">
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue % by Practice — LTM & Trend</p>
+              <div className="space-y-1 flex-1">
                 {([
                   { name: "People",     pct: 38, trend: "↓ 38→37%", trendUp: false, color: "#7c3aed" },
                   { name: "Finance",    pct: 30, trend: "↑ 28→31%", trendUp: true,  color: "#2563eb" },
@@ -264,13 +264,13 @@ export default function MCPlan() {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-2">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
             </div>
 
             {/* Industry Vertical */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-2">Gross Revenue by Industry Vertical — LTM</p>
-              <div className="space-y-1.5 flex-1">
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue by Industry Vertical — LTM</p>
+              <div className="space-y-1 flex-1">
                 {([
                   { name: "IPS",   pct: 30, val: "$8.4M", color: "#2563eb" },
                   { name: "CPS",   pct: 21, val: "$5.7M", color: "#f97316" },
@@ -290,42 +290,42 @@ export default function MCPlan() {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-2">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
             </div>
 
             {/* Active Pipeline */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <div className="flex items-center justify-between mb-1.5">
                 <p className="text-xs font-bold uppercase tracking-wider text-[#2563eb]">Active Pipeline — Q2 '26</p>
                 <Link to="/mc-pipeline" className="text-[10px] text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">Full detail →</Link>
               </div>
-              <div className="mb-3">
-                <p className="text-3xl font-extrabold text-[#0f172a]">567</p>
+              <div className="mb-2">
+                <p className="text-2xl font-extrabold text-[#0f172a]">567</p>
                 <p className="text-xs text-[#6b7280]">opportunities (536 ENT · 31 SMB)</p>
               </div>
-              <div className="mb-3">
-                <div className="grid grid-cols-4 gap-1 mb-1">
+              <div className="mb-2">
+                <div className="grid grid-cols-4 gap-1 mb-0.5">
                   <span />
                   <span className="text-[10px] text-[#9ca3af] text-right">Q4 '25</span>
                   <span className="text-[10px] text-[#9ca3af] text-right">Q1 '26</span>
                   <span className="text-[10px] font-semibold text-[#2563eb] text-right">Q2 '26</span>
                 </div>
-                <div className="grid grid-cols-4 gap-1 py-1.5 border-t border-[#e2e8f0]">
+                <div className="grid grid-cols-4 gap-1 py-1 border-t border-[#e2e8f0]">
                   <span className="text-[10px] text-[#6b7280]">Unwtd</span>
                   <span className="text-[10px] text-[#9ca3af] text-right">$18.1M</span>
                   <span className="text-[10px] text-[#9ca3af] text-right">$21.8M</span>
                   <span className="text-[10px] font-bold text-[#0f172a] text-right">$20.7M</span>
                 </div>
-                <div className="grid grid-cols-4 gap-1 py-1.5 border-t border-[#e2e8f0]">
+                <div className="grid grid-cols-4 gap-1 py-1 border-t border-[#e2e8f0]">
                   <span className="text-[10px] text-[#6b7280]">Wtd</span>
                   <span className="text-[10px] text-[#9ca3af] text-right">$11.3M</span>
                   <span className="text-[10px] text-emerald-600 font-semibold text-right">$13.9M</span>
                   <span className="text-[10px] font-bold text-[#2563eb] text-right">$13.2M</span>
                 </div>
               </div>
-              <div className="bg-[#7c3aed]/8 rounded-lg px-3 py-2 mt-auto">
+              <div className="bg-[#7c3aed]/8 rounded-lg px-2.5 py-1.5 mt-auto">
                 <p className="text-xs font-semibold text-[#7c3aed]">PS pipeline: $2.7M unweighted</p>
-                <p className="text-xs text-[#6b7280]">+36% vs Q4 '25 · 16% of weighted ENT</p>
+                <p className="text-[10px] text-[#6b7280]">+36% vs Q4 '25 · 16% of weighted ENT</p>
               </div>
             </div>
 
