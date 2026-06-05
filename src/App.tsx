@@ -1,22 +1,64 @@
-import { useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AuthGate from "./components/AuthGate";
+import Landing from "./pages/Landing";
+import MCServices from "./pages/MCServices";
+import WayOfWorking from "./pages/WayOfWorking";
+import AccountMarketIntel from "./pages/AccountMarketIntel";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import AdminIndustryInsights from "./pages/AdminIndustryInsights";
+import DiagnosticsHub from "./pages/DiagnosticsHub";
+import MCServicesWeb from "./pages/MCServicesWeb";
+import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
+import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
+import MCPlan from "./pages/MCPlan";
+import MCSellerReintro from "./pages/MCSellerReintro";
+import MCPipelineDetail from "./pages/MCPipelineDetail";
+import MCNarrativeDetail from "./pages/MCNarrativeDetail";
 
-const CLOUD_RUN_URL = "https://mc-hub.toptal.tech/";
+const queryClient = new QueryClient();
 
-const App = () => {
-  useEffect(() => {
-    window.location.replace(CLOUD_RUN_URL);
-  }, []);
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          {/* Diagnostic routes — no Google OAuth required */}
+          <Route path="/diagnostics/:slug/*" element={<DiagnosticShell />} />
+          <Route path="/cannes-diagnostic/*" element={<CannesDiagnosticShell />} />
 
-  return (
-    <div style={{ fontFamily: "sans-serif", padding: "2rem", color: "#374151" }}>
-      <p>
-        This site has moved.{" "}
-        <a href={CLOUD_RUN_URL} style={{ color: "#2563eb" }}>
-          Go to mc-hub.toptal.tech →
-        </a>
-      </p>
-    </div>
-  );
-};
+          {/* Hub routes — require Toptal Google auth */}
+          <Route path="/*" element={
+            <AuthGate>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/services" element={<MCServices />} />
+                <Route path="/services/web" element={<MCServicesWeb />} />
+                <Route path="/way-of-working" element={<WayOfWorking />} />
+                <Route path="/industry-insights" element={<Index />} />
+                <Route path="/account-market-intel" element={<AccountMarketIntel />} />
+                <Route path="/client-insights" element={<AccountMarketIntel />} />
+                <Route path="/diagnostics-hub" element={<DiagnosticsHub />} />
+                <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
+                <Route path="/mc-plan" element={<MCPlan />} />
+                <Route path="/mc-seller-reintro" element={<MCSellerReintro />} />
+                <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
+                <Route path="/mc-narrative" element={<MCNarrativeDetail />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthGate>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
