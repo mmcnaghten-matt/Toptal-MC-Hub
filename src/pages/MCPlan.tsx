@@ -116,6 +116,7 @@ const HubTag = ({ hub }: { hub: string }) => {
 export default function MCPlan() {
   const navigate = useNavigate();
   const [openHub, setOpenHub] = useState<string | null>(null);
+  const [pipelineAnalysis, setPipelineAnalysis] = useState(false);
 
   return (
     <div className="min-h-screen font-sans antialiased">
@@ -324,7 +325,10 @@ export default function MCPlan() {
                 </div>
               </div>
               <div className="bg-[#7c3aed]/8 rounded-lg px-2.5 py-1.5 mt-auto">
-                <p className="text-xs font-semibold text-[#7c3aed]">PS pipeline: $2.7M unweighted</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-[#7c3aed]">PS pipeline: $2.7M unweighted</p>
+                  <button onClick={() => setPipelineAnalysis(true)} className="text-[10px] text-[#7c3aed] hover:text-[#6d28d9] font-medium transition-colors">Talent vs PS →</button>
+                </div>
                 <p className="text-[10px] text-[#6b7280]">+36% vs Q4 '25 · 16% of weighted ENT</p>
               </div>
             </div>
@@ -586,6 +590,139 @@ export default function MCPlan() {
               })()}
             </DialogContent>
           </Dialog>
+
+          {/* Pipeline Analysis Modal */}
+          <Dialog open={pipelineAnalysis} onOpenChange={setPipelineAnalysis}>
+            <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-lg font-extrabold text-[#0f172a]">ENT MC — Talent vs Professional Services</DialogTitle>
+              </DialogHeader>
+
+              {/* Highlight stat cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                {([
+                  { label: "Talent Win Rate", value: "24%", sub: "22–23% each quarter", color: "text-[#2563eb]" },
+                  { label: "PS Win Rate", value: "44%", sub: "14% → 27% → 44% ↑", color: "text-emerald-600" },
+                  { label: "Talent Avg Won Deal", value: "$89K", sub: "LTM", color: "text-[#0f172a]" },
+                  { label: "PS Avg Won Deal", value: "$242K", sub: "2.7× Talent (LTM)", color: "text-[#7c3aed]" },
+                ] as {label:string;value:string;sub:string;color:string}[]).map((s) => (
+                  <div key={s.label} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3">
+                    <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">{s.label}</p>
+                    <p className={`text-2xl font-extrabold ${s.color}`}>{s.value}</p>
+                    <p className="text-[10px] text-[#6b7280] mt-0.5">{s.sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* PS win rate trend bar */}
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-2">PS Win Rate — Quarter over Quarter</p>
+                <div className="flex items-end gap-3">
+                  {([
+                    { q: "Q4 '25", pct: 14 },
+                    { q: "Q1 '26", pct: 27 },
+                    { q: "Q2 '26", pct: 44 },
+                  ]).map((r) => (
+                    <div key={r.q} className="flex flex-col items-center gap-1 flex-1">
+                      <span className="text-xs font-bold text-emerald-700">{r.pct}%</span>
+                      <div className="w-full bg-emerald-100 rounded-sm" style={{ height: 40 }}>
+                        <div className="bg-emerald-500 rounded-sm w-full transition-all" style={{ height: `${(r.pct / 44) * 40}px`, marginTop: `${40 - (r.pct / 44) * 40}px` }} />
+                      </div>
+                      <span className="text-[10px] text-emerald-600">{r.q}</span>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-emerald-700 italic flex-[3] leading-tight">Accelerating — but sample sizes (7, 11, 9 deals) are too small to call a trend with confidence.</p>
+                </div>
+              </div>
+
+              {/* Talent table */}
+              <div>
+                <p className="text-xs font-bold text-[#0f172a] mb-2">Talent</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-[#f1f5f9]">
+                        <th className="text-left font-semibold text-[#374151] px-3 py-2 rounded-tl-lg">Metric</th>
+                        <th className="text-right font-semibold text-[#374151] px-3 py-2">LTM</th>
+                        <th className="text-right font-semibold text-[#374151] px-3 py-2">Q4 2025</th>
+                        <th className="text-right font-semibold text-[#374151] px-3 py-2">Q1 2026</th>
+                        <th className="text-right font-semibold text-[#2563eb] px-3 py-2 rounded-tr-lg">Q2 2026</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        ["Total opptys",     "543",       "130",      "165",      "87"],
+                        ["Won",              "128 (24%)", "28 (22%)", "38 (23%)", "19 (22%)"],
+                        ["Avg deal — all",   "$82K",      "$89K",     "$82K",     "$74K"],
+                        ["Median deal — all","$50K",      "$50K",     "$56K",     "$50K"],
+                        ["Avg deal — won",   "$89K",      "$151K",    "$78K",     "$32K"],
+                        ["Median deal — won","$50K",      "$40K",     "$50K",     "$5K"],
+                      ] as string[][]).map((row, i) => (
+                        <tr key={row[0]} className={i % 2 === 0 ? "bg-white" : "bg-[#f8fafc]"}>
+                          <td className="px-3 py-1.5 text-[#374151]">{row[0]}</td>
+                          <td className="px-3 py-1.5 text-right font-medium text-[#374151]">{row[1]}</td>
+                          <td className="px-3 py-1.5 text-right text-[#374151]">{row[2]}</td>
+                          <td className="px-3 py-1.5 text-right text-[#374151]">{row[3]}</td>
+                          <td className="px-3 py-1.5 text-right font-semibold text-[#2563eb]">{row[4]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* PS table */}
+              <div>
+                <p className="text-xs font-bold text-[#7c3aed] mb-2">Professional Services</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-[#f5f3ff]">
+                        <th className="text-left font-semibold text-[#374151] px-3 py-2 rounded-tl-lg">Metric</th>
+                        <th className="text-right font-semibold text-[#374151] px-3 py-2">LTM</th>
+                        <th className="text-right font-semibold text-[#374151] px-3 py-2">Q4 2025</th>
+                        <th className="text-right font-semibold text-[#374151] px-3 py-2">Q1 2026</th>
+                        <th className="text-right font-semibold text-[#7c3aed] px-3 py-2 rounded-tr-lg">Q2 2026</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {([
+                        ["Total opptys",     "33",        "7",         "11",        "9"],
+                        ["Won",              "12 (36%)",  "1 (14%)",   "3 (27%)",   "4 (44%)"],
+                        ["Avg deal — all",   "$187K",     "$151K",     "$154K",     "$238K"],
+                        ["Median deal — all","$100K",     "$100K",     "$100K",     "$114K"],
+                        ["Avg deal — won",   "$242K",     "$250K",     "$327K",     "$202K"],
+                        ["Median deal — won","$114K",     "$250K",     "$100K",     "$30K*"],
+                      ] as string[][]).map((row, i) => (
+                        <tr key={row[0]} className={i % 2 === 0 ? "bg-white" : "bg-[#f8fafc]"}>
+                          <td className="px-3 py-1.5 text-[#374151]">{row[0]}</td>
+                          <td className="px-3 py-1.5 text-right font-medium text-[#374151]">{row[1]}</td>
+                          <td className="px-3 py-1.5 text-right text-[#374151]">{row[2]}</td>
+                          <td className="px-3 py-1.5 text-right text-[#374151]">{row[3]}</td>
+                          <td className="px-3 py-1.5 text-right font-semibold text-[#7c3aed]">{row[4]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-[#9ca3af] italic mt-1.5 leading-tight">*Q2 PS median won is pulled down by 3 Hershey deals at $29–30K alongside the $637K Owens Corning win — only 4 data points, so the median is fragile.</p>
+              </div>
+
+              {/* Callout narrative boxes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                  <p className="text-xs font-bold text-amber-700 mb-1.5">Talent Q2 Median Won: $5K</p>
+                  <p className="text-xs text-[#374151] leading-relaxed">Unexpectedly low — likely a mix of very small hourly placements and estimated values not updated before close on recently-created deals. Not a signal of structural deal size compression.</p>
+                </div>
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                  <p className="text-xs font-bold text-emerald-700 mb-1.5">PS Win Rate: 14% → 27% → 44%</p>
+                  <p className="text-xs text-[#374151] leading-relaxed">Accelerating quarter over quarter. The direction is right — but with sample sizes of 7, 11, and 9 deals, this is a promising signal, not yet a confirmed trend. Worth watching closely in Q3.</p>
+                </div>
+              </div>
+
+            </DialogContent>
+          </Dialog>
+
         </Container>
       </section>
 
