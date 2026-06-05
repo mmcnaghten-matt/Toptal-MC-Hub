@@ -215,7 +215,7 @@ export default function MCPlan() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">PS margins corrected to 31–36%, in line with Talent. Growth reflects revenue diversification, not margin premium.</p>
+              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">PS margins 31–36%, in line with Talent. Growth reflects revenue diversification, not margin premium.</p>
             </div>
 
             {/* Practice Mix */}
@@ -239,7 +239,7 @@ export default function MCPlan() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations gaining; People and Strategy stable or slightly contracting as a share.</p>
+              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
             </div>
 
             {/* Industry Vertical */}
@@ -276,7 +276,7 @@ export default function MCPlan() {
               {
                 num: "01",
                 title: "ENT is the growth engine",
-                body: "+25% YoY gross in Q1 2026, now 68% of total gross. Consistent 12–25% YoY growth for five quarters.",
+                body: "+25% YoY gross in Q1 2026, now 68% of total Gross Revenue. Consistent 12–25% YoY growth for five quarters.",
                 titleColor: "text-emerald-700",
               },
               {
