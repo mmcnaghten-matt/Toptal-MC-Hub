@@ -183,7 +183,7 @@ export default function MCPlan() {
                 <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-0.5">Projected 2026 Gross</p>
                 <p className="text-lg font-extrabold text-emerald-600 mb-0.5">~$29.8M</p>
                 <p className="text-[10px] text-[#6b7280] mb-0.5">vs $26.3M actual 2025</p>
-                <p className="text-[10px] font-medium text-emerald-600">+13% YoY</p>
+                <p className="text-sm font-bold text-emerald-600">+13% YoY</p>
               </div>
             </div>
 
@@ -197,7 +197,7 @@ export default function MCPlan() {
                 <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-0.5">Projected 2026 Net</p>
                 <p className="text-lg font-extrabold text-emerald-600 mb-0.5">~$10.7M</p>
                 <p className="text-[10px] text-[#6b7280] mb-0.5">vs $9.4M actual 2025</p>
-                <p className="text-[10px] font-medium text-emerald-600">+14% YoY</p>
+                <p className="text-sm font-bold text-emerald-600">+14% YoY</p>
               </div>
             </div>
 
