@@ -171,10 +171,10 @@ export default function MCPlan() {
           <SectionHeading>The business at a glance</SectionHeading>
 
           {/* KPI stat bar */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             {([
-              { label: "12-Month Gross Revenue", value: "$26.9M", sub: "+9.2% vs prior year", subColor: "text-emerald-600", valueColor: "text-[#0f172a]" },
-              { label: "12-Month Net Revenue", value: "$9.75M", sub: "+7.1% vs prior year", subColor: "text-emerald-600", valueColor: "text-[#0f172a]" },
+              { label: "12-Month Gross Revenue", value: "$27.9M", sub: "Q1 '26: +9% YoY", subColor: "text-[#374151]", valueColor: "text-[#0f172a]" },
+              { label: "12-Month Net Revenue", value: "$9.9M", sub: "36.2% blended margin", subColor: "text-emerald-600", valueColor: "text-[#0f172a]" },
               { label: "Blended Margin", value: "36.2%", sub: "Stable band 34–37%", subColor: "text-[#6b7280]", valueColor: "text-[#0f172a]" },
               { label: "ENT YoY Growth (Q1 '26)", value: "+25%", sub: "$4.16M → $5.22M gross", subColor: "text-emerald-600", valueColor: "text-emerald-600" },
               { label: "SMB YoY Trend", value: "–16%", sub: "5 consecutive quarters declining", subColor: "text-red-500", valueColor: "text-red-500" },
@@ -185,6 +185,89 @@ export default function MCPlan() {
                 <p className={`text-xs font-medium ${stat.subColor}`}>{stat.sub}</p>
               </div>
             ))}
+          </div>
+
+          {/* Detail cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
+
+            {/* PS Growth */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Professional Services — YoY Growth</p>
+              <p className="text-4xl font-extrabold text-[#0f172a] mb-1">+294%</p>
+              <p className="text-xs text-[#6b7280] mb-3">Q2 '25 → Q1 '26 quarterly growth rate</p>
+              <div className="bg-emerald-50 border border-emerald-100 rounded px-3 py-1.5 mb-4">
+                <p className="text-xs font-semibold text-emerald-700">Share of gross: 4% → 14% in 4 quarters</p>
+              </div>
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wide mb-3">Quarterly PS Gross Revenue</p>
+              <div className="space-y-2.5 mb-4">
+                {([
+                  { q: "Q2 '25", val: "$263K", pct: 25 },
+                  { q: "Q3 '25", val: "$454K", pct: 44 },
+                  { q: "Q4 '25", val: "$872K", pct: 84 },
+                  { q: "Q1 '26", val: "$1,037K", pct: 100 },
+                ]).map((row) => (
+                  <div key={row.q} className="flex items-center gap-2">
+                    <span className="text-xs text-[#6b7280] w-12 shrink-0">{row.q}</span>
+                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
+                      <div className="bg-[#7c3aed] h-2 rounded-full" style={{ width: `${row.pct}%` }} />
+                    </div>
+                    <span className="text-xs font-semibold text-[#374151] w-16 text-right shrink-0">{row.val}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-auto">PS margins corrected to 31–36%, in line with Talent. Growth reflects revenue diversification, not margin premium.</p>
+            </div>
+
+            {/* Practice Mix */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-4">Gross Revenue % by Practice — LTM & Trend</p>
+              <div className="space-y-3.5 flex-1">
+                {([
+                  { name: "People",     pct: 38, trend: "↓ 38→37%", trendUp: false, color: "#7c3aed" },
+                  { name: "Finance",    pct: 30, trend: "↑ 28→31%", trendUp: true,  color: "#2563eb" },
+                  { name: "Strategy",   pct: 29, trend: "↓ 30→28%", trendUp: false, color: "#16a34a" },
+                  { name: "Operations", pct: 4,  trend: "↑ 3→4%",   trendUp: true,  color: "#f97316" },
+                ]).map((row) => (
+                  <div key={row.name} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
+                    <span className="text-sm text-[#374151] w-20 shrink-0">{row.name}</span>
+                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
+                      <div className="h-2 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.5 }} />
+                    </div>
+                    <span className="text-sm font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
+                    <span className={`text-xs w-16 text-right shrink-0 ${row.trendUp ? "text-emerald-600" : "text-[#9ca3af]"}`}>{row.trend}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations gaining; People and Strategy stable or slightly contracting as a share.</p>
+            </div>
+
+            {/* Industry Vertical */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-5 flex flex-col">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-4">Gross Revenue by Industry Vertical — LTM</p>
+              <div className="space-y-3.5 flex-1">
+                {([
+                  { name: "IPS",   pct: 30, val: "$8.4M", color: "#2563eb" },
+                  { name: "CPS",   pct: 21, val: "$5.7M", color: "#f97316" },
+                  { name: "CMET",  pct: 17, val: "$4.7M", color: "#16a34a" },
+                  { name: "HLS",   pct: 13, val: "$3.6M", color: "#7c3aed" },
+                  { name: "BFSI",  pct: 12, val: "$3.3M", color: "#dc2626" },
+                  { name: "INT'L", pct: 1,  val: "$0.3M", color: "#9f1239" },
+                ]).map((row) => (
+                  <div key={row.name} className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
+                    <span className="text-sm text-[#374151] w-10 shrink-0">{row.name}</span>
+                    <div className="flex-1 bg-[#e2e8f0] rounded-full h-2">
+                      <div className="h-2 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.45 }} />
+                    </div>
+                    <span className="text-sm font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
+                    <span className="text-xs text-[#6b7280] w-12 text-right shrink-0">{row.val}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-[#9ca3af] leading-relaxed italic mt-4">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
+            </div>
+
           </div>
 
           {/* Insight points */}
