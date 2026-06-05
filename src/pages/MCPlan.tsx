@@ -345,7 +345,7 @@ export default function MCPlan() {
                 {
                   num: "02",
                   title: "SMB is declining",
-                  body: "Down 16–34% YoY every quarter for five consecutive quarters. Not a blip.",
+                  body: "Down 16% YoY every quarter for five consecutive quarters. Not a blip.",
                   titleColor: "text-red-600",
                 },
                 {
