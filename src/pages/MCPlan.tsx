@@ -338,25 +338,25 @@ export default function MCPlan() {
               {
                 num: "01",
                 title: "Record Growth — The Business Is Compounding",
-                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. This isn't a recovery — it's a compounding trend.",
+                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. This is a compounding trend.",
                 titleColor: "text-emerald-700",
               },
               {
                 num: "02",
                 title: "Enterprise Is the Engine — and the Flywheel Is Working",
-                body: "ENT grew 25% YoY, now represents 70% of gross revenue, and conversion rate has doubled from 12% to 27% over five quarters. New opportunity creation hit a record 122 in Q1 2026 — structural improvement, not luck.",
+                body: "ENT grew 25% YoY, now represents 70% of gross revenue, and conversion rate has doubled from 12% to 27% over five quarters. New opportunity creation hit a record 122 in Q1 2026 — its structural improvement.",
                 titleColor: "text-emerald-700",
               },
               {
                 num: "03",
                 title: "SMB Is in Structural Decline — This Requires a Decision",
-                body: "Five consecutive quarters of YoY decline (−16% to −34%), no account above $200K net in 12 months, and a pipeline with 31 open opportunities and essentially zero tracked value. ENT is masking it — but without deliberate intervention, SMB will continue drifting.",
+                body: "Five consecutive quarters of YoY decline (−16% to −34%), no account above $200K net in 12 months, and a pipeline with just 3 open opportunities. ENT is masking it — but without understanding the cause and planning a change, SMB risks continual drifting.",
                 titleColor: "text-red-600",
               },
               {
                 num: "04",
                 title: "Professional Services Is the Right Bet — With the Right Pitch",
-                body: "PS grew from 4% to 14% of gross in one year. The value is strategic positioning and client stickiness — not margin expansion; PS margins run 31–36%, in line with Talent.",
+                body: "PS grew from 4% to 14% of gross in one year. The value is strategic positioning and client stickiness — not yet margin expansion; PS margins run 31–36%, in line with Talent.",
                 titleColor: "text-[#2563eb]",
               },
               {
@@ -368,12 +368,12 @@ export default function MCPlan() {
               {
                 num: "06",
                 title: "Margins Are Stable — H2 Is a Top-Line Story",
-                body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift. There is no further margin lever to pull — H2 2026 is about revenue volume: more ENT wins, converting the 83 Solutioning opportunities, and a deliberate call on SMB.",
+                body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift. H2 2026 is about revenue volume: more ENT wins, converting the 83 Solutioning opportunities, and a deliberate call on SMB. Margin can be addressed as a deal-by-deal pricing call.",
                 titleColor: "text-[#2563eb]",
               },
             ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight) => (
               <div key={insight.num} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 flex flex-col">
-                <span className="text-2xl font-extrabold text-[#e2e8f0] leading-none mb-2 select-none">{insight.num}</span>
+                <span className="text-2xl font-extrabold text-[#94a3b8] leading-none mb-2 select-none">{insight.num}</span>
                 <h3 className={`text-sm font-bold mb-1.5 ${insight.titleColor}`}>{insight.title}</h3>
                 <p className="text-xs text-[#374151] leading-relaxed">{insight.body}</p>
               </div>
