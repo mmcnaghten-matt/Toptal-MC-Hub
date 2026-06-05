@@ -303,14 +303,24 @@ export default function MCPlan() {
                 <p className="text-3xl font-extrabold text-[#0f172a]">567</p>
                 <p className="text-xs text-[#6b7280]">opportunities (536 ENT · 31 SMB)</p>
               </div>
-              <div className="space-y-2 mb-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#6b7280]">ENT unweighted</span>
-                  <span className="font-bold text-[#0f172a]">$20.7M</span>
+              <div className="mb-3">
+                <div className="grid grid-cols-4 gap-1 mb-1">
+                  <span />
+                  <span className="text-[10px] text-[#9ca3af] text-right">Q4 '25</span>
+                  <span className="text-[10px] text-[#9ca3af] text-right">Q1 '26</span>
+                  <span className="text-[10px] font-semibold text-[#2563eb] text-right">Q2 '26</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#6b7280]">ENT weighted</span>
-                  <span className="font-bold text-[#2563eb]">$13.2M</span>
+                <div className="grid grid-cols-4 gap-1 py-1.5 border-t border-[#e2e8f0]">
+                  <span className="text-[10px] text-[#6b7280]">Unwtd</span>
+                  <span className="text-[10px] text-[#9ca3af] text-right">$18.1M</span>
+                  <span className="text-[10px] text-[#9ca3af] text-right">$21.8M</span>
+                  <span className="text-[10px] font-bold text-[#0f172a] text-right">$20.7M</span>
+                </div>
+                <div className="grid grid-cols-4 gap-1 py-1.5 border-t border-[#e2e8f0]">
+                  <span className="text-[10px] text-[#6b7280]">Wtd</span>
+                  <span className="text-[10px] text-[#9ca3af] text-right">$11.3M</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold text-right">$13.9M</span>
+                  <span className="text-[10px] font-bold text-[#2563eb] text-right">$13.2M</span>
                 </div>
               </div>
               <div className="bg-[#7c3aed]/8 rounded-lg px-3 py-2 mt-auto">
