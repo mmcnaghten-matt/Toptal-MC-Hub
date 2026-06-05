@@ -160,7 +160,7 @@ export default function MCPipelineDetail() {
                 {([
                   { label: "ENT Total",      indent: false, bold: true,  vals: ["$11.3M", "$13.9M", "$13.2M"], hi: [false, true,  false] },
                   { label: "└ Talent",        indent: true,  bold: false, vals: ["$10.0M", "$11.8M", "$11.1M"], hi: [false, false, false], color: "#2563eb" },
-                  { label: "└ Proj. Services",indent: true,  bold: false, vals: ["$1.25M", "$2.06M", "$2.10M"], hi: [false, false, true],  color: "#7c3aed" },
+                  { label: "└ Prof. Services",indent: true,  bold: false, vals: ["$1.25M", "$2.06M", "$2.10M"], hi: [false, false, true],  color: "#7c3aed" },
                   { label: "SMB",            indent: false, bold: false, vals: ["32 opptys", "32 opptys", "31 opptys"], hi: [false, false, false], muted: true },
                   { label: "Total Weighted", indent: false, bold: true,  vals: ["$11.3M", "$13.9M", "$13.2M"], hi: [false, true,  false] },
                 ] as { label: string; indent: boolean; bold: boolean; vals: string[]; hi: boolean[]; color?: string; muted?: boolean }[]).map((row, ri) => (
