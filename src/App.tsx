@@ -16,9 +16,11 @@ import MCServicesWeb from "./pages/MCServicesWeb";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 import MCPlan from "./pages/MCPlan";
+import MCPlan2 from "./pages/MCPlan2";
 import MCSellerReintro from "./pages/MCSellerReintro";
 import MCPipelineDetail from "./pages/MCPipelineDetail";
 import MCNarrativeDetail from "./pages/MCNarrativeDetail";
+import MCNarrativeDetail2 from "./pages/MCNarrativeDetail2";
 
 const queryClient = new QueryClient();
 
@@ -47,9 +49,11 @@ const App = () => (
                 <Route path="/diagnostics-hub" element={<DiagnosticsHub />} />
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
                 <Route path="/mc-plan" element={<MCPlan />} />
+                <Route path="/mc-plan-2" element={<MCPlan2 />} />
                 <Route path="/mc-seller-reintro" element={<MCSellerReintro />} />
                 <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
                 <Route path="/mc-narrative" element={<MCNarrativeDetail />} />
+                <Route path="/mc-narrative-2" element={<MCNarrativeDetail2 />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
