@@ -44,7 +44,7 @@ export default function MCNarrativeDetail2() {
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              to="/mc-plan-2"
+              to="/mc-plan"
               className="text-blue-300 hover:text-white transition-colors flex items-center gap-1.5 text-xs font-medium"
             >
               <ArrowLeft className="w-3.5 h-3.5" />

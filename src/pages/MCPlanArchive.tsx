@@ -48,7 +48,7 @@ const Container = ({ children, className = "" }: { children: ReactNode; classNam
   </div>
 );
 
-// ── Hub color map ─────────────────────────────────────────────────────────────
+// ── Hub color map (matches ConstellationDiagram light-mode palette) ────────────
 
 const HUB_COLORS: Record<string, { bg: string; text: string }> = {
   "Growth Strategy":         { bg: "#EEF2FF", text: "#2B44D4" },
@@ -111,136 +111,12 @@ const HubTag = ({ hub }: { hub: string }) => {
   );
 };
 
-// ── Tech expansion data ───────────────────────────────────────────────────────
-
-const ALL_TECH_ENGAGEMENTS = [
-  {
-    engagement: "ERP / platform / Salesforce implementation",
-    pairs: [
-      { trigger: '"How are you thinking about adoption — do your people have what they need to actually change how they work?"', hub: "Change Management" },
-      { trigger: '"Now that the system is live, are your processes and team model keeping up?"', hub: "Business Transformation" },
-    ],
-  },
-  {
-    engagement: "AI / ML implementation",
-    pairs: [
-      { trigger: '"When your CFO asks if this is working — do you have a way to measure ROI yet?"', hub: "Finance Transformation" },
-      { trigger: '"The tools are live — are people actually using them? What\'s the resistance looking like?"', hub: "Change Management" },
-    ],
-  },
-  {
-    engagement: "Agile / product model transformation",
-    pairs: [
-      { trigger: '"Now that the model is in place — are you confident you\'re building the right things?"', hub: "Growth Strategy" },
-      { trigger: '"Are the team behaviors and structure actually keeping up with the new model?"', hub: "Change Management" },
-    ],
-  },
-  {
-    engagement: "Cloud migration / app modernization",
-    pairs: [
-      { trigger: '"Now that infrastructure changed — how are your processes and team model keeping up?"', hub: "Business Transformation" },
-    ],
-  },
-  {
-    engagement: "Large-scale tech talent deployment (10+ resources)",
-    pairs: [
-      { trigger: '"How are you thinking about your long-term talent model as AI changes what your engineers do?"', hub: "Workforce Transformation" },
-    ],
-  },
-  {
-    engagement: "Supply chain / ERP / ops systems",
-    pairs: [
-      { trigger: '"Do you have visibility into where AI could automate in your value chain today?"', hub: "Performance Improvement" },
-      { trigger: '"How resilient is your supply chain if your primary supplier or region gets disrupted?"', hub: "Supply Chain" },
-    ],
-  },
-] as { engagement: string; pairs: { trigger: string; hub: string }[] }[];
-
-const PREVIEW_TECH_ENGAGEMENTS = ALL_TECH_ENGAGEMENTS.slice(0, 3);
-
-const TALENT_EXPANSION_ROWS = [
-  {
-    signal: "Long-term staffing engagement (18+ months, stable team)",
-    trigger: '"You\'ve had a consistent team in place for over a year — has the business problem evolved? What are you trying to solve next?"',
-    path: "Business Transformation / Growth Strategy",
-  },
-  {
-    signal: "Multiple roles placed across two or more functions",
-    trigger: '"You\'re scaling across multiple areas at once — is that driven by a strategic shift or a capacity gap?"',
-    path: "Growth Strategy / Business Transformation",
-  },
-  {
-    signal: "Finance or FP&A talent placed",
-    trigger: '"Now that you have the right people — do you have the processes and tools to fully leverage them?"',
-    path: "Finance Transformation",
-  },
-  {
-    signal: "PM or change management talent in a transformation",
-    trigger: '"You have the people in place — how\'s the change actually landing with the broader team?"',
-    path: "Change Management",
-  },
-  {
-    signal: "Ops or supply chain talent expanding",
-    trigger: '"Your ops team is growing — are processes keeping up, or are efficiency gaps building?"',
-    path: "Performance Improvement / Supply Chain",
-  },
-  {
-    signal: "Senior IC placed (director / VP level)",
-    trigger: '"At that seniority, they\'re likely driving a broader agenda — are there areas where a consulting sprint would accelerate what they\'re already building?"',
-    path: "Business Transformation / Workforce Transformation",
-  },
-];
-
-// ── Tech table component ──────────────────────────────────────────────────────
-
-function TechTable({ engagements }: { engagements: typeof ALL_TECH_ENGAGEMENTS }) {
-  return (
-    <div className="overflow-x-auto rounded-xl border border-[#e2e8f0]">
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
-            <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Tech engagement</th>
-            <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question CP/ESE asks</th>
-            <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">MC hub entry point</th>
-          </tr>
-        </thead>
-        <tbody>
-          {engagements.map((row) =>
-            row.pairs.map((pair, pairIdx) => (
-              <tr
-                key={`${row.engagement}-${pairIdx}`}
-                className={`hover:bg-[#fafcff] transition-colors ${pairIdx === 0 ? "border-t border-[#e2e8f0]" : "border-t border-[#f1f5f9]"}`}
-              >
-                {pairIdx === 0 && (
-                  <td
-                    rowSpan={row.pairs.length}
-                    className="px-5 py-4 text-[#2563eb] font-bold align-top border-r border-[#f1f5f9] w-1/4"
-                  >
-                    {row.engagement}
-                  </td>
-                )}
-                <td className="px-5 py-4 text-[#374151] italic align-top">{pair.trigger}</td>
-                <td className="px-5 py-4 align-top w-40">
-                  <HubTag hub={pair.hub} />
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function MCPlan2() {
+export default function MCPlanArchive() {
   const navigate = useNavigate();
   const [openHub, setOpenHub] = useState<string | null>(null);
   const [pipelineAnalysis, setPipelineAnalysis] = useState(false);
-  const [contextModal, setContextModal] = useState(false);
-  const [shiftModal, setShiftModal] = useState(false);
-  const [techExpandModal, setTechExpandModal] = useState(false);
 
   return (
     <div className="min-h-screen font-sans antialiased">
@@ -289,7 +165,7 @@ export default function MCPlan2() {
         </Container>
       </section>
 
-      {/* ── Section 2: MC at a Glance (By the Numbers) ── */}
+      {/* ── Section 2: MC by the Numbers ── */}
       <section className="bg-white py-20">
         <Container>
           <h2 className="text-2xl font-semibold text-[#9ca3af] mb-6">MC at a Glance</h2>
@@ -298,7 +174,7 @@ export default function MCPlan2() {
           {/* KPI stat bar */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
 
-            {/* Gross Revenue */}
+            {/* Gross Revenue — LTM + Projected */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
               <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">12-Month Gross Revenue</p>
               <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$27.9M</p>
@@ -312,7 +188,7 @@ export default function MCPlan2() {
               </div>
             </div>
 
-            {/* Net Revenue */}
+            {/* Net Revenue — LTM + Projected */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
               <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">12-Month Net Revenue</p>
               <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$9.9M</p>
@@ -334,7 +210,7 @@ export default function MCPlan2() {
               <p className="text-[10px] text-[#6b7280]">5 qtrs consistent</p>
             </div>
 
-            {/* ENT vs SMB */}
+            {/* ENT vs SMB — YoY Growth */}
             <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col">
               <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">ENT vs SMB — Q1 '26 YoY</p>
               <p className="text-xl font-extrabold text-emerald-600">ENT +25%</p>
@@ -466,37 +342,37 @@ export default function MCPlan2() {
               {
                 num: "01",
                 title: "Record Growth — The Business Is Compounding",
-                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. ENT conversion has doubled. PS has grown from 4% to 14% of gross in a year. This isn't a turnaround story — it's a scaling story.",
+                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. This is a compounding trend.",
                 titleColor: "text-emerald-700",
               },
               {
                 num: "02",
-                title: "Talent Is the Flywheel — Protect and Extend It",
-                body: "86% of revenue is Talent. Margins are strong — and we should try to increase them. Talent isn't the old model waiting to be replaced — it's the entry point for everything else. The shift is about equipping sellers to see what those relationships already make possible.",
+                title: "Enterprise Is the Engine — and the Flywheel Is Working",
+                body: "ENT grew 25% YoY, now represents 70% of gross revenue, and conversion rate has doubled from 12% to 27% over five quarters. New opportunity creation hit a record 122 in Q1 2026 — its structural improvement.",
                 titleColor: "text-emerald-700",
               },
               {
                 num: "03",
-                title: "Enterprise Is the Engine — and the Ceiling Is Structural",
-                body: "ENT grew 25% YoY and now represents 70% of gross. $13.2M weighted pipeline entering Q2. The constraint to scale isn't demand. It's seller enablement, pursuit leadership, and offer clarity.",
-                titleColor: "text-[#374151]",
+                title: "SMB Is in Structural Decline — This Requires a Decision",
+                body: "Five consecutive quarters of YoY decline (−16% to −34%), no account above $200K net in 12 months, and a pipeline with just 3 open opportunities. ENT is masking it — but without understanding the cause and planning a change, SMB risks continual drifting.",
+                titleColor: "text-red-600",
               },
               {
                 num: "04",
-                title: "SMB Is a Portfolio Decision, Not a Failure",
-                body: "Five consecutive quarters of YoY decline, no account above $200K net in 12 months, three open pipeline opportunities. The SMB Talent motion works — the question is whether MC belongs in it systematically.",
-                titleColor: "text-amber-600",
+                title: "Professional Services Is the Right Bet — With the Right Pitch",
+                body: "PS grew from 4% to 14% of gross in one year. The value is strategic positioning and client stickiness — not yet margin expansion; PS margins run 31–36%, in line with Talent.",
+                titleColor: "text-[#2563eb]",
               },
               {
                 num: "05",
-                title: "Professional Services Is the Right Bet — At the Right Scale",
-                body: "PS grew from 4% to 14% of gross in one year. The PS weighted pipeline has grown 68% over three quarters. What's missing is consistent signal recognition upstream and domain expertise embedded in pursuit leadership.",
-                titleColor: "text-[#7c3aed]",
+                title: "The Pipeline Is Deep — and PS Is Gaining Ground",
+                body: "$13.2M weighted ENT pipeline entering Q2 2026. PS weighted pipeline has grown 68% over three quarters — as it converts, it cements MC's identity as a full-service practice.",
+                titleColor: "text-[#2563eb]",
               },
               {
                 num: "06",
-                title: "H2 Is a Top-Line Story — Margin Follows Volume",
-                body: "Blended margins have held at 34–37% for five consecutive quarters. H2 2026 is about revenue volume: converting the 83 Solutioning opportunities, deepening the top 30 Talent accounts, winning more ENT. Margin is a deal-by-deal pricing call.",
+                title: "Margins Are Stable — H2 Is a Top-Line Story",
+                body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift. H2 2026 is about revenue volume: more ENT wins, converting the 83 Solutioning opportunities, and a deliberate call on SMB. Margin can be addressed as a deal-by-deal pricing call.",
                 titleColor: "text-[#2563eb]",
               },
             ] as { num: string; title: string; body: string; titleColor: string }[]).map((insight) => (
@@ -508,7 +384,7 @@ export default function MCPlan2() {
             ))}
           </div>
           <div className="flex justify-end mb-6">
-            <Link to="/mc-narrative-2" className="text-xs text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">
+            <Link to="/mc-narrative" className="text-xs text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors">
               Deeper analysis →
             </Link>
           </div>
@@ -520,40 +396,32 @@ export default function MCPlan2() {
       <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Context</SectionLabel>
-          <SectionHeading>MC has a scaling opportunity — and the model needs to match it</SectionHeading>
-          <div className="flex items-start gap-6 mb-12">
-            <Body className="max-w-2xl">
-              The business is compounding. The structural constraints aren't holding us back from survival — they're capping our ceiling.
-            </Body>
-            <button
-              onClick={() => setContextModal(true)}
-              className="shrink-0 text-xs font-semibold text-[#2563eb] border border-[#2563eb]/30 rounded-lg px-4 py-2 hover:bg-[#eff6ff] transition-colors whitespace-nowrap"
-            >
-              Read full context →
-            </button>
-          </div>
+          <SectionHeading>MC has a branding and motion problem, not a capability problem</SectionHeading>
+          <Body className="max-w-2xl mb-12">
+            <strong>Our consultants are excellent. The challenge is structural</strong> — limited market recognition means we're fighting for credibility before the conversation even starts, and we've asked sellers built for speed and relationship to carry a pursuit motion that requires deep domain expertise. <strong>That's not a people problem. It's a model problem.</strong>
+          </Body>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
-                title: "Brand ceiling",
-                body: "Clients who trust us for Talent don't naturally reach for us for consulting. That's a positioning challenge, not a client failure.",
+                title: "Brand mismatch",
+                body: "Toptal is perceived as a talent network. Enterprise buyers don't search for consulting this way — paid search misses them entirely.",
               },
               {
-                title: "Recognition ceiling",
-                body: "Recognizing a PS signal requires a different lens. Six hubs with clear entry points changes the equation.",
+                title: "Seller mismatch",
+                body: "Sales and CPs are great at closing talent deals. MC is selling is a different motion — longer, more complex, lower close rate.",
               },
               {
-                title: "Pursuit leadership ceiling",
-                body: "The current motion relies on CPs/ESEs to carry the pursuit — MC supports but doesn't lead. Domain expertise should be driving.",
+                title: "Incentive mismatch",
+                body: "Current comp rewards deal speed. Professional services deals are slower with limited personal upside for sellers today.",
               },
               {
-                title: "Talent expansion ceiling",
-                body: "Deep Talent relationships are underleveraged. No formal motion to convert Talent depth into MC scope.",
+                title: "Complexity overload",
+                body: "40+ services across 4 practices, plus tech and marketing. Too much to carry — sellers disengage before they start.",
               },
               {
-                title: "Incentive ceiling",
-                body: "Current comp rewards deal speed. PS and expansion deals are slower with limited personal upside for CPs/ESEs today.",
+                title: "Credibility gap",
+                body: 'Enterprise buyers ask for 3 case studies. "Our consultant was at Accenture" isn\'t enough yet. We\'re building that track record.',
               },
             ].map((item) => (
               <Card key={item.title}>
@@ -569,26 +437,10 @@ export default function MCPlan2() {
       <section className="bg-white py-20">
         <Container>
           <SectionLabel>The Shift Required</SectionLabel>
-          <SectionHeading>Extend what's working. Build what's missing.</SectionHeading>
-          <div className="flex items-start gap-6 mb-8">
-            <Body className="max-w-2xl">
-              This isn't a repair job — it's an upgrade. The SMB inbound motion works for Talent — protect it. Three things need to change in the ENT model.
-            </Body>
-            <button
-              onClick={() => setShiftModal(true)}
-              className="shrink-0 text-xs font-semibold text-[#2563eb] border border-[#2563eb]/30 rounded-lg px-4 py-2 hover:bg-[#eff6ff] transition-colors whitespace-nowrap"
-            >
-              See full model →
-            </button>
-          </div>
-
-          {/* Core insight callout */}
-          <div className="bg-[#0d1b40] rounded-xl px-6 py-4 mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-1">Core insight</p>
-            <p className="text-base text-white leading-relaxed">
-              CPs and ESEs don't lose — they gain leverage. They keep the relationship and hand off the hard pursuit work.
-            </p>
-          </div>
+          <SectionHeading>Fix the center of gravity: from institution to expert</SectionHeading>
+          <Body className="max-w-2xl mb-12">
+            Sales finds the door. Squad leads walk through it. Domain expertise — not the Toptal brand — closes the trust gap.
+          </Body>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* TODAY */}
@@ -596,12 +448,11 @@ export default function MCPlan2() {
               <p className="text-xs font-bold uppercase tracking-widest text-[#6b7280] mb-4">Today</p>
               <ul className="space-y-3">
                 {[
-                  "SMB: PS signal recognition not always part of the discovery screen",
-                  "ENT PS signal isn't always surfaced upstream by ESEs/CPs",
-                  "CPs/ESEs carry more of the pursuit than we should ask; MC supports rather than leads",
-                  "No formal motion to convert Talent depth into MC scope",
-                  "40+ services create recognition and enablement barriers",
-                  "Clients know Toptal for Talent — don't reach for consulting",
+                  "Sales/CP owns the client relationship and pursuit",
+                  "MC expertise often backstage helping in a pre-sales support role",
+                  'Generic "Toptal" brand carries credibility weight',
+                  "40+ services create confusion; sellers disengage",
+                  "Proposals too large, too slow, too costly to build",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-[#374151]">
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#cbd5e1] shrink-0" />
@@ -616,12 +467,11 @@ export default function MCPlan2() {
               <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-4">Future State</p>
               <ul className="space-y-3">
                 {[
-                  "SMB Talent motion stays intact — six-hub PS signal screen added at discovery",
-                  "ENT sellers equipped with hub entry points and vertical trigger guides",
-                  "Domain experts lead the pursuit — squad lead drives conversations and orals",
-                  "Talent expansion becomes a motion — high-tenure accounts monitored for signals",
-                  "Six hubs, one clear conversation per hub",
-                  "Market presence builds brand — squad lead content, hub POVs, targeted outbound",
+                  "Squad leads (domain experts) drive MC engagement on pursuit efforts",
+                  "Sales finds the lead; expert drives the pursuit",
+                  "Individual expert credibility drives trust and close",
+                  "6 hub offerings — one clear conversation per door",
+                  "Fast, right-sized proposals built by domain owners",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-[#1e3a8a]">
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2563eb] shrink-0" />
@@ -640,10 +490,11 @@ export default function MCPlan2() {
           <SectionLabel>Hub Offerings</SectionLabel>
           <SectionHeading>Six hubs — sharpened to where the market is right now</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Each hub is an entry point into a conversation already happening in the C-suite. CPs and ESEs carry one clear door per hub. Squad leads own the depth conversation behind it.
+            Each hub reframed around the specific executive pressure buyers are feeling today,
+            not generic service categories.
           </Body>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
                 name: "Growth Strategy",
@@ -685,7 +536,6 @@ export default function MCPlan2() {
                 tagline: "Workforce for what's next",
                 body: "Reskilling, role redesign, org structure for AI agents. AI readiness for people.",
                 tags: ["AI readiness", "Org design", "Role redesign"],
-                color: "#5C6BC0",
               },
             ].map((hub) => (
               <Card key={hub.name} className="flex flex-col">
@@ -706,15 +556,6 @@ export default function MCPlan2() {
             ))}
           </div>
 
-          {/* Talent as hub entry callout */}
-          <div className="bg-[#0d1b40] rounded-xl px-6 py-5">
-            <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Talent as hub entry</p>
-            <p className="text-sm text-blue-100 leading-relaxed max-w-3xl">
-              Every active Talent engagement is a potential hub entry point. The CP already has the trust — the trigger question is what turns a staffing relationship into an MC conversation. Squad leads make the transition seamless.
-            </p>
-          </div>
-
-          {/* Hub detail modal */}
           <Dialog open={openHub !== null} onOpenChange={(open) => { if (!open) setOpenHub(null); }}>
             <DialogContent className="max-w-md">
               {openHub && (() => {
@@ -757,6 +598,7 @@ export default function MCPlan2() {
                 <DialogTitle className="text-lg font-extrabold text-[#0f172a]">ENT MC — Talent vs Professional Services</DialogTitle>
               </DialogHeader>
 
+              {/* Highlight stat cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
                 {([
                   { label: "Talent Win Rate", value: "24%", sub: "22–23% each quarter", color: "text-[#2563eb]" },
@@ -772,6 +614,7 @@ export default function MCPlan2() {
                 ))}
               </div>
 
+              {/* PS win rate trend bar */}
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
                 <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-2">PS Win Rate — Quarter over Quarter</p>
                 <div className="flex items-end gap-3">
@@ -792,6 +635,7 @@ export default function MCPlan2() {
                 </div>
               </div>
 
+              {/* Talent table */}
               <div>
                 <p className="text-xs font-bold text-[#0f172a] mb-2">Talent</p>
                 <div className="overflow-x-auto">
@@ -827,6 +671,7 @@ export default function MCPlan2() {
                 </div>
               </div>
 
+              {/* PS table */}
               <div>
                 <p className="text-xs font-bold text-[#7c3aed] mb-2">Professional Services</p>
                 <div className="overflow-x-auto">
@@ -863,6 +708,7 @@ export default function MCPlan2() {
                 <p className="text-[10px] text-[#9ca3af] italic mt-1.5 leading-tight">*Q2 PS median won is pulled down by 3 Hershey deals at $29–30K alongside the $637K Owens Corning win — only 4 data points, so the median is fragile.</p>
               </div>
 
+              {/* Callout narrative boxes */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
                   <p className="text-xs font-bold text-amber-700 mb-1.5">Talent Q2 Median Won: $5K</p>
@@ -880,94 +726,172 @@ export default function MCPlan2() {
         </Container>
       </section>
 
-      {/* ── Section 6: Land & Expand ── */}
+      {/* ── Section 6: Marketing & Positioning ── */}
       <section className="bg-white py-20">
         <Container>
-          <SectionLabel>Land & Expand</SectionLabel>
-          <SectionHeading>Two expansion surfaces. One growth motion.</SectionHeading>
-          <Body className="max-w-2xl mb-12">
-            The fastest path to MC growth runs through relationships we already own — tech services accounts and active MC Talent engagements.
+          <SectionLabel>Marketing & Positioning</SectionLabel>
+          <SectionHeading>Build the brand through experts, not the institution</SectionHeading>
+          <Body className="max-w-2xl mb-10">
+            Only Toptal can credibly say: senior consultants from firms you trust, assembled around your
+            problem — not our pyramid.
           </Body>
 
-          {/* Surface 1: Tech Services */}
-          <p className="text-sm font-bold text-[#0f172a] mb-1">Surface 1: Tech Services Accounts</p>
-          <p className="text-xs text-[#6b7280] mb-5">Every tech engagement creates downstream business problems. Train CPs and ESEs to spot the trigger — then hand off to the right squad lead.</p>
-
-          <div className="mb-4">
-            <TechTable engagements={PREVIEW_TECH_ENGAGEMENTS} />
-          </div>
-          <div className="flex justify-end mb-8">
-            <button
-              onClick={() => setTechExpandModal(true)}
-              className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
-            >
-              View all 10 triggers →
-            </button>
-          </div>
-
-          <InnerCard className="mb-12">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Key insight</p>
-            <p className="text-sm text-[#374151] leading-relaxed">
-              Change Management is a wedge, not just a follow-on — smaller scope, faster close, immediate trust-builder. Every tech implementation creates the need automatically.
+          {/* Positioning callout */}
+          <div className="border-l-4 border-[#2563eb] bg-white rounded-r-xl p-6 mb-12 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-3">The positioning only Toptal owns</p>
+            <p className="text-base font-medium text-[#0f172a] leading-relaxed italic">
+              "Senior level consultants from the firms you trust — assembled around your problem, not our pyramid.
+              No billing juniors at senior rates. No utilization pressure. Experts in, outcome out."
             </p>
-          </InnerCard>
+            <p className="text-xs text-[#6b7280] mt-3">This is the brief for every hub POV asset and every squad lead post.</p>
+          </div>
 
-          {/* Surface 2: MC Talent Accounts */}
-          <p className="text-sm font-bold text-[#0f172a] mb-1">Surface 2: MC Talent Accounts</p>
-          <p className="text-xs text-[#6b7280] mb-5">Active Talent engagements are the highest-trust, lowest-friction MC entry point. The relationship is already there.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {[
+              {
+                title: "LinkedIn (squad leads)",
+                body: "Personal posts from named experts on hub-specific tensions. Toptal amplifies — credibility comes from the individual, not the brand account.",
+              },
+              {
+                title: "Hub POV documents",
+                body: "One 4–6 page opinionated POV per hub. Not 'AI is changing finance' — something forwardable. The CFO's AI ROI framework. The operating model playbook.",
+              },
+              {
+                title: "Diagnostic tools as lead gen",
+                body: "Our existing assessments are marketing assets. 10-min 'AI readiness' check → personalized output → conversation starter. Brand before a meeting.",
+              },
+              {
+                title: "PS campaign under Services",
+                body: "MC must be named and visible in the new professional services outbound push. 6 hubs. Named squad leads. Request international parity in LinkedIn spend.",
+              },
+            ].map((item) => (
+              <Card key={item.title}>
+                <h3 className="text-sm font-bold text-[#2563eb] mb-2">{item.title}</h3>
+                <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
+              </Card>
+            ))}
+          </div>
+        </Container>
+      </section>
 
-          <div className="overflow-x-auto rounded-xl border border-[#e2e8f0] mb-6">
+      {/* ── Section 7: Land & Expand ── */}
+      <section className="bg-[#f8fafc] py-20">
+        <Container>
+          <SectionLabel>Land & Expand</SectionLabel>
+          <SectionHeading>The fastest path to MC growth: our tech services accounts and engagements</SectionHeading>
+          <Body className="max-w-2xl mb-12">
+            Every tech engagement creates downstream business problems. Train CPs to spot the trigger —
+            then hand off to the right squad lead(s).
+          </Body>
+
+          {/* Table */}
+          <div className="overflow-x-auto rounded-xl border border-[#e2e8f0] mb-8">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Talent engagement signal</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question squad lead/CP asks</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">Expansion path</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Tech engagement</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question CP asks</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">MC hub entry point(s)</th>
                 </tr>
               </thead>
               <tbody>
-                {TALENT_EXPANSION_ROWS.map((row, i) => (
-                  <tr key={row.signal} className={`hover:bg-[#fafcff] transition-colors border-t ${i === 0 ? "border-[#e2e8f0]" : "border-[#f1f5f9]"}`}>
-                    <td className="px-5 py-4 text-[#374151] font-medium align-top w-1/3">{row.signal}</td>
-                    <td className="px-5 py-4 text-[#374151] italic align-top">{row.trigger}</td>
-                    <td className="px-5 py-4 align-top w-44">
-                      <span className="inline-block text-xs font-semibold bg-[#eff6ff] text-[#2563eb] rounded px-2.5 py-1">{row.path}</span>
-                    </td>
-                  </tr>
-                ))}
+                {([
+                  {
+                    engagement: "ERP / platform / Salesforce implementation",
+                    pairs: [
+                      { trigger: '"How are you thinking about adoption — do your people have what they need to actually change how they work?"', hub: "Change Management" },
+                      { trigger: '"Now that the system is live, are your processes and team model keeping up?"', hub: "Business Transformation" },
+                    ],
+                  },
+                  {
+                    engagement: "AI / ML implementation",
+                    pairs: [
+                      { trigger: '"When your CFO asks if this is working — do you have a way to measure ROI yet?"', hub: "Finance Transformation" },
+                      { trigger: '"The tools are live — are people actually using them? What\'s the resistance looking like?"', hub: "Change Management" },
+                    ],
+                  },
+                  {
+                    engagement: "Agile / product model transformation",
+                    pairs: [
+                      { trigger: '"Now that the model is in place — are you confident you\'re building the right things?"', hub: "Growth Strategy" },
+                      { trigger: '"Are the team behaviors and structure actually keeping up with the new model?"', hub: "Change Management" },
+                    ],
+                  },
+                  {
+                    engagement: "Cloud migration / app modernization",
+                    pairs: [
+                      { trigger: '"Now that infrastructure changed — how are your processes and team model keeping up?"', hub: "Business Transformation" },
+                    ],
+                  },
+                  {
+                    engagement: "Large-scale tech talent deployment (10+ resources)",
+                    pairs: [
+                      { trigger: '"How are you thinking about your long-term talent model as AI changes what your engineers do?"', hub: "Workforce Transformation" },
+                    ],
+                  },
+                  {
+                    engagement: "Supply chain / ERP / ops systems",
+                    pairs: [
+                      { trigger: '"Do you have visibility into where AI could automate in your value chain today?"', hub: "Performance Improvement" },
+                      { trigger: '"How resilient is your supply chain if your primary supplier or region gets disrupted?"', hub: "Supply Chain" },
+                    ],
+                  },
+                ] as { engagement: string; pairs: { trigger: string; hub: string }[] }[]).map((row) =>
+                  row.pairs.map((pair, pairIdx) => (
+                    <tr
+                      key={`${row.engagement}-${pairIdx}`}
+                      className={`hover:bg-[#fafcff] transition-colors ${pairIdx === 0 ? "border-t border-[#e2e8f0]" : "border-t border-[#f1f5f9]"}`}
+                    >
+                      {pairIdx === 0 && (
+                        <td
+                          rowSpan={row.pairs.length}
+                          className="px-5 py-4 text-[#2563eb] font-bold align-top border-r border-[#f1f5f9] w-1/4"
+                        >
+                          {row.engagement}
+                        </td>
+                      )}
+                      <td className="px-5 py-4 text-[#374151] italic align-top">{pair.trigger}</td>
+                      <td className="px-5 py-4 align-top w-40">
+                        <HubTag hub={pair.hub} />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
+          {/* Mechanism */}
           <InnerCard>
             <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Key insight</p>
             <p className="text-sm text-[#374151] leading-relaxed">
-              The Talent relationship is the trust asset. The squad lead's job on a Talent account isn't to sell — it's to stay close enough to see the next problem.
+              Change management is a wedge, not just a follow-on — smaller scope, faster close, immediate
+              trust-builder. Every tech implementation creates the need automatically.
             </p>
           </InnerCard>
         </Container>
       </section>
 
-      {/* ── Section 7: Future Model ── */}
-      <section className="bg-[#f8fafc] py-20">
+      {/* ── Section 8: Future Model ── */}
+      <section className="bg-white py-20">
         <Container>
           <SectionLabel>Future Model</SectionLabel>
           <SectionHeading>The future value chain: find to deliver</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Two on-ramps. One delivery engine. Squad leads and pursuit ops drive everything from qualification through delivery and expansion.
+            CP/Seller surfaces the signal and lead. MC squad leads and pursuit ops drive everything from qualification through delivery and expansion.
           </Body>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
             {[
               {
                 num: "1",
-                owner: "SDR / ESE / CP — by vertical",
+                owner: "Sales / CP",
                 phase: "Find & qualify",
                 items: [
-                  "SMB: SDR discovery + six-hub PS signal screen",
-                  "ENT: ESE/CP + squad lead paired with top clients",
-                  "Vertical SDRs support discovery",
-                  "Hub trigger guides for all sellers",
+                  "CP spots MC trigger signal",
+                  "Warm intro to squad lead",
+                  "Leverages tech account relationships",
+                  "SDR + account hub tooling",
                 ],
               },
               {
@@ -975,10 +899,10 @@ export default function MCPlan2() {
                 owner: "Squad Lead + Pursuit Ops",
                 phase: "Pursue & solution",
                 items: [
-                  "Squad lead leads discovery and scoping calls",
-                  "TCP engaged at scoping",
+                  "Squad lead leads client calls",
+                  "Fast scoping, right-sized scope",
                   "AI diagnostic tools deployed",
-                  "Right-sized scope, fast proposal",
+                  "Additional TCP used as warranted",
                 ],
               },
               {
@@ -987,20 +911,20 @@ export default function MCPlan2() {
                 phase: "Propose & win",
                 items: [
                   "Squad lead presents in orals",
+                  "Expert credibility closes trust gap",
                   "Tight, priced-to-win proposals",
-                  "Talent relationships as proof points",
-                  "Expert credibility closes the trust gap",
+                  "Client referrals as proof points",
                 ],
               },
               {
                 num: "4",
-                owner: "Squad Lead + CP + Team",
+                owner: "Squad lead + team",
                 phase: "Deliver & expand",
                 items: [
-                  "Monthly client touch (squad lead)",
-                  "CP retains account relationship",
-                  "Case study captured at close",
-                  "Expansion path mapped at kickoff",
+                  "Squad lead monthly client touch",
+                  "Advisory relationship (no sale needed)",
+                  "Case study captured immediately",
+                  "Expand: MC → Tech or Tech → MC",
                 ],
               },
             ].map((phase) => (
@@ -1020,10 +944,12 @@ export default function MCPlan2() {
             ))}
           </div>
 
+          {/* Key insight */}
           <div className="bg-[#0d1b40] rounded-xl p-6">
             <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Key insight</p>
             <p className="text-base text-white leading-relaxed">
-              The ENT model already works. The upgrade is seller enablement upstream, domain expert pursuit leadership, and a formal Talent expansion playbook. Two on-ramps, one delivery engine.
+              Sales doesn't lose — they gain. They keep the relationship and hand off the hard work.
+              Nine pursuits in parallel instead of owning every detail of one.
             </p>
           </div>
         </Container>
@@ -1043,40 +969,40 @@ export default function MCPlan2() {
               {
                 phase: "Phase 1",
                 timeframe: "Now → 90 days",
-                title: "Strengthen the foundation",
+                title: "Structural foundations",
                 items: [
-                  "Seller enablement: 6 hubs, vertical trigger guides, squad lead pairings",
-                  "Pursuit leadership: squad leads lead conversations and orals, TCP at scoping",
-                  "SMB discovery screen: six-hub PS signal check added to discovery",
-                  "Talent expansion: top 20 accounts identified, expansion trigger guide live",
-                  "SMB: portfolio decision made",
+                  "Reduce to 6 hubs; eliminate complexity for sellers",
+                  "Assign squad leads; brief all sales and CPs",
+                  "Warm intros: squad leads into top 15 accounts",
+                  "Fix pursuit model: squad leads scope & propose",
+                  "Build MC trigger guide for tech CP team",
                 ],
-                outcome: "Sellers equipped. Squad leads leading pursuits. Talent expansion motion live. SMB role defined.",
+                outcome: "Sales enabled. Squad leads active in client conversations.",
               },
               {
                 phase: "Phase 2",
                 timeframe: "90 days → 6 months",
-                title: "Activate the market",
+                title: "Market activation",
                 items: [
-                  "Squad lead LinkedIn POV content by hub",
+                  "Map top 30 tech accounts; ID MC entry points",
+                  "Squad leads begin LinkedIn POV content by hub",
                   "One anchor POV document per hub in market",
-                  "PS campaign visibility under Services",
-                  "First 3 Talent-to-MC case studies live",
-                  "Top 30 tech accounts mapped for MC entry points",
+                  "Case study pipeline: document every win immediately",
+                  "Latch onto PS outbound campaign under professional services launch",
                 ],
-                outcome: "First branded case studies live. Talent expansion pipeline tracked and moving.",
+                outcome: "First branded case studies. Pipeline via existing relationships.",
               },
               {
                 phase: "Phase 3",
                 timeframe: "6 months+",
-                title: "Scale the engine",
+                title: "Scale and own",
                 items: [
-                  "Squad leads hold vertical relationships independently",
-                  "Talent expansion systematized across top accounts",
+                  "Squad leads transition 'ownership'",
                   "AI diagnostic tools live as lead-gen marketing assets",
-                  "International coverage through squad-to-region pairings",
+                  "Formalize AI-differentiated delivery story",
+                  "Squad-to-region pairings for international coverage",
                 ],
-                outcome: "Self-sustaining practice with two growth engines — expert-led ENT pursuit and systematic Talent expansion.",
+                outcome: "Self-sustaining practice with expert-led growth engine.",
               },
             ].map((col) => (
               <div key={col.phase} className="bg-white/8 border border-white/15 rounded-xl p-6 flex flex-col">
@@ -1123,122 +1049,6 @@ export default function MCPlan2() {
           </p>
         </Container>
       </footer>
-
-      {/* ── Context Modal ── */}
-      <Dialog open={contextModal} onOpenChange={setContextModal}>
-        <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-extrabold text-[#0f172a]">Full Context — The Scaling Opportunity</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-[#374151] leading-relaxed mt-1">
-            The business is compounding — three consecutive quarters of growth, record Q1 2026, ENT conversion doubled. The structural constraints we face aren't existential. They're ceilings on how high we can go.
-          </p>
-          <div className="space-y-4 mt-4">
-            {[
-              {
-                label: "Brand ceiling",
-                body: "Clients know us for Talent and don't naturally reach for consulting. We need to be visible in the right C-suite conversations before we're in the room. That's a content and presence play — squad lead POVs, hub visibility, targeted outbound. Not a product problem.",
-              },
-              {
-                label: "Recognition ceiling",
-                body: "PS signals exist in nearly every engagement but go unrecognized without a clear framework. A finance transformation in progress, a restructuring underway, a new CFO agenda — these are all conversations MC can lead. Six hubs with clear entry points give the entire sales and delivery organization a common language for spotting them.",
-              },
-              {
-                label: "Pursuit leadership ceiling",
-                body: "CPs and ESEs are excellent at their jobs. The MC pursuit motion requires something different at the front of the conversation — domain expertise, not account management. The model works when squad leads drive discovery and orals. That's the upgrade, not a replacement. CPs keep the relationship; squad leads run the MC portion.",
-              },
-              {
-                label: "Talent expansion ceiling",
-                body: "We have deep relationships across major accounts that have never been formally mapped for MC potential. Long-term engagements, multiple placements, senior ICs — each of these signals an active business problem. The trust is already there. We haven't built the motion to activate it.",
-              },
-              {
-                label: "Incentive ceiling",
-                body: "The current comp structure rewards speed, and PS and expansion deals are slower. There's a structural misalignment to address — but it's a comp design question, not a people question. CPs and ESEs are responding rationally to the incentives they have.",
-              },
-            ].map((item) => (
-              <div key={item.label} className="border-l-2 border-[#dbeafe] pl-4">
-                <p className="text-xs font-bold text-[#2563eb] uppercase tracking-wider mb-1">{item.label}</p>
-                <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="bg-[#f8fafc] rounded-xl p-4 mt-4 border border-[#e2e8f0]">
-            <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-widest mb-2">The headline</p>
-            <p className="text-sm font-medium text-[#0f172a] leading-relaxed">
-              Five ceilings. Each one addressable with structural investment. The business is already compounding — removing these ceilings is how we accelerate.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Shift Modal ── */}
-      <Dialog open={shiftModal} onOpenChange={setShiftModal}>
-        <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-extrabold text-[#0f172a]">Full Model — The Shift Required</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-[#374151] leading-relaxed mt-1">
-            The ENT motion already works at its core. Three upgrades change the ceiling. SMB stays intact with one addition.
-          </p>
-          <div className="space-y-5 mt-4">
-            <div className="bg-[#eff6ff] rounded-xl p-4 border border-[#dbeafe]">
-              <p className="text-xs font-bold text-[#2563eb] uppercase tracking-wider mb-2">SMB: protect and add one screen</p>
-              <p className="text-sm text-[#374151] leading-relaxed">The SMB inbound Talent motion works — protect it. One addition: a six-hub PS signal screen at discovery. One structured question that covers all six entry points. Low friction, high upside. No structural change to the SMB Talent motion.</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-[#0f172a] uppercase tracking-wider mb-3">ENT: three upgrades</p>
-              <div className="space-y-4">
-                {[
-                  {
-                    num: "1",
-                    title: "Seller enablement",
-                    body: "CPs and ESEs can't carry 40+ services. Six hubs with vertical trigger guides gives them one door to open per account type. The first conversation changes: instead of 'what does Toptal MC do,' it becomes 'we see companies in your space navigating [specific pressure] — are you feeling that too?'",
-                  },
-                  {
-                    num: "2",
-                    title: "Pursuit leadership",
-                    body: "Right now, MC mostly supports the CP-led pursuit. The upgrade: squad leads lead the discovery call, drive the scoping conversation, and present in orals. CPs and ESEs handle the intro and keep the relationship. The domain expert runs the MC part of the pursuit. This closes the trust gap that slows ENT close rates.",
-                  },
-                  {
-                    num: "3",
-                    title: "Talent expansion",
-                    body: "Identify the top 20 Talent accounts, pair a squad lead with the CP on each, and create a monthly check-in trigger to ask the simple question: 'is there a business problem behind the hiring trend?' The answer is often yes. The infrastructure to activate it is the missing piece.",
-                  },
-                ].map((item) => (
-                  <div key={item.num} className="flex gap-4">
-                    <span className="text-2xl font-extrabold text-[#cbd5e1] leading-none shrink-0 w-7 pt-0.5">{item.num}</span>
-                    <div>
-                      <p className="text-sm font-bold text-[#0f172a] mb-1">{item.title}</p>
-                      <p className="text-sm text-[#374151] leading-relaxed">{item.body}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="bg-[#0d1b40] rounded-xl p-4 mt-4">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">The bottom line</p>
-            <p className="text-sm text-white leading-relaxed">CPs and ESEs don't lose — they gain leverage. They keep the relationship and hand off the hard pursuit work. Nine pursuits supported in parallel instead of owning every detail of one.</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Tech Expand Modal ── */}
-      <Dialog open={techExpandModal} onOpenChange={setTechExpandModal}>
-        <DialogContent className="max-w-4xl max-h-[88vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-extrabold text-[#0f172a]">All Tech Services Trigger Points</DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-[#6b7280] mb-4">All 10 trigger-question / hub-entry-point pairs across 6 tech engagement types.</p>
-          <TechTable engagements={ALL_TECH_ENGAGEMENTS} />
-          <InnerCard className="mt-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Key insight</p>
-            <p className="text-sm text-[#374151] leading-relaxed">
-              Change Management is a wedge, not just a follow-on — smaller scope, faster close, immediate trust-builder. Every tech implementation creates the need automatically.
-            </p>
-          </InnerCard>
-        </DialogContent>
-      </Dialog>
 
     </div>
   );

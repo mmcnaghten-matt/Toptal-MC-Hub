@@ -16,7 +16,7 @@ import MCServicesWeb from "./pages/MCServicesWeb";
 import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 import MCPlan from "./pages/MCPlan";
-import MCPlan2 from "./pages/MCPlan2";
+import MCPlanArchive from "./pages/MCPlanArchive";
 import MCSellerReintro from "./pages/MCSellerReintro";
 import MCPipelineDetail from "./pages/MCPipelineDetail";
 import MCNarrativeDetail from "./pages/MCNarrativeDetail";
@@ -49,7 +49,7 @@ const App = () => (
                 <Route path="/diagnostics-hub" element={<DiagnosticsHub />} />
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
                 <Route path="/mc-plan" element={<MCPlan />} />
-                <Route path="/mc-plan-2" element={<MCPlan2 />} />
+                <Route path="/mc-plan-archive" element={<MCPlanArchive />} />
                 <Route path="/mc-seller-reintro" element={<MCSellerReintro />} />
                 <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
                 <Route path="/mc-narrative" element={<MCNarrativeDetail />} />
