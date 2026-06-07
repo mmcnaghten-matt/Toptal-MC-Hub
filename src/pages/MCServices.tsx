@@ -410,10 +410,16 @@ const salesAssets: SalesAsset[] = [
     url: "https://docs.google.com/document/d/1rpNt0PjxIWr-WVRoci8MZrSHxkkZ69AO5V3z1oTttl4/edit",
   },
   {
-    topic: "AI Governance",
+    topic: "AI | Governance",
     type: "POV",
     document: "Toptal - AI Governance Execution for Yara",
     url: "https://docs.google.com/presentation/d/1IC5BX7pyVZFa6RO6GRDKsssQXSIHqQn1qGd8eYPO3fI/edit?usp=drive_link",
+  },
+  {
+    topic: "AI | Governance",
+    type: "Discussion Deck",
+    document: "Werner - Governing the Agentic Enterprise",
+    url: "https://docs.google.com/presentation/d/1_Ie-tOHmn-UmJIgSJLHeAwgCdy3I9vqEUCBg1gD3acM/edit?usp=sharing",
   },
   {
     topic: "Growth",
