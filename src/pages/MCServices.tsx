@@ -469,6 +469,12 @@ const salesAssets: SalesAsset[] = [
     document: "Schneider Electric Canada — Commercial Innovation Workshop",
     url: "https://docs.google.com/presentation/d/1qQXPXQHCGseS2d4eHNWNwoiXglL-P9xBpqLw8v4G1qI/edit",
   },
+  {
+    topic: "AI Governance",
+    type: "POV",
+    document: "AI Governance — Toptal MC Point of View",
+    url: "https://docs.google.com/presentation/d/1IC5BX7pyVZFa6RO6GRDKsssQXSIHqQn1qGd8eYPO3fI/edit?usp=drive_link",
+  },
 ];
 
 const pillarColors: Record<string, string> = {
