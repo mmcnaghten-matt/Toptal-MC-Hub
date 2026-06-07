@@ -68,7 +68,8 @@ export const CLIENTS: Client[] = [
     vertical: 'ips',
     description: 'Large-scale transportation and logistics operator. Active AI governance engagement — June 2026.',
     links: [
-      { label: 'Intelligence Report: Werner Enterprises', url: 'https://drive.google.com/file/d/1yZN6NRDwJRdCXzlGTQJmbCaIQhzkhHAm/view?usp=drive_link' },
+      { label: 'Intelligence Briefing: Werner Enterprises', url: 'https://drive.google.com/file/d/1yZN6NRDwJRdCXzlGTQJmbCaIQhzkhHAm/view?usp=drive_link' },
+      { label: 'In Depth Strategic Account Intelligence Report: Werner Enterprises', url: 'https://docs.google.com/document/d/1wlox6NNglR5WnCvKP1R6Dx52gc9JQL863yYJaO2_fN8/edit?usp=drive_link' },
     ],
     opportunities: [
       {
