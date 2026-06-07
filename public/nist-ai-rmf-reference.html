@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<title>NIST AI Risk Management Framework — Reference Summary</title>
+<style>
+  :root {
+    --navy:     #041133;
+    --blue:     #204ECF;
+    --pink:     #D42551;
+    --teal:     #07947C;
+    --lightblue:#25A9EE;
+    --deep:     #262D3D;
+    --cardfill: #E6EBF5;
+    --cardalt:  #CFD9F7;
+    --textdark: #041133;
+    --textmid:  #455065;
+    --textsec:  #626679;
+    --textlt:   #9E9E9E;
+    --border:   #DEDFE4;
+    --bg:       #F7F8FC;
+    --white:    #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--textdark);
+    line-height: 1.6;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--navy);
+    color: var(--white);
+    padding: 52px 60px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 480px; height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(32,78,207,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    background: var(--blue);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.15;
+    max-width: 640px;
+    margin-bottom: 10px;
+  }
+  .hero h1 span { color: #7AADFF; }
+  .hero-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    max-width: 600px;
+    margin-bottom: 32px;
+  }
+  .hero-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hero-pill {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.20);
+    color: var(--white);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    transition: background 0.2s;
+  }
+  .hero-pill:hover { background: rgba(255,255,255,0.20); }
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    flex-wrap: wrap;
+  }
+  .hero-stat-n { font-size: 28px; font-weight: 800; color: var(--white); }
+  .hero-stat-n.blue { color: #7AADFF; }
+  .hero-stat-n.pink { color: #FF7A9A; }
+  .hero-stat-l { font-size: 11px; color: rgba(255,255,255,0.55); max-width: 120px; margin-top: 2px; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
+  .section { padding: 52px 0 40px; }
+  .section + .section { border-top: 1px solid var(--border); }
+  .sec-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--blue); margin-bottom: 6px;
+  }
+  .section h2 {
+    font-size: 26px; font-weight: 800; color: var(--navy);
+    margin-bottom: 8px; line-height: 1.2;
+  }
+  .section-intro {
+    font-size: 14px; color: var(--textmid); max-width: 780px;
+    margin-bottom: 32px; line-height: 1.7;
+  }
+
+  /* ── FUNCTION CARDS ── */
+  .functions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 860px) { .functions-grid { grid-template-columns: repeat(2,1fr); } }
+  .fn-card {
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--white);
+    border: 1px solid var(--border);
+  }
+  .fn-header {
+    padding: 18px 20px 14px;
+    color: var(--white);
+  }
+  .fn-header.govern  { background: var(--navy); }
+  .fn-header.map     { background: var(--blue); }
+  .fn-header.measure { background: var(--teal); }
+  .fn-header.manage  { background: var(--pink); }
+  .fn-tag {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase; opacity: 0.7; margin-bottom: 6px;
+  }
+  .fn-name { font-size: 20px; font-weight: 800; line-height: 1.1; }
+  .fn-cats { font-size: 11px; opacity: 0.75; margin-top: 4px; }
+  .fn-body { padding: 16px 20px 18px; }
+  .fn-purpose {
+    font-size: 12px; color: var(--textmid); margin-bottom: 12px;
+    font-style: italic; line-height: 1.5;
+  }
+  .fn-body ul { list-style: none; }
+  .fn-body ul li {
+    font-size: 12px; color: var(--textsec);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 6px;
+    line-height: 1.4;
+  }
+  .fn-body ul li:last-child { border-bottom: none; }
+  .fn-body ul li::before { content: '→'; color: var(--blue); flex-shrink: 0; font-size: 11px; margin-top: 1px; }
+
+  /* ── DETAIL BLOCKS ── */
+  .detail-block {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 24px;
+    cursor: default;
+  }
+  .detail-code {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+    color: var(--white); padding: 3px 9px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .detail-code.gov { background: var(--navy); }
+  .detail-code.map { background: var(--blue); }
+  .detail-code.msr { background: var(--teal); }
+  .detail-code.mgr { background: var(--pink); }
+  .detail-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .detail-body { padding: 0 24px 20px; }
+  .detail-desc { font-size: 13px; color: var(--textmid); margin-bottom: 14px; line-height: 1.6; }
+  .detail-items { display: flex; flex-wrap: wrap; gap: 8px; }
+  .detail-item {
+    background: var(--cardfill);
+    border: 1px solid var(--cardalt);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--textdark);
+    line-height: 1.4;
+  }
+
+  /* ── TRUSTWORTHY PILLARS ── */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  @media (max-width: 860px) { .pillars-grid { grid-template-columns: repeat(2,1fr); } }
+  .pillar {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 16px 14px;
+  }
+  .pillar-icon {
+    font-size: 22px; margin-bottom: 8px; display: block;
+  }
+  .pillar-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+  .pillar-desc { font-size: 11px; color: var(--textsec); line-height: 1.5; }
+
+  /* ── GENAI PROFILE ── */
+  .risks-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 780px) { .risks-grid { grid-template-columns: repeat(2,1fr); } }
+  .risk-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .risk-num {
+    font-size: 11px; font-weight: 800; color: var(--white);
+    background: var(--blue);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .risk-name { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+  .risk-desc { font-size: 11px; color: var(--textsec); line-height: 1.5; }
+
+  /* ── CROSSWALK TABLE ── */
+  .crosswalk { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .crosswalk th {
+    background: var(--navy);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 10px 16px;
+    text-align: left;
+  }
+  .crosswalk th:first-child { border-radius: 6px 0 0 0; }
+  .crosswalk th:last-child { border-radius: 0 6px 0 0; }
+  .crosswalk td {
+    font-size: 12px;
+    color: var(--textmid);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .crosswalk tr:nth-child(even) td { background: var(--cardfill); }
+  .crosswalk td:first-child { font-weight: 700; color: var(--navy); }
+  .fn-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+    padding: 2px 7px; border-radius: 3px; margin-right: 4px;
+    color: var(--white);
+  }
+  .fn-badge.gov { background: var(--navy); }
+  .fn-badge.map { background: var(--blue); }
+  .fn-badge.msr { background: var(--teal); }
+  .fn-badge.mgr { background: var(--pink); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: linear-gradient(135deg, #EBF0FB 0%, #F0F7FD 100%);
+    border: 1px solid var(--cardalt);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 13px;
+    color: var(--textmid);
+    line-height: 1.7;
+  }
+  .callout strong { color: var(--navy); }
+
+  /* ── FOOTER ── */
+  .foot {
+    background: var(--navy);
+    color: rgba(255,255,255,0.45);
+    font-size: 11px;
+    padding: 24px 60px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .foot a { color: rgba(255,255,255,0.55); text-decoration: none; }
+  .foot a:hover { color: var(--white); }
+
+  /* ── NAV ── */
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    background: rgba(4,17,51,0.97);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    padding: 0 60px;
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sticky-nav a {
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 12px 16px;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .sticky-nav a:hover { color: var(--white); }
+  .sticky-nav a.gov:hover { color: #7AADFF; }
+  .sticky-nav a.map:hover { color: #82CFFF; }
+  .sticky-nav a.msr:hover { color: #5DCFB9; }
+  .sticky-nav a.mgr:hover { color: #FF7A9A; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Reference Document</div>
+  <h1>NIST AI Risk Management<br><span>Framework (AI RMF 1.0)</span></h1>
+  <p class="hero-sub">A structured reference outline of the NIST AI RMF — four core functions, 19 categories, 72 subcategories, and the Generative AI Profile (NIST AI 600-1).</p>
+  <div class="hero-pills">
+    <a href="#govern" class="hero-pill">GOVERN</a>
+    <a href="#map" class="hero-pill">MAP</a>
+    <a href="#measure" class="hero-pill">MEASURE</a>
+    <a href="#manage" class="hero-pill">MANAGE</a>
+    <a href="#trustworthy" class="hero-pill">Trustworthy AI</a>
+    <a href="#genai" class="hero-pill">GenAI Profile</a>
+    <a href="#crosswalk" class="hero-pill">Regulatory Crosswalk</a>
+  </div>
+  <div class="hero-stats">
+    <div>
+      <div class="hero-stat-n blue">4</div>
+      <div class="hero-stat-l">Core functions: Govern, Map, Measure, Manage</div>
+    </div>
+    <div>
+      <div class="hero-stat-n">72</div>
+      <div class="hero-stat-l">Subcategories across 19 categories</div>
+    </div>
+    <div>
+      <div class="hero-stat-n">12</div>
+      <div class="hero-stat-l">GenAI-specific risks in AI 600-1 profile</div>
+    </div>
+    <div>
+      <div class="hero-stat-n pink">Jan 2023</div>
+      <div class="hero-stat-l">Published; updated playbook Mar 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY NAV -->
+<nav class="sticky-nav">
+  <a href="#overview">Overview</a>
+  <a href="#govern" class="gov">GOVERN</a>
+  <a href="#map" class="map">MAP</a>
+  <a href="#measure" class="msr">MEASURE</a>
+  <a href="#manage" class="mgr">MANAGE</a>
+  <a href="#trustworthy">Trustworthy AI</a>
+  <a href="#genai">GenAI Profile</a>
+  <a href="#crosswalk">Crosswalk</a>
+</nav>
+
+<div class="container">
+
+  <!-- OVERVIEW -->
+  <div class="section" id="overview">
+    <div class="sec-eyebrow">What It Is</div>
+    <h2>Framework Overview</h2>
+    <p class="section-intro">
+      The NIST AI Risk Management Framework (AI RMF 1.0), published January 2023, is the leading voluntary standard for managing AI risks in the United States. It is sector-agnostic, scalable to any organization size, and increasingly referenced in enterprise procurement, federal contracts, and state-level AI regulation. The framework does not mandate specific tools or technologies — it defines outcomes and leaves implementation to the organization.
+    </p>
+
+    <div class="functions-grid">
+      <div class="fn-card">
+        <div class="fn-header govern">
+          <div class="fn-tag">Function 1 · Cross-cutting</div>
+          <div class="fn-name">GOVERN</div>
+          <div class="fn-cats">6 categories · ~20 subcategories</div>
+        </div>
+        <div class="fn-body">
+          <p class="fn-purpose">Establishes organizational culture, policies, and accountability. Informs and enables all other functions — should be in place first and maintained throughout.</p>
+          <ul>
+            <li>AI use policies &amp; risk thresholds</li>
+            <li>Roles, accountability, executive sponsorship</li>
+            <li>Cross-functional AI governance committee</li>
+            <li>Workforce training &amp; culture</li>
+            <li>Third-party / vendor AI oversight</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fn-card">
+        <div class="fn-header map">
+          <div class="fn-tag">Function 2 · Pre-deployment</div>
+          <div class="fn-name">MAP</div>
+          <div class="fn-cats">5 categories · 18 subcategories</div>
+        </div>
+        <div class="fn-body">
+          <p class="fn-purpose">Establishes context and identifies risks before deployment. Foreseeable misuse must be considered alongside intended use.</p>
+          <ul>
+            <li>Use case documentation &amp; data provenance</li>
+            <li>Stakeholder impact assessment</li>
+            <li>Harm identification (physical, financial, reputational)</li>
+            <li>Risk identification across AI lifecycle</li>
+            <li>Known limitations &amp; failure mode documentation</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fn-card">
+        <div class="fn-header measure">
+          <div class="fn-tag">Function 3 · Assess &amp; Monitor</div>
+          <div class="fn-name">MEASURE</div>
+          <div class="fn-cats">5 categories · 22 subcategories</div>
+        </div>
+        <div class="fn-body">
+          <p class="fn-purpose">Quantifies risks through testing, metrics, and ongoing monitoring. Translates identified risks into measurable signals.</p>
+          <ul>
+            <li>Testing &amp; evaluation (including red-teaming)</li>
+            <li>Bias &amp; fairness assessment</li>
+            <li>Performance benchmarking</li>
+            <li>Continuous monitoring &amp; drift detection</li>
+            <li>Hallucination rate measurement</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fn-card">
+        <div class="fn-header manage">
+          <div class="fn-tag">Function 4 · Act on Risks</div>
+          <div class="fn-name">MANAGE</div>
+          <div class="fn-cats">3 categories · ~12 subcategories</div>
+        </div>
+        <div class="fn-body">
+          <p class="fn-purpose">Prioritizes and addresses risks through treatment, mitigation, and response planning. Translates measurement into action.</p>
+          <ul>
+            <li>Risk prioritization &amp; scoring</li>
+            <li>Risk treatment: avoid / mitigate / transfer / accept</li>
+            <li>Control implementation</li>
+            <li>Incident response &amp; rollback procedures</li>
+            <li>Post-incident review &amp; control updates</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>The key structural insight:</strong> GOVERN applies to all AI activity across the entire organization. MAP, MEASURE, and MANAGE apply at the individual AI system level, at each stage of the system's lifecycle. You set up governance once (at the organization level) and run MAP → MEASURE → MANAGE for each AI system or use case.
+    </div>
+  </div>
+
+  <!-- GOVERN -->
+  <div class="section" id="govern">
+    <div class="sec-eyebrow">Function 1 · Foundational</div>
+    <h2>GOVERN — Establish Culture &amp; Accountability</h2>
+    <p class="section-intro">
+      GOVERN is the only function that applies across the entire organization rather than system-by-system. Without it, MAP/MEASURE/MANAGE lack context, authority, and ownership. Primary ownership typically sits with the CIO, CISO, General Counsel, or Chief Risk Officer.
+    </p>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code gov">GV.1</span>
+        <span class="detail-title">Organizational Policies &amp; Risk Thresholds</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Define what AI the organization will and won't do, at what risk tolerance, and with what approval process. Policies must be documented, version-controlled, and aligned to legal obligations.</p>
+        <div class="detail-items">
+          <span class="detail-item">AI use policy document</span>
+          <span class="detail-item">Risk tolerance thresholds by use case</span>
+          <span class="detail-item">Approval workflows for high-risk AI</span>
+          <span class="detail-item">Incident response procedures</span>
+          <span class="detail-item">Version history &amp; audit trail</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code gov">GV.2</span>
+        <span class="detail-title">Roles, Responsibilities &amp; Accountability</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Clear ownership is the single most cited gap in AI governance failures. Define who is accountable for each AI system, who approves deployment, and who is responsible when things go wrong.</p>
+        <div class="detail-items">
+          <span class="detail-item">Executive AI sponsor (CIO / CRO)</span>
+          <span class="detail-item">Model Owner (BU leader — risk &amp; performance)</span>
+          <span class="detail-item">AI Champion (BU operational role)</span>
+          <span class="detail-item">RACI matrix for AI risk process</span>
+          <span class="detail-item">Cross-functional governance committee</span>
+          <span class="detail-item">Committee charters &amp; meeting cadence</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code gov">GV.3</span>
+        <span class="detail-title">Workforce Training &amp; Culture</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Technical controls reduce harm; culture prevents it. Organizations that treat governance as a training and culture challenge — not just a policy exercise — consistently outperform those that don't.</p>
+        <div class="detail-items">
+          <span class="detail-item">AI risk awareness training (role-based)</span>
+          <span class="detail-item">AI literacy program — all staff</span>
+          <span class="detail-item">Safe reporting channels (no-retaliation)</span>
+          <span class="detail-item">Training completion tracking</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code gov">GV.4</span>
+        <span class="detail-title">Third-Party &amp; Vendor AI Oversight</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Most enterprises deploy more vendor-built AI than internally-built AI. Governance that stops at the organization's boundary leaves the majority of AI risk unaddressed.</p>
+        <div class="detail-items">
+          <span class="detail-item">AI security questionnaires for vendors</span>
+          <span class="detail-item">AI governance requirements in contracts</span>
+          <span class="detail-item">Periodic third-party compliance audits</span>
+          <span class="detail-item">Vendor registry (same as agent registry)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code gov">GV.5</span>
+        <span class="detail-title">Policies for AI Risk Management (Organizational)</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Extend AI governance into broader enterprise risk management programs — AI risk should not be siloed from cyber risk, operational risk, or compliance risk.</p>
+        <div class="detail-items">
+          <span class="detail-item">AI risk integrated into ERM program</span>
+          <span class="detail-item">Board-level AI risk reporting</span>
+          <span class="detail-item">AI risk appetite statement</span>
+          <span class="detail-item">Alignment to ISO 42001 / EU AI Act where applicable</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code gov">GV.6</span>
+        <span class="detail-title">Policies for AI Risk Management (Workforce)</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Policies governing how employees interact with, build, and deploy AI — including sanctioned use, prohibited use, and citizen development.</p>
+        <div class="detail-items">
+          <span class="detail-item">Approved AI tools catalog</span>
+          <span class="detail-item">Prohibited AI uses (clearly defined)</span>
+          <span class="detail-item">Citizen development policy &amp; guardrails</span>
+          <span class="detail-item">Shadow AI disclosure / amnesty program</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="section" id="map">
+    <div class="sec-eyebrow">Function 2 · Pre-deployment Context</div>
+    <h2>MAP — Understand Context &amp; Identify Risks</h2>
+    <p class="section-intro">
+      MAP happens before deployment. Its job is to understand the operating environment, identify who could be affected and how, and document what could go wrong — including ways the system might be misused. MAP is where risk classification occurs.
+    </p>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code map">MP.1</span>
+        <span class="detail-title">Context &amp; Use Case Analysis</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Document the intended purpose, user populations, and operating environment for every AI system. Include foreseeable misuse — not just intended use.</p>
+        <div class="detail-items">
+          <span class="detail-item">Use case definition with user populations</span>
+          <span class="detail-item">Foreseeable misuse documentation</span>
+          <span class="detail-item">Deployment environment &amp; integration points</span>
+          <span class="detail-item">Data sources, quality, &amp; provenance</span>
+          <span class="detail-item">Architecture diagrams</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code map">MP.2</span>
+        <span class="detail-title">Stakeholder Impact Assessment</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Identify everyone affected by AI decisions — including indirect stakeholders who may not interact with the system directly. Assess potential harms across harm categories.</p>
+        <div class="detail-items">
+          <span class="detail-item">Stakeholder map (direct &amp; indirect)</span>
+          <span class="detail-item">Harm assessment: physical, psychological, financial, reputational</span>
+          <span class="detail-item">Disparate impact analysis (protected classes)</span>
+          <span class="detail-item">Community engagement records (where applicable)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code map">MP.3</span>
+        <span class="detail-title">Risk Identification Across the AI Lifecycle</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Systematically identify risks at each stage: training data, model design, deployment, integration, and ongoing operation. Document known limitations and failure modes before deployment.</p>
+        <div class="detail-items">
+          <span class="detail-item">Risk register (per system)</span>
+          <span class="detail-item">Risks cataloged against all 7 trustworthy AI characteristics</span>
+          <span class="detail-item">Training data risk assessment</span>
+          <span class="detail-item">Known limitations documented (model card)</span>
+          <span class="detail-item">Failure mode &amp; effects analysis</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code map">MP.4</span>
+        <span class="detail-title">Risk Classification &amp; Prioritization</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Classify each AI system by risk tier. Risk classification determines approval pathway, monitoring intensity, and documentation requirements. Calibrate approval to risk — not all AI should face the same governance overhead.</p>
+        <div class="detail-items">
+          <span class="detail-item">Risk tier classification (Low / Medium / High)</span>
+          <span class="detail-item">Risk scoring criteria (documented)</span>
+          <span class="detail-item">Approval pathway by tier</span>
+          <span class="detail-item">Escalation triggers</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code map">MP.5</span>
+        <span class="detail-title">Scientific &amp; Technical Risk Understanding</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Ensure decision-makers understand the technical risks inherent in the AI approach being used — including model type, training methodology, and known limitations of the underlying technology.</p>
+        <div class="detail-items">
+          <span class="detail-item">Technical risk summary (for non-technical stakeholders)</span>
+          <span class="detail-item">Model card / system card</span>
+          <span class="detail-item">Limitations documented in plain language</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEASURE -->
+  <div class="section" id="measure">
+    <div class="sec-eyebrow">Function 3 · Assess &amp; Quantify</div>
+    <h2>MEASURE — Test, Benchmark &amp; Monitor</h2>
+    <p class="section-intro">
+      MEASURE translates identified risks into quantifiable signals. It covers pre-deployment testing, bias assessment, and the ongoing monitoring required to detect performance degradation, drift, and emerging risks. Measurement is continuous — not a one-time exercise.
+    </p>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code msr">MS.1</span>
+        <span class="detail-title">AI Testing &amp; Evaluation</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Rigorous testing before and after deployment. Testing scope should match risk level — high-risk applications warrant adversarial testing and red-teaming.</p>
+        <div class="detail-items">
+          <span class="detail-item">Performance testing across diverse conditions</span>
+          <span class="detail-item">Edge case &amp; adversarial testing</span>
+          <span class="detail-item">Prompt injection &amp; jailbreak testing (GenAI)</span>
+          <span class="detail-item">Red team exercises (high-risk)</span>
+          <span class="detail-item">Hallucination rate benchmarking</span>
+          <span class="detail-item">Benchmark scores (documented)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code msr">MS.2</span>
+        <span class="detail-title">Bias &amp; Fairness Assessment</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Measure and document bias across protected categories before deployment and on a defined ongoing cadence. Fairness metrics must be defined for the specific use case — no universal metric applies.</p>
+        <div class="detail-items">
+          <span class="detail-item">Use-case-specific fairness metrics (defined upfront)</span>
+          <span class="detail-item">Disparate impact testing by demographic group</span>
+          <span class="detail-item">Training &amp; evaluation data representation analysis</span>
+          <span class="detail-item">Bias assessment report (versioned)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code msr">MS.3</span>
+        <span class="detail-title">Continuous Monitoring</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Establish production monitoring to detect performance degradation, data drift, and behavioral anomalies. Monitoring should generate evidence automatically — not be assembled at audit time.</p>
+        <div class="detail-items">
+          <span class="detail-item">Production performance metrics dashboard</span>
+          <span class="detail-item">Data drift &amp; distribution shift detection</span>
+          <span class="detail-item">Anomalous output alerting</span>
+          <span class="detail-item">Behavioral monitoring (agents)</span>
+          <span class="detail-item">Automated compliance reporting</span>
+          <span class="detail-item">Incident log &amp; drift reports</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code msr">MS.4</span>
+        <span class="detail-title">Trustworthy AI Characteristics Assessment</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Assess system performance against all seven trustworthy AI characteristics (see below) on a defined review cycle. Document gaps and remediation plans.</p>
+        <div class="detail-items">
+          <span class="detail-item">Assessment against 7 trustworthy AI criteria</span>
+          <span class="detail-item">Documented gaps &amp; remediation plans</span>
+          <span class="detail-item">Defined review cycle (e.g., annual for low-risk, quarterly for high)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code msr">MS.5</span>
+        <span class="detail-title">Explainability &amp; Interpretability</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Ensure that AI outputs can be explained to the relevant stakeholders — the level of explainability required depends on the decision context and who is affected.</p>
+        <div class="detail-items">
+          <span class="detail-item">Explainability approach documented per use case</span>
+          <span class="detail-item">Human-readable output explanations (where required)</span>
+          <span class="detail-item">Interpretability appropriate to decision stakes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANAGE -->
+  <div class="section" id="manage">
+    <div class="sec-eyebrow">Function 4 · Act on Risks</div>
+    <h2>MANAGE — Treat, Mitigate &amp; Respond</h2>
+    <p class="section-intro">
+      MANAGE is where measurement becomes action. It covers risk prioritization, treatment selection, control implementation, and incident response. The framework identifies four treatment options: avoid, mitigate, transfer, or accept.
+    </p>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code mgr">MG.1</span>
+        <span class="detail-title">Risk Prioritization</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Score and prioritize risks using consistent criteria across all AI systems, aligned to the broader enterprise risk framework. Consider reversibility — risks that are hard to undo warrant greater caution.</p>
+        <div class="detail-items">
+          <span class="detail-item">Risk scoring matrix (likelihood × impact)</span>
+          <span class="detail-item">Reversibility &amp; remediation difficulty factor</span>
+          <span class="detail-item">Regulatory &amp; reputational implications weighting</span>
+          <span class="detail-item">Prioritized risk register (reviewed regularly)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code mgr">MG.2</span>
+        <span class="detail-title">Risk Treatment Options</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">For each identified risk, select one of four treatment strategies. The treatment decision must be documented with executive sign-off for "Accept" decisions on high-risk items.</p>
+        <div class="detail-items">
+          <span class="detail-item">Avoid — don't deploy this use case</span>
+          <span class="detail-item">Mitigate — implement controls to reduce to acceptable level</span>
+          <span class="detail-item">Transfer — contracts, insurance, shared responsibility</span>
+          <span class="detail-item">Accept — document with executive approval (high-risk requires sign-off)</span>
+          <span class="detail-item">Treatment decisions documented &amp; reviewable</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <div class="detail-header">
+        <span class="detail-code mgr">MG.3</span>
+        <span class="detail-title">Incident Response &amp; Recovery</span>
+      </div>
+      <div class="detail-body">
+        <p class="detail-desc">Prepare for AI failures before they happen. Rollback mechanisms, human takeover protocols, and post-incident reviews are the minimum viable incident response capability for any AI system in production.</p>
+        <div class="detail-items">
+          <span class="detail-item">AI-specific incident response plan</span>
+          <span class="detail-item">Rollback &amp; human takeover mechanisms</span>
+          <span class="detail-item">Escalation contacts &amp; decision authority</span>
+          <span class="detail-item">Post-incident review process</span>
+          <span class="detail-item">Control update procedures post-incident</span>
+          <span class="detail-item">Incident logs retained for audit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRUSTWORTHY AI -->
+  <div class="section" id="trustworthy">
+    <div class="sec-eyebrow">Framework Foundation</div>
+    <h2>Seven Characteristics of Trustworthy AI</h2>
+    <p class="section-intro">
+      The NIST AI RMF is organized around seven characteristics that AI systems should exhibit to be considered trustworthy. Risk assessment across MAP and MEASURE is evaluated against all seven. An AI system that fails on any one characteristic is not fully trustworthy.
+    </p>
+
+    <div class="pillars-grid">
+      <div class="pillar">
+        <span class="pillar-icon">✓</span>
+        <div class="pillar-name">Valid &amp; Reliable</div>
+        <div class="pillar-desc">Consistent, accurate performance within defined parameters across conditions and over time. The system does what it claims to do.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🛡</span>
+        <div class="pillar-name">Safe</div>
+        <div class="pillar-desc">No unreasonable harm to people or the environment — including physical, psychological, financial, and societal harm. Safety failures can be irreversible.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🔒</span>
+        <div class="pillar-name">Secure &amp; Resilient</div>
+        <div class="pillar-desc">Protected from adversarial attacks (including prompt injection), able to maintain function under stress, and recoverable from disruption. Includes data integrity.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">👁</span>
+        <div class="pillar-name">Accountable &amp; Transparent</div>
+        <div class="pillar-desc">Clear ownership of outcomes, visible decision processes, and audit trails. Someone is responsible for what this system does — and can be found.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">💡</span>
+        <div class="pillar-name">Explainable &amp; Interpretable</div>
+        <div class="pillar-desc">Outputs can be understood by relevant stakeholders. The level of explainability required scales with the stakes of the decision and who is affected.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🔐</span>
+        <div class="pillar-name">Privacy-Enhanced</div>
+        <div class="pillar-desc">Individual privacy is protected throughout the AI lifecycle — data collection, training, deployment, and output. Includes de-identification and data minimization.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">⚖</span>
+        <div class="pillar-name">Fair — Bias Managed</div>
+        <div class="pillar-desc">Regular auditing for discriminatory outputs with corrective action. Fairness must be defined per use case — no single metric applies universally.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENAI PROFILE -->
+  <div class="section" id="genai">
+    <div class="sec-eyebrow">NIST AI 600-1 · Released July 2024</div>
+    <h2>Generative AI Profile — 12 Risk Categories</h2>
+    <p class="section-intro">
+      Released July 26, 2024 (per Executive Order 14110), the NIST AI 600-1 Generative AI Profile identifies 12 risks unique to or significantly exacerbated by generative AI and LLMs. It provides 200+ suggested actions mapped across GOVERN, MAP, MEASURE, and MANAGE. Organizations deploying LLMs or generative AI should layer this profile on top of AI RMF 1.0.
+    </p>
+
+    <div class="risks-grid">
+      <div class="risk-card">
+        <div class="risk-num">1</div>
+        <div>
+          <div class="risk-name">CBRN Information</div>
+          <div class="risk-desc">Lowered barrier to accessing chemical, biological, radiological, and nuclear weapons information via AI-assisted research.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">2</div>
+        <div>
+          <div class="risk-name">Confabulation</div>
+          <div class="risk-desc">Generation of false or misleading content presented with false confidence — commonly called "hallucination." Ranges from 0.7% (best-in-class) to 25%+ in deployed models.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">3</div>
+        <div>
+          <div class="risk-name">Dangerous Content</div>
+          <div class="risk-desc">Creation of violent, hateful, or otherwise harmful content. Includes content that could incite real-world harm or facilitate harassment.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">4</div>
+        <div>
+          <div class="risk-name">Data Privacy</div>
+          <div class="risk-desc">Unauthorized exposure, leakage, or re-identification of personal data — through training data, model outputs, or retrieval-augmented generation.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">5</div>
+        <div>
+          <div class="risk-name">Environmental Impacts</div>
+          <div class="risk-desc">Significant energy consumption and carbon emissions from training and inference at scale. Increasingly a regulatory and ESG disclosure consideration.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">6</div>
+        <div>
+          <div class="risk-name">Harmful Bias</div>
+          <div class="risk-desc">Reinforcement or amplification of stereotypes and discriminatory outputs — particularly at the intersection of training data representation and deployment context.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">7</div>
+        <div>
+          <div class="risk-name">Homogenization</div>
+          <div class="risk-desc">Reduction in content diversity and perspectives as AI-generated content dominates. Risk of monoculture in knowledge creation and decision-making.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">8</div>
+        <div>
+          <div class="risk-name">Information Integrity</div>
+          <div class="risk-desc">Generation and amplification of misinformation and disinformation. Deepfakes and synthetic media are a significant sub-risk in this category.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">9</div>
+        <div>
+          <div class="risk-name">Information Security</div>
+          <div class="risk-desc">Lowered barrier to cybersecurity attacks — including code generation for exploits, spear-phishing at scale, and adversarial attacks on AI systems themselves.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">10</div>
+        <div>
+          <div class="risk-name">Intellectual Property</div>
+          <div class="risk-desc">Copyright concerns in both training data ingestion and generated outputs. Ongoing legal uncertainty — organizations should track jurisdiction-specific developments.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">11</div>
+        <div>
+          <div class="risk-name">Obscene Content</div>
+          <div class="risk-desc">Generation of sexual, violent, or otherwise illegal content. Includes non-consensual intimate images — a key regulatory focus in 2024–2026.</div>
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-num">12</div>
+        <div>
+          <div class="risk-name">Value Chain &amp; Component Risks</div>
+          <div class="risk-desc">Risks inherited from third-party components — foundation models, fine-tuning datasets, plugins, and RAG data sources. Governance must extend to the supply chain.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CROSSWALK -->
+  <div class="section" id="crosswalk">
+    <div class="sec-eyebrow">Regulatory Alignment</div>
+    <h2>Framework Crosswalk</h2>
+    <p class="section-intro">
+      NIST AI RMF is voluntary but widely adopted as a baseline. Organizations implementing it build a strong foundation for compliance with other frameworks and emerging regulations. The table below maps AI RMF functions to key regulatory and standards equivalents.
+    </p>
+
+    <table class="crosswalk">
+      <thead>
+        <tr>
+          <th>AI RMF Function</th>
+          <th>EU AI Act</th>
+          <th>ISO 42001</th>
+          <th>What It Means in Practice</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="fn-badge gov">GOVERN</span></td>
+          <td>Quality Management System (Art. 17) · Transparency &amp; Accountability obligations</td>
+          <td>Clauses 5–7: Leadership, Planning, Support</td>
+          <td>Policies, roles, and governance structures required by all three frameworks — implement once, satisfy all three.</td>
+        </tr>
+        <tr>
+          <td><span class="fn-badge map">MAP</span></td>
+          <td>Risk Classification (Art. 6) · Prohibited AI (Art. 5) · Conformity assessment</td>
+          <td>Clause 6.1: AI Risk Assessment</td>
+          <td>MAP outputs (use case docs, stakeholder assessments, risk classification) directly satisfy EU Act conformity requirements for high-risk systems.</td>
+        </tr>
+        <tr>
+          <td><span class="fn-badge msr">MEASURE</span></td>
+          <td>Testing &amp; Monitoring obligations (Art. 9) · Accuracy, robustness, cybersecurity requirements</td>
+          <td>Clauses 9–10: Performance Evaluation, Improvement</td>
+          <td>Testing records, bias reports, and monitoring logs produced in MEASURE become the evidence required for EU AI Act post-market surveillance.</td>
+        </tr>
+        <tr>
+          <td><span class="fn-badge mgr">MANAGE</span></td>
+          <td>Risk Management System (Art. 9) · Incident reporting to authorities</td>
+          <td>Clause 8: AI System Operation</td>
+          <td>Incident response plans, treatment decisions, and post-incident reviews satisfy EU Act serious incident reporting and ISO 42001 operational control requirements.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="margin-top:28px;">
+      <strong>Status as of June 2026:</strong> NIST AI RMF remains voluntary for US private-sector organizations. The Federal AI Risk Management Act (HR6936) would make it mandatory for federal agencies and contractors — status: proposed. Colorado's original 2024 AI Act offered a safe harbor for NIST AI RMF compliance, but that statute was repealed and replaced by SB 26-189 (effective Jan 1, 2027) which does not carry the safe harbor — the framework remains strongly recommended practice for meeting SB 26-189's documentation and disclosure duties, but is no longer a codified legal defense in Colorado.
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="foot">
+  <div>NIST AI RMF 1.0 · NIST AI 600-1 Generative AI Profile · Reference summary prepared June 2026</div>
+  <div>
+    <a href="https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf" target="_blank">AI RMF 1.0 (PDF)</a>
+    &nbsp;·&nbsp;
+    <a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf" target="_blank">AI 600-1 GenAI Profile (PDF)</a>
+    &nbsp;·&nbsp;
+    <a href="https://airc.nist.gov/airmf-resources/playbook/" target="_blank">NIST Playbook</a>
+  </div>
+</div>
+
+</body>
+</html>
