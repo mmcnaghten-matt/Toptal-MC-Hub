@@ -64,6 +64,21 @@ export default function ClientDetail() {
           {client.description && (
             <p className="text-blue-300/70 text-sm mt-2">{client.description}</p>
           )}
+          {client.links && client.links.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-4">
+              {client.links.map((link, i) => (
+                <a
+                  key={i}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-3 py-1.5 transition-colors"
+                >
+                  {link.label} →
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

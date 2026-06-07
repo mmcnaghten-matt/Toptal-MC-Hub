@@ -16,6 +16,7 @@ export interface Client {
   name: string;
   vertical: VerticalId;
   description?: string;
+  links?: Array<{ label: string; url: string }>;
   opportunities: Opportunity[];
 }
 
@@ -66,6 +67,9 @@ export const CLIENTS: Client[] = [
     name: 'Werner Enterprises',
     vertical: 'ips',
     description: 'Large-scale transportation and logistics operator. Active AI governance engagement — June 2026.',
+    links: [
+      { label: 'Intelligence Report: Werner Enterprises', url: 'https://drive.google.com/file/d/1yZN6NRDwJRdCXzlGTQJmbCaIQhzkhHAm/view?usp=drive_link' },
+    ],
     opportunities: [
       {
         id: 'werner-ai-governance',
