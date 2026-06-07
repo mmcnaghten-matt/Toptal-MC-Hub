@@ -21,6 +21,9 @@ import MCSellerReintro from "./pages/MCSellerReintro";
 import MCPipelineDetail from "./pages/MCPipelineDetail";
 import MCNarrativeDetail from "./pages/MCNarrativeDetail";
 import MCNarrativeDetail2 from "./pages/MCNarrativeDetail2";
+import ClientsIndex from "./pages/clients/ClientsIndex";
+import ClientVertical from "./pages/clients/ClientVertical";
+import ClientDetail from "./pages/clients/ClientDetail";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +57,9 @@ const App = () => (
                 <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
                 <Route path="/mc-narrative" element={<MCNarrativeDetail />} />
                 <Route path="/mc-narrative-2" element={<MCNarrativeDetail2 />} />
+                <Route path="/clients" element={<ClientsIndex />} />
+                <Route path="/clients/:vertical" element={<ClientVertical />} />
+                <Route path="/clients/:vertical/:clientId" element={<ClientDetail />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
