@@ -50,7 +50,7 @@ const App = () => (
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
                 <Route path="/mc-plan" element={<MCPlan />} />
                 <Route path="/mc-plan-archive" element={<MCPlanArchive />} />
-                <Route path="/mc-seller-reintro" element={<MCSellerReintro />} />
+                <Route path="/mc-seller-reignite" element={<MCSellerReintro />} />
                 <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
                 <Route path="/mc-narrative" element={<MCNarrativeDetail />} />
                 <Route path="/mc-narrative-2" element={<MCNarrativeDetail2 />} />

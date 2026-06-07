@@ -1105,10 +1105,10 @@ export default function MCPlan() {
       <div className="bg-[#0d1b40] border-t border-white/5 py-5">
         <Container className="flex items-center justify-end">
           <Link
-            to="/mc-seller-reintro"
+            to="/mc-seller-reignite"
             className="flex items-center gap-2 text-sm text-blue-300/70 hover:text-blue-200 transition-colors"
           >
-            MC Sellers Reintro
+            Ignite MC Scale
             <ArrowRight size={14} />
           </Link>
         </Container>

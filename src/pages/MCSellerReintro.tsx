@@ -287,7 +287,7 @@ export default function MCSellerReintro() {
             <ToptalLogo className="h-6" />
           </div>
           <p className="text-xs font-semibold uppercase tracking-widest text-blue-300/60">
-            MC Sellers Reintro · Confidential
+            Ignite MC Scale · Confidential
           </p>
         </Container>
       </header>
