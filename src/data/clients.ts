@@ -8,6 +8,7 @@ export interface Opportunity {
   value?: string;
   practice?: string;
   notes?: string;
+  url?: string;
 }
 
 export interface Client {
@@ -60,6 +61,20 @@ export const VERTICALS: Record<VerticalId, { label: string; fullName: string; co
 export const VERTICAL_ORDER: VerticalId[] = ['ips', 'cps', 'cmet', 'hls', 'bfsi', 'international'];
 
 export const CLIENTS: Client[] = [
-  // IPS — content coming
-  // { id: 'schneider-electric', name: 'Schneider Electric', vertical: 'ips', opportunities: [] },
+  {
+    id: 'werner-enterprises',
+    name: 'Werner Enterprises',
+    vertical: 'ips',
+    description: 'Large-scale transportation and logistics operator. Active AI governance engagement — June 2026.',
+    opportunities: [
+      {
+        id: 'werner-ai-governance',
+        title: 'Governing the Agentic Enterprise',
+        description: 'Working session on AI governance operating models as agent development expands beyond IT. Covers shadow AI discovery, operating model design, citizen development enablement, and at-scale governance infrastructure across five capability domains.',
+        status: 'pipeline',
+        practice: 'AI Governance',
+        url: '/werner-governing-agentic-enterprise.html',
+      },
+    ],
+  },
 ];

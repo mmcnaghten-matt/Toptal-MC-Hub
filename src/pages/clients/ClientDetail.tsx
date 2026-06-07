@@ -105,6 +105,18 @@ export default function ClientDetail() {
                   {opp.notes && (
                     <p className="text-xs text-[#6b7280] leading-relaxed mt-2 italic border-t border-[#f1f5f9] pt-2">{opp.notes}</p>
                   )}
+                  {opp.url && (
+                    <div className="mt-3 pt-3 border-t border-[#f1f5f9]">
+                      <a
+                        href={opp.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-[#2563eb] hover:underline"
+                      >
+                        View document →
+                      </a>
+                    </div>
+                  )}
                 </div>
               );
             })}
