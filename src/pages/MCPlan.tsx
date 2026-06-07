@@ -274,9 +274,9 @@ export default function MCPlan() {
           <h1 className="text-5xl sm:text-6xl font-extrabold text-white leading-tight max-w-3xl mb-4">
             MC Model Transformation
           </h1>
-          <p className="text-lg text-blue-200 mb-10">Context · Vision · Marketing · Plan</p>
+          <p className="text-lg text-blue-200 mb-10">Numbers · Context · Hubs · Plan</p>
           <div className="flex flex-wrap gap-3">
-            {["Context", "Hub Strategy", "Marketing", "Execution Plan"].map((label) => (
+            {["MC at a Glance", "Context", "Hub Strategy", "Execution Plan"].map((label) => (
               <span
                 key={label}
                 className="flex items-center gap-2 bg-white/10 border border-white/20 text-white text-sm rounded-full px-4 py-2"
