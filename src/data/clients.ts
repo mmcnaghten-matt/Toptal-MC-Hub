@@ -82,4 +82,13 @@ export const CLIENTS: Client[] = [
       },
     ],
   },
+  {
+    id: 'yara-international',
+    name: 'Yara International',
+    vertical: 'ips',
+    links: [
+      { label: 'AI Governance Execution for Yara', url: 'https://docs.google.com/presentation/d/1IC5BX7pyVZFa6RO6GRDKsssQXSIHqQn1qGd8eYPO3fI/edit?usp=drive_link' },
+    ],
+    opportunities: [],
+  },
 ];
