@@ -223,6 +223,7 @@ const pursuitStages = [
       "Spot the MC trigger signal",
       "Warm intro to squad lead",
       "Leverage your tech account relationship",
+      "Monitor active Talent engagements for expansion signals",
       "Keep the broader deal in motion",
     ],
   },
@@ -258,7 +259,7 @@ const pursuitStages = [
     items: [
       "You stay in monthly client relationship",
       "Squad lead holds advisory touch",
-      "Expand: MC → Tech or Tech → MC",
+      "Expand: MC → Tech, Tech → MC, or Talent → PS",
       "Case study captured — you share in the win",
     ],
   },
@@ -316,9 +317,9 @@ export default function MCSellerReintro() {
       <section className="py-20 bg-white">
         <Container>
           <SectionLabel>Context</SectionLabel>
-          <SectionHeading>MC has a branding and motion problem,<br />not a capability problem</SectionHeading>
+          <SectionHeading>MC has a scaling opportunity —<br />and the model needs to match it</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            <strong>Our consultants are excellent. The challenge is structural</strong> — and we've asked sellers built for speed and relationship to carry too much of a pursuit motion that requires deep domain expertise. <strong>That's not a people problem. It's a model problem.</strong>
+            <strong>Our consultants are excellent. The challenge is structural</strong> — and we've asked sellers built for speed and relationship to carry too much of a pursuit motion that requires deep domain expertise. <strong>That's not a people problem. It's a growth model problem.</strong>
           </Body>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <Card>
@@ -330,13 +331,13 @@ export default function MCSellerReintro() {
             <Card>
               <h3 className="text-base font-bold text-[#0f172a] mb-3">A model that asked too much</h3>
               <p className="text-sm text-[#374151] leading-relaxed">
-                Selling MC requires solutioning, scoping and pursuing complex engagements — on top of your core talent work. We've been asking you to do two hard jobs at once. That's changing.
+                Recognizing a PS signal and pursuing complex MC engagements — on top of your core talent work — requires a different lens. We've been asking you to develop that lens without the tools to do it. That's changing.
               </p>
             </Card>
             <Card>
               <h3 className="text-base font-bold text-[#0f172a] mb-3">What's changing for you</h3>
               <p className="text-sm text-[#374151] leading-relaxed">
-                Your role shifts to finding the signal and making the intro. Expert squad leads take the pursuit from there. You stay in the relationship — without carrying the hard work of solutioning.
+                Your role shifts to finding the signal and making the intro — and your Talent relationships are the best place to start. Expert squad leads take the pursuit from there. You stay in the relationship — without carrying the hard work of solutioning.
               </p>
             </Card>
           </div>
@@ -367,6 +368,7 @@ export default function MCSellerReintro() {
                   "Client relationship — you own it throughout",
                   "Spotting the MC trigger signal in account conversations",
                   "Making the warm intro to the right squad lead",
+                  "Monitoring your active Talent engagements for MC expansion signals — tenure, growing scope, adjacent pain",
                   "Staying in the loop on pursuit progress",
                   "Credit for the MC engagement in your account",
                 ].map((item) => (
@@ -478,9 +480,9 @@ export default function MCSellerReintro() {
       <section className="py-20 bg-[#f8fafc]">
         <Container>
           <SectionLabel>Land &amp; expand — start here</SectionLabel>
-          <SectionHeading>Your tech accounts are the fastest path to MC revenue</SectionHeading>
+          <SectionHeading>Your tech accounts and your Talent relationships are the fastest path to MC revenue</SectionHeading>
           <Body className="max-w-2xl mb-10">
-            Every tech engagement creates a downstream business problem. These are the trigger questions — and the MC doors they open.
+            Every tech engagement creates a downstream business problem — and every active Talent engagement is a trust relationship waiting to be extended. These are the trigger questions and the MC doors they open.
           </Body>
           <div className="overflow-x-auto rounded-xl border border-[#e2e8f0] bg-white mb-6">
             <table className="w-full text-sm border-collapse">
@@ -510,9 +512,47 @@ export default function MCSellerReintro() {
               </tbody>
             </table>
           </div>
-          <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-xl px-6 py-5">
+          <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-xl px-6 py-5 mb-14">
             <p className="text-sm text-[#1e40af] leading-relaxed">
               <strong>Change management is a wedge, not just a follow-on</strong> — smaller scope, faster close, immediate trust-builder. Every tech implementation creates the need automatically.
+            </p>
+          </div>
+
+          {/* Talent accounts table */}
+          <p className="text-sm font-bold text-[#0f172a] mb-1">MC Talent Accounts</p>
+          <p className="text-sm text-[#374151] mb-6">Active Talent engagements are the highest-trust, lowest-friction MC entry point. The relationship is already there — you just need to see the signal.</p>
+          <div className="overflow-x-auto rounded-xl border border-[#e2e8f0] bg-white mb-6">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-widest text-[#6b7280] w-[30%]">Talent engagement signal</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-widest text-[#6b7280]">Trigger question to ask</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-widest text-[#6b7280] w-[22%]">MC door it opens</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f1f5f9]">
+                {([
+                  { signal: "Consultant tenure 4+ months, expanding scope", trigger: "Is there a broader initiative we should be helping shape — not just staffing?", door: "PS overlay / hub engagement" },
+                  { signal: "Single-practice Talent with adjacent pain visible", trigger: "You've got Finance covered — are the operational or workforce pressures connected?", door: "Adjacent practice entry" },
+                  { signal: "Consultant flagging strategic misalignment", trigger: "Is this a strategy problem upstream from what we're working on?", door: "Growth Strategy / Business Transformation" },
+                  { signal: "Multi-resource deployment (3+)", trigger: "Is there a program management layer that would make this team more effective?", door: "PS overlay" },
+                  { signal: "Repeat Talent buyer, same practice", trigger: "You keep coming back for this talent — have you thought about what a longer-term model looks like?", door: "Retainer / advisory" },
+                  { signal: "Engagement nearing close", trigger: "Before we wrap — what's the next problem? We'd rather you don't have to start over with someone new.", door: "Renewal + expansion" },
+                ] as { signal: string; trigger: string; door: string }[]).map((row) => (
+                  <tr key={row.signal} className="hover:bg-[#fafcff] transition-colors">
+                    <td className="px-5 py-4 text-[#2563eb] font-semibold align-top border-r border-[#f1f5f9]">{row.signal}</td>
+                    <td className="px-5 py-4 text-[#374151] italic align-top">"{row.trigger}"</td>
+                    <td className="px-5 py-4 align-top">
+                      <span className="inline-block text-xs font-semibold bg-[#eff6ff] text-[#2563eb] rounded px-2.5 py-1">{row.door}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-xl px-6 py-5">
+            <p className="text-sm text-[#1e40af] leading-relaxed">
+              <strong>The Talent relationship is the trust asset.</strong> You don't need to sell — you need to stay close enough to see the next problem before the client goes looking elsewhere.
             </p>
           </div>
         </Container>
@@ -553,7 +593,7 @@ export default function MCSellerReintro() {
           </div>
           <div className="bg-[#0d1b40] rounded-xl px-6 py-5">
             <p className="text-sm text-blue-100 leading-relaxed">
-              <strong className="text-white">You never lose the client — you gain a consulting win.</strong> A closed MC engagement in your account lifts the full relationship and opens new doors.
+              <strong className="text-white">You never lose the client — you gain a consulting win.</strong> A closed MC engagement in your account lifts the full relationship. An expanded Talent engagement deepens it. Both open new doors.
             </p>
           </div>
         </Container>
