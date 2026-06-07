@@ -86,9 +86,15 @@ export const CLIENTS: Client[] = [
     id: 'yara-international',
     name: 'Yara International',
     vertical: 'ips',
-    links: [
-      { label: 'AI Governance Execution for Yara', url: 'https://docs.google.com/presentation/d/1IC5BX7pyVZFa6RO6GRDKsssQXSIHqQn1qGd8eYPO3fI/edit?usp=drive_link' },
+    opportunities: [
+      {
+        id: 'yara-ai-governance',
+        title: 'AI Governance Execution for Yara',
+        description: 'Toptal MC engagement on execution-layer AI governance — covering strategy, data security, build-time compliance, runtime enforcement, telemetry, and org topology across Yara\'s AI operating model.',
+        status: 'pipeline',
+        practice: 'AI Governance',
+        url: 'https://docs.google.com/presentation/d/1IC5BX7pyVZFa6RO6GRDKsssQXSIHqQn1qGd8eYPO3fI/edit?usp=drive_link',
+      },
     ],
-    opportunities: [],
   },
 ];
