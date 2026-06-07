@@ -24,7 +24,7 @@ export default function ClientsIndex() {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-400 mb-3">
             Toptal Management Consulting
           </p>
-          <h1 className="text-3xl font-extrabold text-white">Account Intelligence</h1>
+          <h1 className="text-3xl font-extrabold text-white">MC Account Repository</h1>
           <p className="text-blue-300/70 text-sm mt-2">Client context, engagement history, and active opportunities by vertical</p>
         </div>
       </div>
