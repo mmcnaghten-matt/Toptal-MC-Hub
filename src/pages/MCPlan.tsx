@@ -1033,7 +1033,7 @@ export default function MCPlan() {
       <section className="bg-[#0d1b40] py-24">
         <Container>
           <SectionLabel light>Plan on a Page</SectionLabel>
-          <SectionHeading light>Three phases. Clear owners. Measurable momentum.</SectionHeading>
+          <SectionHeading light>Three phases. Measurable momentum.</SectionHeading>
           <Body light className="max-w-2xl mb-14">
             Sequenced to build — not everything at once.<br />Phase 1 unlocks Phase 2. Phase 2 earns Phase 3.
           </Body>
