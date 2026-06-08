@@ -294,13 +294,14 @@ export default function MCPlan() {
         <Container>
           <h2 className="text-2xl font-semibold text-[#9ca3af] mb-6">MC at a Glance</h2>
           <SectionLabel>By the Numbers</SectionLabel>
+          <p className="text-xs text-[#9ca3af] mb-6">As of June 5, 2026</p>
 
           {/* KPI stat bar */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
 
             {/* Gross Revenue */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">12-Month Gross Revenue</p>
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Gross Revenue — TTM</p>
               <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$27.9M</p>
               <p className="text-[10px] text-[#374151] mb-0.5">Jun '25 – May '26</p>
               <p className="text-[10px] font-medium text-emerald-600 mb-2">Q1 '26: +9% YoY</p>
@@ -314,7 +315,7 @@ export default function MCPlan() {
 
             {/* Net Revenue */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">12-Month Net Revenue</p>
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Net Revenue — TTM</p>
               <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$9.9M</p>
               <p className="text-[10px] text-[#374151] mb-0.5">36.2% blended margin</p>
               <p className="text-[10px] font-medium text-emerald-600 mb-2">Q1 '26: +5% YoY</p>
@@ -341,7 +342,7 @@ export default function MCPlan() {
               <p className="text-[10px] text-[#374151] mb-2">$4.2M → $5.2M</p>
               <p className="text-xl font-extrabold text-red-500">SMB –16%</p>
               <p className="text-[10px] text-[#374151] mb-1">$2.7M → $2.2M</p>
-              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Mix: ENT 69% · SMB 31% of LTM gross</p>
+              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Mix: ENT 69% · SMB 31% of TTM gross</p>
             </div>
 
             {/* Delivery Model Mix */}
@@ -370,7 +371,7 @@ export default function MCPlan() {
 
             {/* Practice Mix */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue % by Practice — LTM & Trend</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue % by Practice — TTM & Trend</p>
               <div className="space-y-1 flex-1">
                 {([
                   { name: "People",     pct: 38, trend: "↓ 38→37%", trendUp: false, color: "#7c3aed" },
@@ -389,12 +390,12 @@ export default function MCPlan() {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">LTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">TTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
             </div>
 
             {/* Industry Vertical */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue by Industry Vertical — LTM</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue by Industry Vertical — TTM</p>
               <div className="space-y-1 flex-1">
                 {([
                   { name: "IPS",   pct: 30, val: "$8.4M", color: "#2563eb" },
