@@ -178,6 +178,10 @@ const gtmMaterials: GTMRow[] = [
     description: "Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy.",
     keyBuyers: "CRO, CMO, CSO · Marketing / Sales / Innovation",
   },
+  {
+    seq: 3,
+    practice: "Strategy",
+    service: "Product Strategy",
     docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1DnZ419DYA2PvP7CYOPUsKM--SDtLuVmi/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
