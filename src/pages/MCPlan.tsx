@@ -901,7 +901,7 @@ export default function MCPlan() {
               onClick={() => setTechExpandModal(true)}
               className="text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
             >
-              View all 10 triggers →
+              View all 6 triggers →
             </button>
           </div>
 
