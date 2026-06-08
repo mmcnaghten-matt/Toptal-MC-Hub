@@ -450,6 +450,12 @@ const salesAssets: SalesAsset[] = [
     url: "https://docs.google.com/presentation/d/1_Ie-tOHmn-UmJIgSJLHeAwgCdy3I9vqEUCBg1gD3acM/edit?usp=sharing",
   },
   {
+    topic: "AI | Governance",
+    type: "Research Briefing",
+    document: "Governing the Agentic Enterprise - Prepared for Werner Industries",
+    url: "/werner-ai-governance-brief.html",
+  },
+  {
     topic: "Growth",
     type: "Workshop",
     document: "Access Health — Strategic Health Workshop Design",

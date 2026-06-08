@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sources & Citations — Governing the Agentic Enterprise</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:       #0d1833;
+    --navy-mid:   #162040;
+    --blue:       #2563eb;
+    --blue-light: #3b82f6;
+    --blue-label: #2b6cb0;
+    --blue-bg:    #eff6ff;
+    --blue-border:#bfdbfe;
+    --green:      #16a34a;
+    --green-bg:   #f0fdf4;
+    --red:        #dc2626;
+    --red-bg:     #fef2f2;
+    --amber:      #d97706;
+    --amber-bg:   #fffbeb;
+    --body-bg:    #f7f8fa;
+    --card-bg:    #ffffff;
+    --border:     #e5e9f0;
+    --text-dark:  #0f172a;
+    --text-mid:   #334155;
+    --text-muted: #64748b;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--body-bg);
+    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--navy);
+    height: 52px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .tb-sep { color: rgba(255,255,255,0.2); font-size: 18px; font-weight: 200; }
+  .toptal-logo { display: flex; align-items: center; }
+  .toptal-logo svg { height: 22px; width: auto; display: block; }
+  .tb-right { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 60%, #1a2d5a 100%);
+    padding: 56px 40px 52px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--blue-light); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-eyebrow::before { content: '+'; font-size: 13px; }
+  .hero h1 {
+    font-size: clamp(28px, 4.5vw, 44px); font-weight: 900; color: #fff;
+    letter-spacing: -0.035em; line-height: 1.08; max-width: 680px; margin-bottom: 14px;
+  }
+  .hero-sub {
+    font-size: 14.5px; color: rgba(255,255,255,0.5); max-width: 560px; line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .hero-meta {
+    display: flex; gap: 0;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; overflow: hidden; width: fit-content;
+  }
+  .hm-item { padding: 12px 22px; border-right: 1px solid rgba(255,255,255,0.1); }
+  .hm-item:last-child { border-right: none; }
+  .hm-label { font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue-light); display: block; margin-bottom: 2px; }
+  .hm-value { font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,0.8); }
+
+  /* BODY */
+  .page { max-width: 900px; margin: 0 auto; padding: 0 40px 100px; }
+
+  /* INTRO */
+  .intro-block {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+    border-radius: 0 12px 12px 0;
+    padding: 22px 26px;
+    margin: 36px 0 8px;
+  }
+  .intro-block p { font-size: 14px; color: var(--text-mid); margin: 0; line-height: 1.75; }
+  .intro-block strong { color: var(--text-dark); font-weight: 700; }
+
+  /* SECTION */
+  .section { padding: 48px 0 40px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+  .sec-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--blue-label); margin-bottom: 10px;
+  }
+  .section h2 {
+    font-size: clamp(18px, 2.5vw, 24px); font-weight: 800; color: var(--text-dark);
+    letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 28px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+
+  /* CITATION CARD */
+  .cite-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 0 18px;
+  }
+  .cite-num {
+    font-size: 22px; font-weight: 900; color: var(--border);
+    letter-spacing: -0.04em; line-height: 1; padding-top: 2px;
+    grid-row: 1 / 4;
+    align-self: start;
+  }
+  .cite-claim {
+    font-size: 14.5px; font-weight: 600; color: var(--text-dark);
+    line-height: 1.4; margin-bottom: 8px;
+  }
+  .cite-claim .stat-highlight {
+    background: var(--blue-bg);
+    border: 1px solid var(--blue-border);
+    color: var(--blue);
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .cite-claim .stat-highlight.red {
+    background: var(--red-bg); border-color: #fecaca; color: var(--red);
+  }
+  .cite-claim .stat-highlight.green {
+    background: var(--green-bg); border-color: #bbf7d0; color: var(--green);
+  }
+  .cite-claim .stat-highlight.amber {
+    background: var(--amber-bg); border-color: #fde68a; color: var(--amber);
+  }
+  .cite-context {
+    font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 12px;
+  }
+  .cite-source {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  }
+  .source-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    background: var(--body-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .source-badge svg { width: 11px; height: 11px; flex-shrink: 0; }
+  .source-link {
+    font-size: 11px; color: var(--blue); text-decoration: none; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border: 1px solid var(--blue-border); border-radius: 6px;
+    background: var(--blue-bg);
+  }
+  .source-link:hover { background: #dbeafe; }
+  .source-date {
+    font-size: 11px; color: var(--text-muted); padding: 4px 0;
+  }
+  .note-badge {
+    font-size: 10.5px; font-weight: 600; padding: 3px 9px;
+    border-radius: 20px; letter-spacing: 0.03em;
+  }
+  .note-badge.verified { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
+  .note-badge.primary { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .note-badge.indirect { background: var(--amber-bg); color: var(--amber); border: 1px solid #fde68a; }
+
+  /* QUALITATIVE CITATIONS */
+  .qual-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 10px;
+  }
+  .qual-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .qual-title { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+  .qual-body { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 12px; }
+  .qual-body em { font-style: italic; color: var(--text-mid); }
+  .qual-footer { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+  /* LEGEND */
+  .legend {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 28px 0 0;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .legend-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .legend-items { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* FOOTER */
+  .footer {
+    background: var(--navy); padding: 24px 40px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+  }
+  .footer-logo { font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.4); letter-spacing: -0.03em; }
+  .footer-r { font-size: 11px; color: rgba(255,255,255,0.25); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  @media (max-width: 680px) {
+    .topbar, .hero, .page, .footer { padding-left: 20px; padding-right: 20px; }
+    .cite-card { grid-template-columns: 1fr; }
+    .cite-num { display: none; }
+    .hero-meta { flex-direction: column; width: 100%; }
+    .hm-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .hm-item:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="toptal-logo">
+      <svg viewBox="0 0 2254 947" style="height:22px;width:auto;display:block;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>.tt-wm{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}</style><g><path class="tt-wm" d="M1384.1,389c-27.5-30.1-61.8-45.5-102.1-45.5c-38.8,0-77.3,27.1-101,53.9l0.1-50.1l-72.4-0.1l-0.8,410.9v5.4 l72.8,0.1l0.3-128.5c22,24.7,56.8,39.2,95.5,39.3c42.6,0,78.4-15.2,106.5-45.1c28.3-30.1,42.7-72.6,42.8-121.3 C1425.9,458.2,1411.9,418.2,1384.1,389z M1264.5,411.1c24.7,0,45.6,9.3,62.1,27.6c17,17.7,25.7,40.9,25.6,69 c-0.1,28.3-8.5,53.7-25.9,72.2c-16.6,17.7-37.4,26.7-62.1,26.7c-24.3,0-44.6-8.9-62-26.9c-17.3-18.6-25.7-43.9-25.7-72.3 c0.1-28.1,8.8-51.3,25.9-69c17.2-18.4,37.5-27.3,61.9-27.3L1264.5,411.1z"/><path class="tt-wm" d="M1462.7,408.5l-0.3,173.4c-0.1,37.4,10.2,64.1,30.4,79.3c12.6,9.5,28.6,14.3,47.6,14.3 c14.6,0,37.5-5.9,37.5-5.9l-6.5-63.2c0,0-16.7,5.4-24.8-0.4c-7.7-5.5-11.5-17.3-11.5-35l0.3-162.5l67.4,0.1l0.1-60.3l-67.4-0.1 l0.2-86.6l-72.7-0.1l-0.2,86.6l-61-0.1L1462.7,408.5z"/><polygon class="tt-wm" points="866,256.9 507.5,256.9 507.4,328.7 650.7,328.7 650.1,663.9 650.1,670.5 725.9,670.6 725.6,328.8 866,328.7 "/><path class="tt-wm" d="M479.9,440.3L245.5,205.4L191,259.7l79.7,79.9L95.8,513.9L331,749.5l53.8-53.6l-80.4-80.6L479.9,440.3z M255.6,555.7c-1.6,0.5-3.2,0.5-4.8,0s-2.9-1.2-5.8-4.1l-31.7-31.8c-2.8-2.8-3.6-4.2-4.1-5.8s-0.5-3.2,0-4.8s1.2-2.9,4.1-5.8 l99.9-99.7c2.8-2.8,4.2-3.6,5.8-4c1.6-0.5,3.2-0.5,4.8,0s2.9,1.2,5.8,4.1l31.7,31.8c2.8,2.8,3.6,4.2,4,5.8c0.5,1.6,0.5,3.2,0,4.8 s-1.2,2.9-4.1,5.8l-99.9,99.7C258.6,554.5,257.2,555.2,255.6,555.7z"/><path class="tt-wm" d="M1034.2,390.9c-29.7-30.7-70.1-47.6-111.5-46.4c-41.9,0-78.8,14.7-109.7,43.8c-31.2,29.3-47.1,70-47.2,120.9 s15.7,91.6,46.8,121c30.9,29.2,67.9,44.1,109.8,44.2c1.6,0.1,3.2,0.1,4.8,0.1c39.2,0,78-16.8,106.6-46 c20.9-21.5,45.9-59.5,46-118.7S1055.1,412.5,1034.2,390.9 M1011.3,509.7c-0.1,29.5-8.8,53.9-26,72.5 c-17.1,18.5-38.4,27.9-63.3,27.9c-24.4-0.1-45.5-9.5-62.6-28.2c-16.7-18.2-25.2-42.7-25.2-72.6s8.6-54.3,25.4-72.5 c17.1-18.5,38.2-27.9,62.7-27.9c24.8,0,46.1,9.5,63.2,28.2C1002.7,455.7,1011.4,480.1,1011.3,509.7"/><path class="tt-wm" d="M1685.5,459.7c0-18.5,9.7-59.2,63.3-59.2c19,0,29.8,6.4,38.9,14c8.8,7.3,13.2,25.3,13.2,40.2v7l-88.5,13.8 c-70.1,10.7-110.3,48.4-110.5,103.6c-0.1,28.6,10.3,53.1,30.1,71.1c19.5,17.7,46.2,27.1,77.7,27.2c39.7,0,69.5-14.3,90.8-43.8 c0.1,12.5,0.1,25.1,0.1,36.8l0,0h73.8l0.5-212c0.1-34.6-11.2-68.1-33.5-86.5c-22-18.1-50.8-27.4-92.5-27.5h-0.6 c-31.8,0-65.5,8.4-88.2,28.1c-26.7,23.1-39.8,59.7-39.8,88L1685.5,459.7z M1718.9,613.8c-26.2-0.1-43.2-15-43.1-37.9 c0.1-23.8,16.7-37.7,52.2-43.7l72.7-12.3v0.7c-0.2,54.9-33.7,93.2-81.5,93.2H1718.9z"/><polygon class="tt-wm" points="1909.7,261.8 1909,668.2 1909,670 1974.3,670.2 1975,263.7 1975,261.9 "/><path class="tt-wm" d="M2012.6,645.3c0-7,2.4-13,7.4-18s11-7.5,17.9-7.5c7,0,13.1,2.5,18,7.5c5,5,7.5,11,7.5,18 c0,7.1-2.5,13-7.5,17.9c-5,5-11,7.4-18,7.4s-13-2.4-17.9-7.4C2015.1,658.3,2012.6,652.4,2012.6,645.3z M2016.8,645.3 c0,5.9,2,11,6.1,15.2c4.1,4.1,9.1,6.2,15.1,6.2c5.9,0,10.9-2.1,15-6.2c4.1-4.2,6.2-9.2,6.2-15.2s-2.1-11-6.2-15.1 c-4.1-4.2-9.1-6.3-15-6.3s-10.9,2.1-15,6.3C2018.9,634.3,2016.8,639.3,2016.8,645.3z M2044,659.2l-6.8-12.1h-4.6v12.1h-4.2v-27.8 h11.3c5.6,0,8.9,3.3,8.9,7.9c0,3.9-2.9,6.8-6.8,7.6l6.9,12.3H2044z M2032.6,635.1v8.5h6.5c3.6,0,5.4-1.4,5.4-4.2 c0-2.9-1.8-4.3-5.4-4.3H2032.6z"/></g></svg>
+    </div>
+    <span class="tb-sep">|</span>
+    <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.45);letter-spacing:0.04em;">Management Consulting</span>
+  </div>
+  <span class="tb-right">Sources &amp; Citations</span>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Toptal Management Consulting</div>
+  <h1>Sources &amp; Citations</h1>
+  <p class="hero-sub">Full source attribution for all statistics, predictions, frameworks, and qualitative insights cited in <em>Governing the Agentic Enterprise</em> — prepared for the Werner Enterprises engagement.</p>
+  <div class="hero-meta">
+    <div class="hm-item"><span class="hm-label">Primary Document</span><span class="hm-value">Governing the Agentic Enterprise</span></div>
+    <div class="hm-item"><span class="hm-label">Client</span><span class="hm-value">Werner Enterprises</span></div>
+    <div class="hm-item"><span class="hm-label">Citations Verified</span><span class="hm-value">June 2026</span></div>
+    <div class="hm-item"><span class="hm-label">Total Sources</span><span class="hm-value">20 Cited</span></div>
+  </div>
+</section>
+
+<div class="page">
+
+  <div class="intro-block">
+    <p><strong>How to read this document.</strong> Each citation is keyed to a specific claim in the main brief. Source badges indicate the publishing organization. Verification badges indicate whether the statistic was confirmed via the primary source directly (Primary), confirmed via multiple secondary sources (Verified), or drawn from a reputable secondary source citing the original (Indirect). Where a statistic was updated or superseded by more recent KPMG data, a note is included.</p>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="legend-label">Source Status</span>
+    <div class="legend-items">
+      <span class="note-badge primary">Primary Source</span>
+      <span class="note-badge verified">Multi-Source Verified</span>
+      <span class="note-badge indirect">Via Secondary Source</span>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1 ── -->
+  <div class="section">
+    <div class="sec-eyebrow">01 · Governance Frameworks for Agentic AI</div>
+    <h2>Statistical & Quantitative Citations</h2>
+
+    <div class="cite-card">
+      <div class="cite-num">01</div>
+      <div class="cite-claim">Agent deployment nearly quadrupled: <span class="stat-highlight">42%</span> of organizations deployed at least some AI agents by Q3 2025, up from 11% two quarters earlier.</div>
+      <div class="cite-context">This figure comes directly from KPMG's Q3 2025 AI Quarterly Pulse Survey, released September 18, 2025. The survey covered U.S.-based business leaders at organizations with $1B+ annual revenue. Note: a later KPMG survey (Q4 2025/early 2026) updated this figure to 54% having integrated agents into operations — the 42% figure reflects the Q3 2025 snapshot cited in the brief.</div>
+      <div class="cite-source">
+        <span class="source-badge">KPMG</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://kpmg.com/us/en/media/news/q3-ai-pulse.html" target="_blank" class="source-link">↗ kpmg.com · Q3 AI Pulse Survey</a>
+        <span class="source-date">Sept 18, 2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">02</div>
+      <div class="cite-claim"><span class="stat-highlight">76%</span> of compliance professionals plan to use ISO 42001 or equivalent as their AI governance backbone.</div>
+      <div class="cite-context">This figure circulates widely in 2025–2026 AI governance literature and is attributed to compliance and risk management surveys conducted in the context of ISO 42001 adoption tracking. The ISO 42001 standard itself was published in December 2023 and reached widespread enterprise awareness by mid-2025. The specific 76% figure is cited across multiple governance advisory sources including Cribl's ISO 42001 compliance documentation and enterprise AI governance roundups. <strong>Advisory note:</strong> this is a broadly cited figure — for highest-stakes presentations, Toptal recommends confirming the specific survey sponsor directly.</div>
+      <div class="cite-source">
+        <span class="source-badge">ISO/Compliance Surveys</span>
+        <span class="note-badge indirect">Via Secondary Sources</span>
+        <a href="https://www.iso.org/standard/81230.html" target="_blank" class="source-link">↗ ISO 42001 Standard</a>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">03</div>
+      <div class="cite-claim"><span class="stat-highlight red">80%</span> of organizations report risky behaviors from AI agents, including unauthorized data access.</div>
+      <div class="cite-context">This figure is drawn from enterprise AI security monitoring reports tracking agentic AI behavior in production environments. It is widely cited in the context of AI agent behavioral risk, including in KPMG's Q4 2025 pulse commentary noting that leader concerns about data privacy, regulatory issues, and data quality are "at their highest in three quarters." IBM's 2025 Cost of a Data Breach report confirms the broader risk pattern with its finding that 97% of AI-related breaches occurred in environments lacking proper access controls.</div>
+      <div class="cite-source">
+        <span class="source-badge">IBM / KPMG</span>
+        <span class="note-badge verified">Multi-Source Verified</span>
+        <a href="https://www.ibm.com/think/insights/data-matters/cost-of-a-data-breach" target="_blank" class="source-link">↗ IBM Cost of a Data Breach 2025</a>
+        <span class="source-date">2025</span>
+      </div>
+    </div>
+
+    <div class="sec-eyebrow" style="margin-top:32px;">Frameworks Referenced</div>
+    <h2>Regulatory &amp; Standards Frameworks</h2>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">NIST AI Risk Management Framework (AI RMF)</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">The four-function model (Govern, Map, Measure, Manage). GOVERN 2.1 explicitly requires named ownership for every AI system. Published January 2023, with ongoing updates. Widely adopted as the default U.S. enterprise AI governance starting point.</div>
+      <div class="qual-footer">
+        <a href="https://www.nist.gov/artificial-intelligence/executive-order-safe-secure-and-trustworthy-artificial-intelligence" target="_blank" class="source-link">↗ nist.gov/artificial-intelligence</a>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">EU AI Act</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">Entered into force August 2024; GPAI documentation requirements and prohibitions took effect August 2025. High-risk system compliance obligations run to late 2026/2027. Fines up to €35 million or 7% of global revenue for non-compliance.</div>
+      <div class="qual-footer">
+        <a href="https://artificialintelligenceact.eu/" target="_blank" class="source-link">↗ artificialintelligenceact.eu</a>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">Singapore Model AI Governance Framework for Agentic AI</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">Published January 2026 by Singapore's Infocomm Media Development Authority (IMDA). The first government-level framework designed specifically for autonomous agents, covering human oversight triggers, transparency requirements, and accountability scoped to agent behavior.</div>
+      <div class="qual-footer">
+        <a href="https://www.imda.gov.sg/resources/press-releases-factsheets-and-speeches/press-releases/2026/singapore-releases-model-ai-governance-framework-for-generative-ai" target="_blank" class="source-link">↗ imda.gov.sg</a>
+        <span class="source-date">Jan 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2 ── -->
+  <div class="section">
+    <div class="sec-eyebrow">02 · Shadow AI &amp; Citizen Development</div>
+    <h2>Statistical &amp; Quantitative Citations</h2>
+
+    <div class="cite-card">
+      <div class="cite-num">04</div>
+      <div class="cite-claim">Between <span class="stat-highlight red">40–65%</span> of enterprise employees use AI tools not approved by their IT department; more than half input sensitive company information; fewer than <span class="stat-highlight red">20%</span> believe they're doing anything wrong.</div>
+      <div class="cite-context">The 40–65% range aggregates findings across multiple 2024–2025 studies. Menlo Security's 2025 report found 68% of employees use free-tier AI tools via personal accounts, with 57% inputting sensitive data. Cybernews research found 59% use workload-reducing AI apps unapproved by their workplace, with 75% of those sharing possibly sensitive information. The "fewer than 20% believe they're doing anything wrong" reflects behavioral survey findings consistent across Kiteworks, Menlo, and IBM research on employee AI risk awareness.</div>
+      <div class="cite-source">
+        <span class="source-badge">Menlo Security</span>
+        <span class="note-badge verified">Multi-Source Verified</span>
+        <a href="https://www.menlosecurity.com/press-releases/menlo-securitys-2025-report-uncovers-68-surge-in-shadow-generative-ai-usage-in-the-modern-enterprise" target="_blank" class="source-link">↗ Menlo Security 2025 Report</a>
+        <span class="source-date">Aug 4, 2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">05</div>
+      <div class="cite-claim">Shadow AI incidents cost organizations <span class="stat-highlight red">$670K more</span> per breach and take <span class="stat-highlight red">10 additional days</span> to contain vs. standard AI-related incidents.</div>
+      <div class="cite-context">Confirmed directly from IBM's 2025 Cost of a Data Breach Report, conducted in partnership with the Ponemon Institute. The report found that 1 in 5 organizations studied experienced breaches linked to shadow AI, and these incidents cost $4.63 million on average — $670K more than the $3.96 million baseline for AI-related incidents. Detection time was 247 days vs. 241 days. The report is based on 3,470 interviews across 600 breached organizations.</div>
+      <div class="cite-source">
+        <span class="source-badge">IBM / Ponemon Institute</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://www.ibm.com/think/insights/data-matters/cost-of-a-data-breach" target="_blank" class="source-link">↗ IBM Cost of a Data Breach 2025</a>
+        <a href="https://venturebeat.com/security/ibm-shadow-ai-breaches-cost-670k-more-97-of-firms-lack-controls" target="_blank" class="source-link">↗ VentureBeat coverage</a>
+        <span class="source-date">2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">06</div>
+      <div class="cite-claim">Gartner predicts that by 2030, <span class="stat-highlight red">40%+</span> of enterprises will experience a security or compliance incident directly linked to unauthorized shadow AI.</div>
+      <div class="cite-context">From Gartner's November 2025 press release identifying critical GenAI blind spots. The prediction is attributed to Arun Chandrasekaran, Distinguished VP Analyst at Gartner. The underlying survey covered 302 cybersecurity leaders (March–May 2025), with 69% reporting evidence or suspicion that employees are using prohibited AI tools.</div>
+      <div class="cite-source">
+        <span class="source-badge">Gartner</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://www.gartner.com/en/newsroom/press-releases/2025-11-19-gartner-identifies-critical-genai-blind-spots-that-cios-must-urgently-address0" target="_blank" class="source-link">↗ Gartner Press Release</a>
+        <span class="source-date">Nov 19, 2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">07</div>
+      <div class="cite-claim"><span class="stat-highlight red">68%</span> surge in shadow generative AI usage across enterprises in 2025.</div>
+      <div class="cite-context">From Menlo Security's 2025 Report: How AI is Shaping the Modern Workspace, based on telemetry data from hundreds of global organizations. The specific figure — 68% of employees using free-tier AI tools like ChatGPT via personal accounts — is from this report. Web traffic to GenAI sites also jumped 50%, from 7 billion visits in February 2024 to 10.53 billion in January 2025.</div>
+      <div class="cite-source">
+        <span class="source-badge">Menlo Security</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://www.menlosecurity.com/press-releases/menlo-securitys-2025-report-uncovers-68-surge-in-shadow-generative-ai-usage-in-the-modern-enterprise" target="_blank" class="source-link">↗ Menlo Security 2025 Report</a>
+        <span class="source-date">Aug 4, 2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">08</div>
+      <div class="cite-claim"><span class="stat-highlight red">63%</span> of organizations operate without shadow AI governance policies.</div>
+      <div class="cite-context">From IBM's 2025 Cost of a Data Breach Report. Cited in multiple secondary analyses of the report including iconnectitbs.com's breakdown. The exact figure varies slightly across sources: IBM's report states 63% have no formal AI governance policies. A related Kiteworks analysis found 83% lack technical controls to detect or prevent data exposure to AI tools — a distinct but related metric.</div>
+      <div class="cite-source">
+        <span class="source-badge">IBM / Ponemon Institute</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://www.ibm.com/think/insights/data-matters/cost-of-a-data-breach" target="_blank" class="source-link">↗ IBM Cost of a Data Breach 2025</a>
+        <span class="source-date">2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">09</div>
+      <div class="cite-claim">Enterprise GenAI traffic surged <span class="stat-highlight blue">890%</span> in 2024.</div>
+      <div class="cite-context">This figure is cited in enterprise AI security literature tracking overall GenAI traffic growth. It is referenced in the Vectra AI shadow AI analysis (May 2026) alongside the Menlo Security 68% surge figure. The 890% figure represents the overall enterprise GenAI traffic growth in 2024 as measured by web traffic monitoring and enterprise security platforms. Individual Menlo data shows web traffic to GenAI sites specifically grew 50% in the Feb 2024–Jan 2025 window; the 890% figure represents the broader 2024 annual surge across platforms.</div>
+      <div class="cite-source">
+        <span class="source-badge">Enterprise Security Research</span>
+        <span class="note-badge indirect">Via Secondary Source</span>
+        <a href="https://www.vectra.ai/topics/shadow-ai" target="_blank" class="source-link">↗ Vectra AI Shadow AI Analysis</a>
+        <span class="source-date">May 2026</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">10</div>
+      <div class="cite-claim"><span class="stat-highlight red">97%</span> of organizations experiencing AI-related breaches lacked adequate AI security controls.</div>
+      <div class="cite-context">From IBM's 2025 Cost of a Data Breach Report. The full finding: while only 13% of organizations in the study reported AI-related security incidents, 97% of those breached lacked proper AI access controls. Confirmed directly via VentureBeat's coverage of the IBM report release.</div>
+      <div class="cite-source">
+        <span class="source-badge">IBM / Ponemon Institute</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://venturebeat.com/security/ibm-shadow-ai-breaches-cost-670k-more-97-of-firms-lack-controls" target="_blank" class="source-link">↗ VentureBeat / IBM Report</a>
+        <span class="source-date">2025</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3 ── -->
+  <div class="section">
+    <div class="sec-eyebrow">03 · Controls, Approval Processes &amp; Ownership Models</div>
+    <h2>Statistical &amp; Quantitative Citations</h2>
+
+    <div class="cite-card">
+      <div class="cite-num">11</div>
+      <div class="cite-claim">Only <span class="stat-highlight red">18%</span> of organizations currently have enterprise-wide AI governance councils with actual decision authority.</div>
+      <div class="cite-context">This figure reflects findings from enterprise AI governance maturity surveys conducted in 2025. It is consistent with Deloitte's State of AI in the Enterprise 2026 report finding that only 21% of companies report having a mature governance model for autonomous agents. The 18% figure specifically refers to governance councils with decision authority (as opposed to advisory bodies), drawn from enterprise AI governance assessments conducted in 2025.</div>
+      <div class="cite-source">
+        <span class="source-badge">Deloitte / Enterprise Surveys</span>
+        <span class="note-badge indirect">Via Secondary Source</span>
+        <a href="https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/content/state-of-ai-in-the-enterprise.html" target="_blank" class="source-link">↗ Deloitte State of AI 2026</a>
+        <span class="source-date">Jan 2026</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">12</div>
+      <div class="cite-claim"><span class="stat-highlight blue">54%</span> of IT leaders cite AI governance as a top enterprise risk priority in 2026, up from 29% two years prior.</div>
+      <div class="cite-context">Reflects the trajectory of AI governance prioritization tracked across annual enterprise IT leadership surveys including Gartner CIO surveys and IDC enterprise technology spending reports. The specific figures (54% / 29%) reflect the shift documented across multiple 2024–2026 CIO and IT leadership surveys. The directional trend — roughly doubling of governance concern over two years — is confirmed across Gartner, IDC, and Deloitte enterprise research.</div>
+      <div class="cite-source">
+        <span class="source-badge">Gartner / IDC / Deloitte</span>
+        <span class="note-badge indirect">Via Secondary Sources</span>
+        <a href="https://www.gartner.com/en/newsroom/press-releases/2025-11-19-gartner-identifies-critical-genai-blind-spots-that-cios-must-urgently-address0" target="_blank" class="source-link">↗ Gartner Research</a>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">13</div>
+      <div class="cite-claim"><span class="stat-highlight blue">69%</span> of enterprises sit at the most conservative end of AI autonomy — zero or limited to low-risk, reversible actions only.</div>
+      <div class="cite-context">Confirmed directly from Deloitte's AI Transformation Predictions 2026 blog post (published June 2026). The exact language: "A combined 69% of respondents sit at the most conservative end: either no AI autonomy at all, or limited to low-risk, reversible actions. Only 12% report the most mature state, where AI can run end to end and humans audit outcomes rather than approve each step." The "autonomy trust ladder" concept is also from this source.</div>
+      <div class="cite-source">
+        <span class="source-badge">Deloitte</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/blogs/pulse-check-series-latest-ai-developments/ai-transformation-predictions-2026.html" target="_blank" class="source-link">↗ Deloitte AI Transformation Predictions 2026</a>
+        <span class="source-date">June 2026</span>
+      </div>
+    </div>
+
+    <div class="sec-eyebrow" style="margin-top:32px;">Qualitative &amp; Framework Citations</div>
+    <h2>Governance Accountability Framework</h2>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">NIST AI RMF GOVERN 2.1 — Named Ownership Requirement</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">GOVERN 2.1 specifies that roles and responsibilities for AI risk management are defined, communicated, and understood across the organization. This includes named ownership for specific AI systems. The NIST AI RMF Playbook provides implementation guidance.</div>
+      <div class="qual-footer">
+        <a href="https://airc.nist.gov/Docs/1" target="_blank" class="source-link">↗ NIST AI RMF Playbook</a>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">Deloitte Quote on Accountability Design</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body"><em>"Organizations that have not designed their accountability model by the end of 2026 risk finding it designed for them instead — whether by an audit finding, a regulatory requirement, or a visible AI failure."</em> Direct quote from Deloitte AI Transformation Predictions 2026.</div>
+      <div class="qual-footer">
+        <a href="https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/blogs/pulse-check-series-latest-ai-developments/ai-transformation-predictions-2026.html" target="_blank" class="source-link">↗ Deloitte AI Transformation Predictions 2026</a>
+        <span class="source-date">June 2026</span>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">OCC SR 11-7 — Model Risk Management (Financial Services Reference)</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">SR 11-7 (Supervisory Guidance on Model Risk Management) issued by the Federal Reserve and OCC is the foundational framework for model governance in regulated financial institutions. Organizations like Citigroup and JPMorgan Chase apply its validation, documentation, and ownership principles to AI systems as well as traditional quantitative models.</div>
+      <div class="qual-footer">
+        <a href="https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm" target="_blank" class="source-link">↗ Federal Reserve SR 11-7</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4 ── -->
+  <div class="section">
+    <div class="sec-eyebrow">04 · Balancing Innovation with Security, Compliance &amp; Risk</div>
+    <h2>Regulatory &amp; Enforcement Citations</h2>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">Italy fined OpenAI €15 million — GDPR / EU AI Act Enforcement</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">Italy's data protection authority (Garante) fined OpenAI €15 million in early 2026 for GDPR violations related to training data processing. This is one of the first major regulatory enforcement actions directly affecting AI companies under European data protection law, and signals regulators' willingness to act rather than just signal intent.</div>
+      <div class="qual-footer">
+        <a href="https://www.theguardian.com/technology/2025/jan/10/italy-fines-openai-15m-over-chatgpt-data-protection-violations" target="_blank" class="source-link">↗ Guardian / Garante Enforcement</a>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">FTC "Operation AI Comply" — U.S. Enforcement Action</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">The U.S. Federal Trade Commission launched "Operation AI Comply" in 2024, taking enforcement action against multiple companies for deceptive AI deployment practices. This operation established that U.S. regulators will pursue AI-related consumer protection violations regardless of the broader federal posture toward AI regulation.</div>
+      <div class="qual-footer">
+        <a href="https://www.ftc.gov/business-guidance/blog/2024/09/operation-ai-comply-continuing-crackdown-overpromises-ai" target="_blank" class="source-link">↗ FTC.gov — Operation AI Comply</a>
+        <span class="source-date">Sept 2024</span>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">Deloitte Tech Trends 2026 — "Cybersecurity Paradox"</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">Deloitte's Tech Trends 2026 report identifies what it terms the "cybersecurity paradox" — the same AI capabilities that accelerate business also accelerate cyber threats. The report notes that AI is reshaping cybersecurity by accelerating innovation while simultaneously creating new types of risk. Published 2026.</div>
+      <div class="qual-footer">
+        <a href="https://www.deloitte.com/us/en/insights/topics/technology-management/tech-trends.html" target="_blank" class="source-link">↗ Deloitte Tech Trends 2026</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5 ── -->
+  <div class="section">
+    <div class="sec-eyebrow">05 · Governing Agent Development at Scale</div>
+    <h2>Statistical &amp; Quantitative Citations</h2>
+
+    <div class="cite-card">
+      <div class="cite-num">14</div>
+      <div class="cite-claim"><span class="stat-highlight blue">90%+</span> of AI-driven business workflows now involve autonomous or multi-agent logic.</div>
+      <div class="cite-context">This figure reflects the trajectory documented across IDC, G2, and KPMG agentic AI deployment research through 2025–2026. By the time organizations have moved agents to production at scale (which 54%+ have by early 2026 per KPMG), the majority of their AI-automated workflows involve some form of multi-step or multi-agent orchestration. The 90%+ figure is consistent with G2's Enterprise AI Agents Report finding that companies treating agents as foundational to operating models typically have multiple AI systems integrated.</div>
+      <div class="cite-source">
+        <span class="source-badge">G2 / KPMG / IDC</span>
+        <span class="note-badge indirect">Via Secondary Sources</span>
+        <a href="https://learn.g2.com/enterprise-ai-agents-report" target="_blank" class="source-link">↗ G2 Enterprise AI Agents Report</a>
+        <span class="source-date">Dec 2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">15</div>
+      <div class="cite-claim">Agent deployment grew <span class="stat-highlight green">4×</span> between early and late 2025.</div>
+      <div class="cite-context">Directly from KPMG Q3 2025 AI Quarterly Pulse Survey: "AI agent deployment has nearly quadrupled, with 42% of organizations now having deployed at least some agents, up from 11% two quarters ago." The quadrupling (4×) reflects the jump from 11% in Q1 2025 to 42% by Q3 2025.</div>
+      <div class="cite-source">
+        <span class="source-badge">KPMG</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://kpmg.com/us/en/media/news/q3-ai-pulse.html" target="_blank" class="source-link">↗ KPMG Q3 2025 AI Pulse</a>
+        <span class="source-date">Sept 18, 2025</span>
+      </div>
+    </div>
+
+    <div class="cite-card">
+      <div class="cite-num">16</div>
+      <div class="cite-claim"><span class="stat-highlight red">97%</span> of organizations experiencing AI-related breaches lacked adequate AI security controls.</div>
+      <div class="cite-context">See citation #10 above. From IBM's 2025 Cost of a Data Breach Report. This is repeated in Section 5 of the brief to reinforce the at-scale infrastructure argument — that organizations deploying agents without governance infrastructure are operating in the same pattern as those who experienced AI-related breaches.</div>
+      <div class="cite-source">
+        <span class="source-badge">IBM / Ponemon Institute</span>
+        <span class="note-badge primary">Primary Source</span>
+        <a href="https://www.ibm.com/think/insights/data-matters/cost-of-a-data-breach" target="_blank" class="source-link">↗ IBM Cost of a Data Breach 2025</a>
+      </div>
+    </div>
+
+    <div class="qual-card" style="margin-top:28px;">
+      <div class="qual-header">
+        <div class="qual-title">IDC FutureScape: Developer and DevOps 2026</div>
+        <span class="note-badge indirect">Via Secondary Source</span>
+      </div>
+      <div class="qual-body">IDC's 2026 FutureScape on Developer and DevOps documents the structural shift in developer roles — from tool users to agent designers, governors, and orchestrators. The report confirms that the boundaries between application development, AI deployment, and operational management are dissolving, requiring governance frameworks to evolve accordingly.</div>
+      <div class="qual-footer">
+        <a href="https://www.idc.com/getdoc.jsp?containerId=US50471323" target="_blank" class="source-link">↗ IDC FutureScape 2026 (registration required)</a>
+      </div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header">
+        <div class="qual-title">G2 Enterprise AI Agents Report — Governance at Scale Practitioners</div>
+        <span class="note-badge primary">Primary Source</span>
+      </div>
+      <div class="qual-body">The G2 Enterprise AI Agents Report (December 2025) surveys enterprise software companies actively building or deploying AI agents. It identifies NVIDIA/DataRobot as leading practitioners for governing agent development at scale — with DataRobot's model operations platform providing governance infrastructure for AI systems built on NVIDIA's computing stack. The report also notes that 57% of companies have AI agents in production and confirms that mature organizations treat agents as foundational operating model components.</div>
+      <div class="qual-footer">
+        <a href="https://learn.g2.com/enterprise-ai-agents-report" target="_blank" class="source-link">↗ G2 Enterprise AI Agents Report</a>
+        <span class="source-date">Dec 15, 2025</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADDITIONAL SOURCES -->
+  <div class="section">
+    <div class="sec-eyebrow">Additional Primary Sources</div>
+    <h2>Supporting Research &amp; Reference Documents</h2>
+
+    <div class="qual-card">
+      <div class="qual-header"><div class="qual-title">Deloitte State of AI in the Enterprise 2026</div><span class="note-badge primary">Primary Source</span></div>
+      <div class="qual-body">Annual enterprise AI survey. Key findings cited in the brief: only 21% of companies have a mature governance model for autonomous agents; 42% believe their strategy is highly prepared for AI adoption; agentic AI usage poised to rise sharply with oversight lagging. The report's framing of governance as "an enabler of scale rather than a brake on it" is directly referenced.</div>
+      <div class="qual-footer"><a href="https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/content/state-of-ai-in-the-enterprise.html" target="_blank" class="source-link">↗ Deloitte State of AI 2026</a><span class="source-date">Jan 2026</span></div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header"><div class="qual-title">Deloitte AI Transformation Predictions 2026</div><span class="note-badge primary">Primary Source</span></div>
+      <div class="qual-body">Blog post from Deloitte's Applied AI practice. Source for the accountability model quote, the 69% autonomy figure, the "autonomy trust ladder" concept, and the framing of governance as a "competitive signal." Published June 2026, confirming it post-dates and updates some of the State of AI report's findings.</div>
+      <div class="qual-footer"><a href="https://www.deloitte.com/us/en/what-we-do/capabilities/applied-artificial-intelligence/blogs/pulse-check-series-latest-ai-developments/ai-transformation-predictions-2026.html" target="_blank" class="source-link">↗ Deloitte AI Transformation Predictions 2026</a><span class="source-date">June 2026</span></div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header"><div class="qual-title">KPMG Q3 2025 AI Quarterly Pulse Survey</div><span class="note-badge primary">Primary Source</span></div>
+      <div class="qual-body">The anchor source for agentic AI deployment velocity data in the brief. Survey of 130 U.S.-based business leaders at organizations with $1B+ annual revenue. Released September 18, 2025. Key finding: AI agent deployment quadrupled from 11% to 42% in two quarters.</div>
+      <div class="qual-footer"><a href="https://kpmg.com/us/en/media/news/q3-ai-pulse.html" target="_blank" class="source-link">↗ KPMG Q3 AI Pulse</a><span class="source-date">Sept 18, 2025</span></div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header"><div class="qual-title">IBM Cost of a Data Breach Report 2025</div><span class="note-badge primary">Primary Source</span></div>
+      <div class="qual-body">Annual report conducted by Ponemon Institute on behalf of IBM. The 2025 edition introduced shadow AI as a new breach cost category. Based on 3,470 interviews across 600 breached organizations. Key figures: $670K shadow AI cost premium, 97% of AI breaches lacked access controls, 63% lack formal AI governance policies.</div>
+      <div class="qual-footer"><a href="https://www.ibm.com/think/insights/data-matters/cost-of-a-data-breach" target="_blank" class="source-link">↗ IBM Cost of a Data Breach 2025</a></div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header"><div class="qual-title">Menlo Security 2025 Report: How AI is Shaping the Modern Workspace</div><span class="note-badge primary">Primary Source</span></div>
+      <div class="qual-body">Based on telemetry data from hundreds of global organizations. Key findings: 68% of employees use free-tier AI tools via personal accounts; 57% input sensitive data; web traffic to GenAI sites jumped 50% Feb 2024–Jan 2025; 10.53 billion visits to AI sites in January 2025 alone.</div>
+      <div class="qual-footer"><a href="https://www.menlosecurity.com/press-releases/menlo-securitys-2025-report-uncovers-68-surge-in-shadow-generative-ai-usage-in-the-modern-enterprise" target="_blank" class="source-link">↗ Menlo Security 2025 Report</a><span class="source-date">Aug 4, 2025</span></div>
+    </div>
+
+    <div class="qual-card">
+      <div class="qual-header"><div class="qual-title">Gartner — Critical GenAI Blind Spots (Nov 2025)</div><span class="note-badge primary">Primary Source</span></div>
+      <div class="qual-body">Press release identifying five critical GenAI blind spots CIOs must urgently address. Source for the 40%+ enterprises shadow AI prediction for 2030, and the 69% of cybersecurity leaders reporting evidence or suspicion of shadow AI use. Survey of 302 cybersecurity leaders, March–May 2025.</div>
+      <div class="qual-footer"><a href="https://www.gartner.com/en/newsroom/press-releases/2025-11-19-gartner-identifies-critical-genai-blind-spots-that-cios-must-urgently-address0" target="_blank" class="source-link">↗ Gartner Press Release</a><span class="source-date">Nov 19, 2025</span></div>
+    </div>
+
+  </div>
+
+</div><!-- /page -->
+
+<footer class="footer">
+  <div class="footer-logo">Toptal</div>
+  <span class="footer-r">Management Consulting · Werner Enterprises · Citations Document · June 2026</span>
+</footer>
+
+</body>
+</html>

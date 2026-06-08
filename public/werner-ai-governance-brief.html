@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Governing the Agentic Enterprise — Toptal MC</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:       #0d1833;
+    --navy-mid:   #162040;
+    --navy-light: #1e2d52;
+    --blue:       #2563eb;
+    --blue-light: #3b82f6;
+    --blue-label: #2b6cb0;
+    --green:      #16a34a;
+    --green-bg:   #f0fdf4;
+    --red:        #dc2626;
+    --red-bg:     #fef2f2;
+    --amber:      #d97706;
+    --amber-bg:   #fffbeb;
+    --body-bg:    #f7f8fa;
+    --card-bg:    #ffffff;
+    --border:     #e5e9f0;
+    --text-dark:  #0f172a;
+    --text-mid:   #334155;
+    --text-muted: #64748b;
+    --text-faint: #94a3b8;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--body-bg);
+    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--navy);
+    height: 52px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .back-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .back-link:hover { color: rgba(255,255,255,0.85); }
+  .tb-sep { color: rgba(255,255,255,0.2); font-size: 18px; font-weight: 200; }
+  .toptal-logo { display: flex; align-items: center; }
+  .toptal-logo svg { height: 22px; width: auto; display: block; }
+  .tb-right {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 60%, #1a2d5a 100%);
+    padding: 64px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--blue-light);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hero-eyebrow::before { content: '+'; font-size: 13px; }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 62px);
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+    max-width: 700px;
+    margin-bottom: 20px;
+  }
+  .hero-sub {
+    font-size: 15px;
+    color: rgba(255,255,255,0.55);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+  .hero-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .hero-pill:hover { background: rgba(255,255,255,0.13); }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-light); flex-shrink: 0; }
+
+  /* ── BODY ── */
+  .page { max-width: 940px; margin: 0 auto; padding: 0 40px 100px; }
+
+  /* ── META BAR ── */
+  .meta-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 36px 0 0;
+  }
+  .meta-item {
+    padding: 18px 22px;
+    border-right: 1px solid var(--border);
+  }
+  .meta-item:last-child { border-right: none; }
+  .meta-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue-label);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .meta-value { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+
+  /* ── SECTION ── */
+  .section { padding: 60px 0 52px; border-bottom: 1px solid var(--border); }
+  .section:last-child { border-bottom: none; }
+
+  .sec-eyebrow {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue-label);
+    margin-bottom: 12px;
+  }
+  .section h2 {
+    font-size: clamp(22px, 3.5vw, 32px);
+    font-weight: 900;
+    color: var(--text-dark);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .sec-tagline {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 36px;
+  }
+
+  /* ── SUBSECTION ── */
+  .sub { margin-bottom: 36px; }
+  .sub-head {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sub-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  p { font-size: 14.5px; line-height: 1.85; color: var(--text-mid); margin-bottom: 14px; }
+  strong { font-weight: 700; color: var(--text-dark); }
+
+  /* ── STAT CARDS ── */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 28px 0; }
+  .stat {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 20px;
+  }
+  .stat-n {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--text-dark);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  .stat-n.blue { color: var(--blue); }
+  .stat-n.green { color: var(--green); }
+  .stat-n.red { color: var(--red); }
+  .stat-l { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── NARRATIVE CARDS (numbered) ── */
+  .narrative-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 26px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .nar-num {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--border);
+    line-height: 1;
+    min-width: 44px;
+    letter-spacing: -0.04em;
+    flex-shrink: 0;
+    margin-top: -2px;
+  }
+  .nar-body h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .nar-body h4.blue { color: var(--blue); }
+  .nar-body h4.green { color: var(--green); }
+  .nar-body h4.red { color: var(--red); }
+  .nar-body h4.amber { color: var(--amber); }
+  .nar-body h4.dark { color: var(--text-dark); }
+  .nar-body p { font-size: 13.5px; margin: 0; color: var(--text-mid); line-height: 1.7; }
+
+  /* ── CARDS GRID ── */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 22px;
+  }
+  .card-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blue-label);
+    margin-bottom: 6px;
+  }
+  .card p { font-size: 13px; margin: 0; color: var(--text-mid); line-height: 1.65; }
+
+  /* ── FRAMEWORK TAGS ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0 20px; }
+  .tag {
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 4px 12px;
+    background: #eff6ff;
+    color: var(--blue);
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+  }
+
+  /* ── QUOTE ── */
+  .quote {
+    border-left: 3px solid var(--blue);
+    padding: 16px 22px;
+    background: #eff6ff;
+    border-radius: 0 8px 8px 0;
+    margin: 24px 0;
+  }
+  .quote p { font-size: 14px; font-style: italic; color: var(--text-dark); font-weight: 500; margin-bottom: 6px; }
+  .quote cite { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; color: var(--blue-label); text-transform: uppercase; font-style: normal; }
+
+  /* ── RISK ALERT ── */
+  .risk {
+    background: var(--red-bg);
+    border: 1px solid #fecaca;
+    border-left: 3px solid var(--red);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 22px 0;
+  }
+  .risk-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red); margin-bottom: 5px; }
+  .risk p { font-size: 13.5px; margin: 0; color: #991b1b; }
+
+  /* ── BP LIST ── */
+  .bpl { list-style: none; margin: 16px 0; }
+  .bpl li {
+    display: flex;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-mid);
+  }
+  .bpl li:last-child { border-bottom: none; }
+  .bpi { color: var(--blue); font-size: 12px; min-width: 14px; margin-top: 4px; font-weight: 700; flex-shrink: 0; }
+
+  /* ── LEADER CARDS ── */
+  .lcard {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .lorg {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .ldot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+  .lcard p { font-size: 12.5px; margin: 0; color: var(--text-muted); line-height: 1.65; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--navy);
+    padding: 26px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-logo { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.5); letter-spacing: -0.03em; }
+  .footer-r { font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  @media (max-width: 680px) {
+    .topbar, .hero, .page, .footer { padding-left: 20px; padding-right: 20px; }
+    .hero { padding-top: 44px; padding-bottom: 44px; }
+    .stats, .card-grid { grid-template-columns: 1fr; }
+    .meta-bar { grid-template-columns: 1fr 1fr; }
+    .meta-item:nth-child(2) { border-right: none; }
+    .meta-item:nth-child(3), .meta-item:nth-child(4) { border-top: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <a href="#" class="back-link">← Hub</a>
+    <span class="tb-sep">|</span>
+    <div class="toptal-logo">
+      <svg viewBox="0 0 2254 947" style="height:22px;width:auto;display:block;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><style>.tt-wm{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}</style><g><path class="tt-wm" d="M1384.1,389c-27.5-30.1-61.8-45.5-102.1-45.5c-38.8,0-77.3,27.1-101,53.9l0.1-50.1l-72.4-0.1l-0.8,410.9v5.4 l72.8,0.1l0.3-128.5c22,24.7,56.8,39.2,95.5,39.3c42.6,0,78.4-15.2,106.5-45.1c28.3-30.1,42.7-72.6,42.8-121.3 C1425.9,458.2,1411.9,418.2,1384.1,389z M1264.5,411.1c24.7,0,45.6,9.3,62.1,27.6c17,17.7,25.7,40.9,25.6,69 c-0.1,28.3-8.5,53.7-25.9,72.2c-16.6,17.7-37.4,26.7-62.1,26.7c-24.3,0-44.6-8.9-62-26.9c-17.3-18.6-25.7-43.9-25.7-72.3 c0.1-28.1,8.8-51.3,25.9-69c17.2-18.4,37.5-27.3,61.9-27.3L1264.5,411.1z"/><path class="tt-wm" d="M1462.7,408.5l-0.3,173.4c-0.1,37.4,10.2,64.1,30.4,79.3c12.6,9.5,28.6,14.3,47.6,14.3 c14.6,0,37.5-5.9,37.5-5.9l-6.5-63.2c0,0-16.7,5.4-24.8-0.4c-7.7-5.5-11.5-17.3-11.5-35l0.3-162.5l67.4,0.1l0.1-60.3l-67.4-0.1 l0.2-86.6l-72.7-0.1l-0.2,86.6l-61-0.1L1462.7,408.5z"/><polygon class="tt-wm" points="866,256.9 507.5,256.9 507.4,328.7 650.7,328.7 650.1,663.9 650.1,670.5 725.9,670.6 725.6,328.8 866,328.7 "/><path class="tt-wm" d="M479.9,440.3L245.5,205.4L191,259.7l79.7,79.9L95.8,513.9L331,749.5l53.8-53.6l-80.4-80.6L479.9,440.3z M255.6,555.7c-1.6,0.5-3.2,0.5-4.8,0s-2.9-1.2-5.8-4.1l-31.7-31.8c-2.8-2.8-3.6-4.2-4.1-5.8s-0.5-3.2,0-4.8s1.2-2.9,4.1-5.8 l99.9-99.7c2.8-2.8,4.2-3.6,5.8-4c1.6-0.5,3.2-0.5,4.8,0s2.9,1.2,5.8,4.1l31.7,31.8c2.8,2.8,3.6,4.2,4,5.8c0.5,1.6,0.5,3.2,0,4.8 s-1.2,2.9-4.1,5.8l-99.9,99.7C258.6,554.5,257.2,555.2,255.6,555.7z"/><path class="tt-wm" d="M1034.2,390.9c-29.7-30.7-70.1-47.6-111.5-46.4c-41.9,0-78.8,14.7-109.7,43.8c-31.2,29.3-47.1,70-47.2,120.9 s15.7,91.6,46.8,121c30.9,29.2,67.9,44.1,109.8,44.2c1.6,0.1,3.2,0.1,4.8,0.1c39.2,0,78-16.8,106.6-46 c20.9-21.5,45.9-59.5,46-118.7S1055.1,412.5,1034.2,390.9 M1011.3,509.7c-0.1,29.5-8.8,53.9-26,72.5 c-17.1,18.5-38.4,27.9-63.3,27.9c-24.4-0.1-45.5-9.5-62.6-28.2c-16.7-18.2-25.2-42.7-25.2-72.6s8.6-54.3,25.4-72.5 c17.1-18.5,38.2-27.9,62.7-27.9c24.8,0,46.1,9.5,63.2,28.2C1002.7,455.7,1011.4,480.1,1011.3,509.7"/><path class="tt-wm" d="M1685.5,459.7c0-18.5,9.7-59.2,63.3-59.2c19,0,29.8,6.4,38.9,14c8.8,7.3,13.2,25.3,13.2,40.2v7l-88.5,13.8 c-70.1,10.7-110.3,48.4-110.5,103.6c-0.1,28.6,10.3,53.1,30.1,71.1c19.5,17.7,46.2,27.1,77.7,27.2c39.7,0,69.5-14.3,90.8-43.8 c0.1,12.5,0.1,25.1,0.1,36.8l0,0h73.8l0.5-212c0.1-34.6-11.2-68.1-33.5-86.5c-22-18.1-50.8-27.4-92.5-27.5h-0.6 c-31.8,0-65.5,8.4-88.2,28.1c-26.7,23.1-39.8,59.7-39.8,88L1685.5,459.7z M1718.9,613.8c-26.2-0.1-43.2-15-43.1-37.9 c0.1-23.8,16.7-37.7,52.2-43.7l72.7-12.3v0.7c-0.2,54.9-33.7,93.2-81.5,93.2H1718.9z"/><polygon class="tt-wm" points="1909.7,261.8 1909,668.2 1909,670 1974.3,670.2 1975,263.7 1975,261.9 "/><path class="tt-wm" d="M2012.6,645.3c0-7,2.4-13,7.4-18s11-7.5,17.9-7.5c7,0,13.1,2.5,18,7.5c5,5,7.5,11,7.5,18 c0,7.1-2.5,13-7.5,17.9c-5,5-11,7.4-18,7.4s-13-2.4-17.9-7.4C2015.1,658.3,2012.6,652.4,2012.6,645.3z M2016.8,645.3 c0,5.9,2,11,6.1,15.2c4.1,4.1,9.1,6.2,15.1,6.2c5.9,0,10.9-2.1,15-6.2c4.1-4.2,6.2-9.2,6.2-15.2s-2.1-11-6.2-15.1 c-4.1-4.2-9.1-6.3-15-6.3s-10.9,2.1-15,6.3C2018.9,634.3,2016.8,639.3,2016.8,645.3z M2044,659.2l-6.8-12.1h-4.6v12.1h-4.2v-27.8 h11.3c5.6,0,8.9,3.3,8.9,7.9c0,3.9-2.9,6.8-6.8,7.6l6.9,12.3H2044z M2032.6,635.1v8.5h6.5c3.6,0,5.4-1.4,5.4-4.2 c0-2.9-1.8-4.3-5.4-4.3H2032.6z"/></g></svg>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a href="/werner-ai-governance-citations.html" target="_blank" style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.55);text-decoration:none;">Citations →</a>
+    <span class="tb-right">MC Research · Confidential</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Toptal Management Consulting</div>
+  <h1>Governing the<br>Agentic Enterprise</h1>
+  <p class="hero-sub">A practitioner's deep-dive on the five critical governance challenges facing organizations as AI agent development escapes traditional IT boundaries.</p>
+  <div class="hero-pills">
+    <a href="#s1" class="hero-pill"><span class="pill-dot"></span>Governance Frameworks</a>
+    <a href="#s2" class="hero-pill"><span class="pill-dot"></span>Shadow AI</a>
+    <a href="#s3" class="hero-pill"><span class="pill-dot"></span>Controls &amp; Ownership</a>
+    <a href="#s4" class="hero-pill"><span class="pill-dot"></span>Innovation vs. Risk</a>
+    <a href="#s5" class="hero-pill"><span class="pill-dot"></span>Governing at Scale</a>
+  </div>
+</section>
+
+<div class="page">
+
+  <!-- META -->
+  <div class="meta-bar">
+    <div class="meta-item"><span class="meta-label">Prepared For</span><span class="meta-value">Werner Enterprises</span></div>
+    <div class="meta-item"><span class="meta-label">Domains Covered</span><span class="meta-value">5 Governance Areas</span></div>
+    <div class="meta-item"><span class="meta-label">Research Current</span><span class="meta-value">June 2026</span></div>
+    <div class="meta-item"><span class="meta-label">Practice</span><span class="meta-value">Toptal MC</span></div>
+  </div>
+
+  <!-- ── SECTION 1 ── -->
+  <div class="section" id="s1">
+    <div class="sec-eyebrow">01 · Foundation</div>
+    <h2>Governance Frameworks for Agentic AI</h2>
+    <p class="sec-tagline">"Traditional AI governance was built for a world where AI advised. Agentic AI acts."</p>
+
+    <div class="sub">
+      <div class="sub-head">The Problem &amp; The Trend</div>
+      <p>We are in the middle of one of the most consequential inflection points in enterprise technology. AI systems have evolved from tools that assist human decision-making to agents that plan, reason, and take autonomous action — initiating transactions, calling APIs, modifying files, coordinating with other agents — often with minimal direct human oversight at the moment of action.</p>
+      <p>The governance frameworks most organizations are operating with today were designed for the prior era: static models, narrow applications, predictable outputs. They center on data quality, bias mitigation, and explainability after the fact. They are inadequate for systems that act before anyone reviews their decisions.</p>
+      <p>Agent deployment has accelerated dramatically. KPMG data confirm that deployment nearly quadrupled between early and late 2025, with 42% of organizations running agents in production by Q3. The governance infrastructure has not kept pace. The gap is structural, not incremental.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n blue">42%</div><div class="stat-l">of organizations deploying AI agents in production by Q3 2025 (KPMG)</div></div>
+      <div class="stat"><div class="stat-n blue">76%</div><div class="stat-l">of compliance professionals plan to use ISO 42001 or equivalent as their AI governance backbone</div></div>
+      <div class="stat"><div class="stat-n red">80%</div><div class="stat-l">of organizations report risky behaviors from AI agents, including unauthorized data access</div></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">How It's Being Addressed</div>
+      <p>Three governance frameworks have emerged as the dominant architecture. In practice, most sophisticated organizations blend elements from all three rather than adopting any single standard wholesale.</p>
+      <div class="tags">
+        <span class="tag">NIST AI RMF</span><span class="tag">EU AI Act</span><span class="tag">ISO/IEC 42001</span><span class="tag">Singapore IMDA 2026</span><span class="tag">OWASP Agentic Top 10</span><span class="tag">AIUC-1</span>
+      </div>
+      <p>The <strong>NIST AI Risk Management Framework</strong> has become the default U.S. starting point. Its four-function model (Govern, Map, Measure, Manage) provides a risk-proportionate structure enterprises extend for agentic requirements. GOVERN 2.1 explicitly requires a named owner for every AI system — a critical anchor for agentic deployments.</p>
+      <p>The <strong>EU AI Act</strong> — enforcing in phases with high-risk system obligations running to late 2027 — forces any organization with EU exposure to build compliance infrastructure regardless of philosophical disposition. Non-compliance carries fines up to €35 million or 7% of global revenue.</p>
+      <p><strong>Singapore's Model AI Governance Framework for Agentic AI</strong> (January 2026) is the first government-level framework designed specifically for autonomous agents — filling the gap broader frameworks leave open, with specific guidance on human oversight triggers, transparency, and accountability scoped to agent behavior.</p>
+      <p>What separates leading organizations is a shift from reactive compliance to <strong>"governance by design"</strong> — embedding controls directly into development workflows rather than retrofitting them post-deployment.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">What's Working Best</div>
+      <ul class="bpl">
+        <li><span class="bpi">▸</span><div><strong>Tiered risk classification.</strong> Frameworks that bucket agents by impact scope, data sensitivity, and reversibility allow low-risk automation to move quickly while high-stakes agents receive proportionate scrutiny.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Governance as infrastructure, not policy.</strong> Organizations embedding governance in CI/CD pipelines — mandatory model registration, automated bias checks, compliance gates before production promotion — see dramatically better compliance than those relying on documents alone.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Defined autonomy limits and human-in-the-loop triggers.</strong> Leading frameworks specify which decisions agents can make unilaterally, which require human confirmation, and which must be escalated — documented before deployment, not discovered after an incident.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Unified control plane.</strong> A single governance control plane providing visibility and policy enforcement across all AI systems regardless of origin or vendor, rather than each application team implementing their own guardrails in isolation.</div></li>
+      </ul>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">Who's Doing It Well</div>
+      <div class="card-grid">
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Microsoft</div><p>Has published its Responsible AI Standard and operationalized internal impact assessments for all AI systems. Dedicated Responsible AI engineering teams are embedded in product groups, not siloed in compliance.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>JPMorgan Chase</div><p>Operates a model risk management discipline with direct lineage from financial regulatory requirements. AI models are subject to the same validation, ownership documentation, and monitoring rigor as quantitative trading models.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Salesforce</div><p>Embedded Agentforce governance as a core product layer — trust controls, data masking, audit logging, and permission scoping are platform features, not configuration burdens left to implementing organizations.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Singapore GovTech</div><p>Pioneered public-sector AI governance and now leads sandbox environments for testing agentic governance before scaling — highlighted by the WEF as a model for controlled iteration at government scale.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2 ── -->
+  <div class="section" id="s2">
+    <div class="sec-eyebrow">02 · Highest Urgency</div>
+    <h2>Managing Shadow AI &amp; Citizen Development</h2>
+    <p class="sec-tagline">"Shadow AI is not a technology problem. It's an organizational one."</p>
+
+    <div class="sub">
+      <div class="sub-head">The Problem &amp; The Trend</div>
+      <p>Shadow AI has graduated from "employees using ChatGPT for email drafts" to something categorically more dangerous: business users and pseudo-IT teams building and deploying autonomous agents that access production systems, process sensitive customer data, automate business workflows, and make consequential decisions — entirely outside IT visibility.</p>
+      <p>Between 40 and 65 percent of enterprise employees report using AI tools not approved by their IT department. More than half admit to inputting sensitive company information into those tools. Critically, fewer than 20 percent believe they are doing anything wrong. This is rational employees solving real problems in the absence of sanctioned alternatives that meet their speed requirements.</p>
+      <div class="risk">
+        <div class="risk-lbl">Critical Risk Signal</div>
+        <p>IBM's 2025 Cost of a Data Breach data shows shadow AI incidents cost <strong>$670K more per breach</strong> and take <strong>10 additional days to contain</strong> vs. standard AI-related incidents. Gartner predicts that by 2030, over 40% of enterprises will experience a security or compliance incident directly linked to unauthorized shadow AI.</p>
+      </div>
+      <p>What makes the 2026 version qualitatively different is the agent dimension. Citizen-built agents don't just consume data — they act on it. They call APIs, trigger workflows, generate customer-facing outputs, and interact with other systems. The blast radius of a governance failure is orders of magnitude larger than an unauthorized SaaS subscription.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n red">68%</div><div class="stat-l">surge in shadow generative AI usage across enterprises in 2025 (Menlo Security)</div></div>
+      <div class="stat"><div class="stat-n red">63%</div><div class="stat-l">of organizations operating without shadow AI governance policies (IBM 2025)</div></div>
+      <div class="stat"><div class="stat-n blue">890%</div><div class="stat-l">surge in enterprise GenAI traffic in 2024 — the underlying demand signal governance must meet</div></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">How It's Being Addressed</div>
+      <p>The most effective responses move through three stages: <strong>discover, classify, and channel.</strong> Detection-first approaches — AI gateway tools, DLP integrations, and CASBs — give organizations visibility into what is actually being used before policies are written. Organizations that begin with policy-writing before discovery produce unenforceable rules.</p>
+      <p>The classification step tiers AI tools into three categories: fully approved, conditionally approved (specific use cases or roles with guardrails), and prohibited (unacceptable data or compliance risk).</p>
+      <p>The most strategically important step is <strong>"channeling"</strong> — replacing prohibition with sanctioned alternatives that meet the speed and capability demands driving shadow behavior. Organizations that respond with bans alone consistently see behavior re-emerge in new tools.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">What's Working Best</div>
+      <ul class="bpl">
+        <li><span class="bpi">▸</span><div><strong>AI discovery before policy.</strong> Use CASB and network monitoring to inventory what's actually deployed before writing governance rules. Policies written in ignorance of actual usage are ignored or circumvented.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Sanctioned citizen development environments.</strong> The most forward-leaning organizations are channeling citizen development, not stopping it. Microsoft Copilot Studio, Power Platform with governance rails, and ServiceNow's AI agent builder give business users low-code tools to build agents within pre-approved guardrails.</div></li>
+        <li><span class="bpi">▸</span><div><strong>AI amnesty programs.</strong> Formal programs inviting employees to surface existing shadow AI deployments without penalty have consistently surfaced far more undeclared usage than security scans alone.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Mandatory AI literacy training.</strong> Governance infrastructure reduces harm but doesn't shift culture. Leading organizations pair technical controls with required training that moves employees from "I didn't know this was a problem" to active governance participants.</div></li>
+      </ul>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">Who's Doing It Well</div>
+      <div class="card-grid">
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Goldman Sachs</div><p>Built internal "GS AI" as a sanctioned, governed alternative to external tools — giving employees high-capability AI with enterprise data protections. Addresses the underlying demand rather than just restricting supply.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Walmart</div><p>Deployed a tiered AI access model across its 2M+ employee base with different tool permissions based on role, data access level, and training completion — arguably the most complex citizen AI management operation in enterprise today.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Novartis</div><p>Combines strict discovery tooling (given regulatory exposure) with sanctioned innovation programs — allowing R&D teams to experiment with agents while maintaining audit trail integrity required for regulatory submissions.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>ISACA / WEF</div><p>The WEF Technology Audit Framework and ISACA's Shadow AI audit guidance have become the standard methodology for discovery and classification. Organizations using these structured approaches consistently outperform those improvising.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3 ── -->
+  <div class="section" id="s3">
+    <div class="sec-eyebrow">03 · Operating Model</div>
+    <h2>Controls, Approval Processes &amp; Ownership Models</h2>
+    <p class="sec-tagline">"Unclear accountability does not scale. Ownership must be explicit before autonomy expands."</p>
+
+    <div class="sub">
+      <div class="sub-head">The Problem &amp; The Trend</div>
+      <p>The majority of consequential AI failures trace back not to technical shortcomings, but to organizational ones — unclear ownership, absent approval processes, and no defined accountability when things go wrong. A 2025 review of documented AI failures found that weak controls and unclear ownership outranked technical deficiencies as root causes.</p>
+      <p>As agent development democratizes, the ownership problem compounds. When a supply chain manager builds an agent to automate vendor communications, or a financial analyst creates a workflow agent processing AP data, traditional accountability models break down. The question "who owns this?" has no clear answer — and that question gets asked loudest when something goes wrong.</p>
+      <div class="quote">
+        <p>"Organizations that have not designed their accountability model by the end of 2026 risk finding it designed for them instead — whether by an audit finding, a regulatory requirement, or a visible AI failure."</p>
+        <cite>Deloitte AI Transformation Predictions 2026</cite>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">How It's Being Addressed</div>
+      <p>Governance structures that work separate three distinct roles often conflated in practice: the <strong>AI Executive Sponsor</strong> (typically the CIO, holding cross-functional accountability and regulatory exposure), the <strong>Model Owner</strong> (the business unit leader accountable for the specific agent's outputs, performance, and risk), and the <strong>AI Champion</strong> (an operational role embedded within the business unit, managing day-to-day governance and serving as liaison to central functions).</p>
+      <p>Approval processes are converging on a <strong>stage-gate model calibrated to risk tier.</strong> Low-risk agents move through a lightweight self-certification process. Medium-risk agents require cross-functional AI governance committee review. High-risk agents require full documentation, security review, legal sign-off, and explicit ownership registration before deployment.</p>
+      <p>Platforms like ServiceNow, Microsoft Azure AI Studio, Credo AI, and Arthur AI are operationalizing the approval and ownership model in software — making compliance an engineering artifact rather than a documentation exercise.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n red">18%</div><div class="stat-l">of organizations currently have enterprise-wide AI governance councils with actual decision authority</div></div>
+      <div class="stat"><div class="stat-n blue">54%</div><div class="stat-l">of IT leaders cite AI governance as a top enterprise risk priority in 2026, up from 29% two years prior</div></div>
+      <div class="stat"><div class="stat-n blue">69%</div><div class="stat-l">of enterprises sit at the most conservative end of AI autonomy — zero or limited autonomous action (Deloitte)</div></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">What's Working Best</div>
+      <ul class="bpl">
+        <li><span class="bpi">▸</span><div><strong>Named ownership before deployment.</strong> NIST AI RMF GOVERN 2.1 requires every AI system to have a named owner. The most effective implementations register this in a system of record at deployment time — no agent goes live without a business owner on record.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Risk-calibrated approval gates.</strong> Organizations with binary approval processes create either dangerous gaps or innovation-killing bottlenecks. The tiered model enables speed for low-risk work while maintaining rigor where it matters.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Federated execution with centralized standards.</strong> A central AI governance office sets risk appetite, approval criteria, and mandatory controls; business units retain deployment authority within those guardrails. This mirrors successful patterns used in enterprise data governance and cloud infrastructure.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Human-in-the-loop for high-stakes decisions.</strong> Leading organizations codify which decisions agents can make autonomously, which require human confirmation, and which must be escalated — specified in agent design, not discovered during incidents.</div></li>
+      </ul>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">Who's Doing It Well</div>
+      <div class="card-grid">
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Google DeepMind</div><p>Every production AI system requires documented ownership, a model card, and a defined review cycle — an industry reference for what "good" looks like in AI system documentation and lifecycle governance.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Citigroup</div><p>Following OCC model risk management guidelines (SR 11-7), Citi operates one of the most mature AI model approval and validation processes in financial services — a template for risk-calibrated approval across regulated industries.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Unilever</div><p>Developed a federated AI governance model with a central AI ethics board setting standards and business unit AI leads owning operational compliance. Their "responsible by design" checklist is embedded in project intake, not a post-hoc review.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Credo AI / Arthur AI</div><p>Purpose-built governance platforms that have operationalized the approval registry concept — automated intake, risk assessment, ownership assignment, and ongoing compliance monitoring at scale.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4 ── -->
+  <div class="section" id="s4">
+    <div class="sec-eyebrow">04 · Strategic Tension</div>
+    <h2>Balancing Innovation with Security, Compliance &amp; Risk</h2>
+    <p class="sec-tagline">"The organizations winning at AI are not the ones moving fastest. They're the ones moving fastest safely."</p>
+
+    <div class="sub">
+      <div class="sub-head">The Problem &amp; The Trend</div>
+      <p>The tension between AI innovation velocity and governance rigor is the most viscerally felt challenge for operational leaders. Development teams — under competitive pressure to deploy — experience governance as friction. Compliance teams — under regulatory and audit pressure — experience ungoverned AI as existential risk. Both are right. The organizations that have resolved this tension are generating real competitive advantage over those still fighting it internally.</p>
+      <p>The regulatory environment has accelerated this tension significantly. The EU AI Act is now enforcing; Italy fined OpenAI €15 million in 2026 for GDPR violations. The FTC's "Operation AI Comply" targeted deceptive AI deployment practices. Regulators have moved from signaling to acting. At the same time, the U.S. federal posture has moved toward a "minimally burdensome" approach — a regulatory divergence that globally operating enterprises must navigate simultaneously.</p>
+      <div class="risk">
+        <div class="risk-lbl">Emerging Risk</div>
+        <p>Deloitte's Tech Trends 2026 identifies the "cybersecurity paradox" — the same AI capabilities that accelerate business also accelerate threats. The attack surface of an enterprise with hundreds of deployed agents is fundamentally different from one with a handful of supervised models.</p>
+      </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">How It's Being Addressed</div>
+      <p>The concept with the most traction is <strong>"governance as enablement rather than gatekeeping."</strong> When governance teams define themselves as the function that provides safe, fast pathways to AI deployment — rather than the review board that slows things down — organizational alignment improves substantially. Concretely: pre-approved tool catalogs, pre-built compliant templates, and clear "green lanes" for low-risk use cases requiring no additional review.</p>
+      <p>The <strong>federated governance model</strong> — centralized policy and risk appetite owned by a cross-functional committee (Legal/Privacy, IT/Security, Product/Business, Data Science), with distributed execution owned by business units — has emerged as the dominant structural solution to the innovation/control tension.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">What's Working Best</div>
+      <ul class="bpl">
+        <li><span class="bpi">▸</span><div><strong>Pre-approved AI tool catalogs.</strong> Teams choosing from a pre-approved catalog move with zero additional governance overhead. Teams wanting to operate outside the catalog follow a defined review process. Governance accelerates compliant work instead of universally bottlenecking it.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Policy gates embedded in CI/CD.</strong> Governance requirements embedded as automated checks in the deployment pipeline are dramatically more effective than manual review and don't slow delivery for compliant work.</div></li>
+        <li><span class="bpi">▸</span><div><strong>The "autonomy trust ladder."</strong> Organizations that build measurement infrastructure can extend AI autonomy incrementally as trust is earned — giving business units a credible path to greater velocity over time, not a permanent ceiling.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Unified access governance.</strong> Managing human users and AI agents under the same access governance framework — consistent least-privilege enforcement, credential management, activity logging — closes a major gap that separate systems create.</div></li>
+      </ul>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">Who's Doing It Well</div>
+      <div class="card-grid">
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Amazon Web Services</div><p>Has operationalized "guardrails as product" — Bedrock Guardrails, SageMaker Clarify, and the broader AWS Responsible AI stack give customers pre-built compliance infrastructure at scale.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>HSBC</div><p>Built one of the most sophisticated AI risk frameworks in financial services, with explicit risk appetite statements for AI, board-level metrics, and a dedicated AI risk function sitting within (not adjacent to) Group Risk.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>IMO Health</div><p>Operating under HIPAA, FDA software guidance, and CMS requirements — IMO has built a model enabling rapid AI deployment within those constraints. A strong proof point for "governance as enablement" in a high-stakes environment.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Cribl</div><p>Cited in the CISO community as a practitioner model for aligning AI governance with existing security programs — demonstrating that ISO 42001 certification and innovation velocity are compatible goals.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5 ── -->
+  <div class="section" id="s5">
+    <div class="sec-eyebrow">05 · Infrastructure</div>
+    <h2>Governing Agent Development at Scale</h2>
+    <p class="sec-tagline">"Governance that relies on human review and spreadsheet inventories cannot keep up with thousands of agents."</p>
+
+    <div class="sub">
+      <div class="sub-head">The Problem &amp; The Trend</div>
+      <p>Scale is the new frontier of AI governance. The challenge in 2023 was convincing organizations that governance was necessary. The challenge in 2026 is building governance infrastructure that can operate at the velocity and volume at which agents are now being created — by developers, by business users, by vendor updates, and increasingly by other agents.</p>
+      <p>IDC's 2026 FutureScape confirms the structural shift: developers are no longer just using AI tools — they are designing, governing, and orchestrating agent systems. Governance frameworks built for defined handoff points struggle with agent systems that continuously evolve, adapt, and generate new sub-agents.</p>
+      <p>By 2026, large enterprises are managing hundreds to thousands of active AI agents. Manual governance breaks down. The only viable path is automated governance infrastructure — policy enforcement that runs at machine speed.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n blue">90%+</div><div class="stat-l">of AI-driven business workflows now involve autonomous or multi-agent logic (2026 industry analysis)</div></div>
+      <div class="stat"><div class="stat-n green">4×</div><div class="stat-l">agent deployment growth between early and late 2025 — the scaling challenge is already present</div></div>
+      <div class="stat"><div class="stat-n red">97%</div><div class="stat-l">of organizations experiencing AI-related breaches lacked adequate AI security controls (IBM 2025)</div></div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">How It's Being Addressed</div>
+      <p>The infrastructure layer required for at-scale agent governance is converging around several components. The <strong>AI/agent registry</strong> — a system of record inventorying every deployed agent, its owner, risk classification, data access permissions, approval status, and performance metrics — is table stakes. Without it, governance is built on ignorance about what's actually running.</p>
+      <p>Above the registry, organizations need a <strong>real-time policy enforcement layer</strong>: automated prompt guardrails, behavioral monitoring that flags agents operating outside expected parameters, access governance enforcement (agents treated as identities with credentials and audit trails), and compliance reporting generated continuously rather than assembled at audit time.</p>
+      <p>The emerging concept of an <strong>AI control plane</strong> — a unified governance layer across all AI systems regardless of which teams built them or which platforms they run on — addresses the policy fragmentation that is the most common failure mode in at-scale governance programs.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">What's Working Best</div>
+      <ul class="bpl">
+        <li><span class="bpi">▸</span><div><strong>Design before tooling.</strong> Start with scope definition and risk classification. Build the governance architecture before selecting a platform. Organizations that reverse this sequence consistently end up with governance infrastructure that doesn't match their actual risk topology.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Automated evidence generation.</strong> Leading programs build compliance evidence as a byproduct of normal operations — not a separate documentation exercise. Audit logs, access records, and decision trails are available on demand, transforming audit preparation from a months-long scramble to a report pull.</div></li>
+        <li><span class="bpi">▸</span><div><strong>Agents as identities.</strong> Every agent is a managed identity: credentials, permission scopes, authentication requirements, and activity logs governed through the same IAM infrastructure used for human users. This closes the visibility gaps that separate agent management systems create.</div></li>
+        <li><span class="bpi">▸</span><div><strong>System-level governance for multi-agent workflows.</strong> As agents increasingly coordinate with other agents, governance must operate at the system level. Orchestration rules, cross-agent communication permissions, and system-level behavioral boundaries must be defined explicitly.</div></li>
+      </ul>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">Who's Doing It Well</div>
+      <div class="card-grid">
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>ServiceNow</div><p>Has built governance infrastructure directly into the Now Platform — agent registries, approval workflows, and access controls are platform features. Their own internal AI deployment at scale serves as a live reference architecture for customers.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Arthur AI</div><p>Governance platform purpose-built for the AI control plane concept — centralized monitoring, policy enforcement, registry management, and compliance reporting across heterogeneous AI environments at enterprise scale.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>Accenture</div><p>Governs AI deployments across a global workforce for both internal operations and client delivery. Their "responsible AI" frameworks have become consulting industry reference architecture for at-scale governance programs.</p></div>
+        <div class="lcard"><div class="lorg"><span class="ldot"></span>NVIDIA / DataRobot</div><p>Highlighted in G2's Enterprise AI Agents report as leading practitioners — DataRobot's model operations platform providing governance infrastructure for AI systems built on NVIDIA's computing stack.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SYNTHESIS ── -->
+  <div class="section" id="s6">
+    <div class="sec-eyebrow">Synthesis · Advisory Opportunity</div>
+    <h2>Implications for Werner Enterprises</h2>
+    <p class="sec-tagline">What the research means for the operating model question at the center of this engagement.</p>
+
+    <div class="sub">
+      <div class="sub-head">The Through Line</div>
+      <p>Across all five domains, a single organizing insight emerges: <strong>the governance gap is structural, not cosmetic.</strong> Organizations cannot patch traditional IT governance frameworks onto fundamentally different technology. Agentic AI requires purpose-built governance that addresses autonomy, ownership, and scale simultaneously — and it requires building that infrastructure before the agent ecosystem expands beyond the point where governance is feasible to impose.</p>
+      <p>Werner's instinct — to address governance before the shadow AI and citizen development problem fully matures — is precisely the right strategic posture. The organizations paying the highest price for governance failures in 2026 are overwhelmingly those that waited until they had an incident before building the infrastructure to prevent one.</p>
+      <p>The deepest question Werner is grappling with — what the operating model should look like when both IT and non-IT teams are building agents — has a clear leading-practice answer: <strong>centralized standards, federated execution, automated enforcement.</strong> IT owns the policy layer, the registry, and the control plane. Business units own deployment authority within those guardrails.</p>
+    </div>
+
+    <div class="sub">
+      <div class="sub-head">Advisory Opportunity Map</div>
+
+      <div class="narrative-card">
+        <div class="nar-num">01</div>
+        <div class="nar-body"><h4 class="blue">AI Governance Framework Design</h4><p>Defining the risk classification taxonomy, ownership model, approval criteria, and policy architecture — before tooling selection. The most common mistake is reversing this sequence.</p></div>
+      </div>
+      <div class="narrative-card">
+        <div class="nar-num">02</div>
+        <div class="nar-body"><h4 class="blue">Shadow AI Discovery &amp; Remediation</h4><p>Structured audit of current AI tool usage, classification against the governance framework, and a remediation roadmap for out-of-scope deployments.</p></div>
+      </div>
+      <div class="narrative-card">
+        <div class="nar-num">03</div>
+        <div class="nar-body"><h4 class="blue">Operating Model Design</h4><p>Defining the organizational structure — AI governance committee, business unit AI leads, central AI office — and the accountability model for sustained governance at scale.</p></div>
+      </div>
+      <div class="narrative-card">
+        <div class="nar-num">04</div>
+        <div class="nar-body"><h4 class="green">Citizen Development Program Design</h4><p>Building the sanctioned citizen development environment — approved platforms, training requirements, guardrails, and oversight mechanisms that channel innovation rather than suppress it.</p></div>
+      </div>
+      <div class="narrative-card">
+        <div class="nar-num">05</div>
+        <div class="nar-body"><h4 class="green">Governance Technology Roadmap</h4><p>Platform selection and implementation sequencing for the agent registry, control plane, and monitoring infrastructure. Sequenced correctly: architecture first, tooling second.</p></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer class="footer">
+  <div class="footer-logo">Toptal</div>
+  <span class="footer-r">Management Consulting · Werner Enterprises · Confidential · June 2026</span>
+</footer>
+
+</body>
+</html>
