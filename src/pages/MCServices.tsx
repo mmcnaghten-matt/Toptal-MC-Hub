@@ -267,13 +267,6 @@ const gtmMaterials: GTMRow[] = [
     description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
     keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
   },
-  {
-    seq: 10,
-    practice: "Strategy",
-    service: "Sales Transformation",
-    docUrl: "https://docs.google.com/presentation/d/1D4n31KDux-KaP-DKYSOMZYOcWBaJe7yfteAZAqNdTSo/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/136XrAIahuuQegqI5N414wBdWHPY-S30P/view?usp=drive_link",
-  },
   // Finance
   {
     isHub: true,
