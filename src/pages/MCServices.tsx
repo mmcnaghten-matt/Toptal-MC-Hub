@@ -573,48 +573,13 @@ export default function MCServices() {
           <HubFinder />
         </section>
 
-        {/* Introduction - Definition + Service Portfolio side by side */}
-        <div id="introduction" className="fade-in grid gap-8 lg:grid-cols-5 scroll-mt-20">
-          {/* Left: Definition (slide 4) */}
-          <section className="lg:col-span-2 rounded-lg border border-border bg-card p-6">
-            <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Introduction</p>
-            <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">{definition.title}</h2>
-            <p className="text-sm leading-relaxed text-muted-foreground mb-3">{definition.description}</p>
-            <p className="text-sm leading-relaxed text-muted-foreground">{definition.extended}</p>
-          </section>
-
-          {/* Right: Service Portfolio (slide 5) */}
-          <section className="lg:col-span-3 rounded-lg border border-border bg-card p-6">
-            <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Service Portfolio
-            </p>
-            <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">Toptal MC Services</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {servicePortfolio.map((category) => (
-                <div key={category.pillar} className="space-y-3">
-                  <span
-                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${pillarColors[category.pillar] || "bg-secondary text-secondary-foreground"}`}
-                  >
-                    {category.pillar}
-                  </span>
-                  {category.groups.map((group) => (
-                    <div key={group.name}>
-                      <h4 className="text-xs font-semibold text-foreground mb-1">{group.name}</h4>
-                      <ul className="space-y-0.5">
-                        {group.services.map((s) => (
-                          <li key={s} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                            {s}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
+        {/* Introduction */}
+        <section id="introduction" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Introduction</p>
+          <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">{definition.title}</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground mb-3">{definition.description}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{definition.extended}</p>
+        </section>
 
         {/* MC Services Web */}
         <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
