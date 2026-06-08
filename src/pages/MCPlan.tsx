@@ -890,7 +890,7 @@ export default function MCPlan() {
           </Body>
 
           {/* Surface 1: Tech Services */}
-          <p className="text-sm font-bold text-[#0f172a] mb-1">Surface 1: Tech Services Accounts</p>
+          <p className="text-base font-bold text-[#0f172a] mb-1">Surface 1: Tech Services Accounts</p>
           <p className="text-xs text-[#6b7280] mb-5">Every tech engagement creates downstream business problems. Train CPs and ESEs to spot the trigger — then hand off to the right squad lead.</p>
 
           <div className="mb-8">
@@ -905,7 +905,7 @@ export default function MCPlan() {
           </InnerCard>
 
           {/* Surface 2: MC Talent Accounts */}
-          <p className="text-sm font-bold text-[#0f172a] mb-1">Surface 2: MC Talent Accounts</p>
+          <p className="text-base font-bold text-[#0f172a] mb-1">Surface 2: MC Talent Accounts</p>
           <p className="text-xs text-[#6b7280] mb-5">Active Talent engagements are the highest-trust, lowest-friction MC entry point. The relationship is already there.</p>
 
           <div className="overflow-x-auto rounded-xl border border-[#e2e8f0] mb-6">
