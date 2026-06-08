@@ -201,14 +201,6 @@ const gtmMaterials: GTMRow[] = [
     keyBuyers: "CFOs · Internal Auditors · General Counsels · Regulatory Affairs Managers · CIOs · CISOs · COOs · CSOs · BOD Risk Committees",
   },
   {
-    seq: 5,
-    practice: "Strategy",
-    service: "Business Continuity Services",
-    docUrl: "https://docs.google.com/presentation/d/1ocPmWrfHUatJwFBDWlNqFdGrR4CSlwncYakhsyIGzdY/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/1OfEVGSH_wYF0oeo7XYRHLc_qC8BllUhW/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1MmCz8MiOeO4zypm8JbO8qvm7fET9mRq29ucXU6B583U/edit",
-  },
-  {
     seq: 6,
     practice: "Strategy",
     service: "Customer Experience",
