@@ -166,7 +166,7 @@ const gtmMaterials: GTMRow[] = [
     keyBuyers: "CEO/President, CGO/CSO, CMO, CSO/Head of Sales, COO, CFO · Heads of Product Development/Innovation · Heads of BUs/Divisions",
   },
   {
-    seq: 2,
+    seq: 3,
     practice: "Strategy",
     service: "Go-to-Market",
     docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing",
@@ -179,7 +179,7 @@ const gtmMaterials: GTMRow[] = [
     keyBuyers: "CRO, CMO, CSO · Marketing / Sales / Innovation",
   },
   {
-    seq: 3,
+    seq: 4,
     practice: "Strategy",
     service: "Product Strategy",
     docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
@@ -191,7 +191,7 @@ const gtmMaterials: GTMRow[] = [
     keyBuyers: "CPO, CTO, VP of Product Mgmt · R&D / New Product Development / Innovation",
   },
   {
-    seq: 4,
+    seq: 5,
     practice: "Strategy",
     service: "Risk Management Services",
     docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link",
@@ -252,7 +252,7 @@ const gtmMaterials: GTMRow[] = [
   },
   {
     isHub: true,
-    seq: 10,
+    seq: 2,
     practice: "Strategy",
     service: "Business Transformation",
     docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
@@ -268,7 +268,7 @@ const gtmMaterials: GTMRow[] = [
     keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
   },
   {
-    seq: 11,
+    seq: 10,
     practice: "Strategy",
     service: "Sales Transformation",
     docUrl: "https://docs.google.com/presentation/d/1D4n31KDux-KaP-DKYSOMZYOcWBaJe7yfteAZAqNdTSo/edit?usp=sharing",
