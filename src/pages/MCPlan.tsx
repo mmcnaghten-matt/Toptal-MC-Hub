@@ -928,7 +928,7 @@ export default function MCPlan() {
               <tbody>
                 {TALENT_EXPANSION_ROWS.map((row, i) => (
                   <tr key={row.signal} className={`hover:bg-[#fafcff] transition-colors border-t ${i === 0 ? "border-[#e2e8f0]" : "border-[#f1f5f9]"}`}>
-                    <td className="px-5 py-4 text-[#374151] font-medium align-top w-1/3">{row.signal}</td>
+                    <td className="px-5 py-4 text-[#374151] font-bold align-top w-1/3">{row.signal}</td>
                     <td className="px-5 py-4 text-[#374151] italic align-top">{row.trigger}</td>
                     <td className="px-5 py-4 align-top w-44">
                       <span className="inline-block text-xs font-semibold bg-[#eff6ff] text-[#2563eb] rounded px-2.5 py-1">{row.path}</span>
