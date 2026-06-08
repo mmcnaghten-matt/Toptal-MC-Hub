@@ -199,9 +199,9 @@ function TechTable({ engagements }: { engagements: typeof ALL_TECH_ENGAGEMENTS }
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
-            <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Tech engagement</th>
-            <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question CP/ESE asks</th>
-            <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">MC hub entry point</th>
+            <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Tech engagement</th>
+            <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question CP/ESE asks</th>
+            <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#2563eb]">MC hub entry point</th>
           </tr>
         </thead>
         <tbody>
@@ -214,13 +214,13 @@ function TechTable({ engagements }: { engagements: typeof ALL_TECH_ENGAGEMENTS }
                 {pairIdx === 0 && (
                   <td
                     rowSpan={row.pairs.length}
-                    className="px-5 py-4 text-[#2563eb] font-bold align-top border-r border-[#f1f5f9] w-1/4"
+                    className="px-4 py-2 text-[#2563eb] font-bold align-top border-r border-[#f1f5f9] w-1/4"
                   >
                     {row.engagement}
                   </td>
                 )}
-                <td className="px-5 py-4 text-[#374151] italic align-top">{pair.trigger}</td>
-                <td className="px-5 py-4 align-top w-40">
+                <td className="px-4 py-2 text-[#374151] italic align-top">{pair.trigger}</td>
+                <td className="px-4 py-2 align-top w-40">
                   <HubTag hub={pair.hub} />
                 </td>
               </tr>
@@ -920,17 +920,17 @@ export default function MCPlan() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Talent engagement signal</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question squad lead/CP asks</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">Expansion path</th>
+                  <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Talent engagement signal</th>
+                  <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question squad lead/CP asks</th>
+                  <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#2563eb]">Expansion path</th>
                 </tr>
               </thead>
               <tbody>
                 {TALENT_EXPANSION_ROWS.map((row, i) => (
                   <tr key={row.signal} className={`hover:bg-[#fafcff] transition-colors border-t ${i === 0 ? "border-[#e2e8f0]" : "border-[#f1f5f9]"}`}>
-                    <td className="px-5 py-4 text-[#374151] font-bold align-top w-1/3">{row.signal}</td>
-                    <td className="px-5 py-4 text-[#374151] italic align-top">{row.trigger}</td>
-                    <td className="px-5 py-4 align-top w-44">
+                    <td className="px-4 py-2 text-[#374151] font-bold align-top w-1/3">{row.signal}</td>
+                    <td className="px-4 py-2 text-[#374151] italic align-top">{row.trigger}</td>
+                    <td className="px-4 py-2 align-top w-44">
                       <span className="inline-block text-xs font-semibold bg-[#eff6ff] text-[#2563eb] rounded px-2.5 py-1">{row.path}</span>
                     </td>
                   </tr>
