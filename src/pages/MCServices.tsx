@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ConstellationDiagram from "@/components/ConstellationDiagram";
-import HubFinder from "@/components/HubFinder";
+import ServiceFinder from "@/components/ServiceFinder";
 
 const definition = {
   title: "Management Consulting Services",
@@ -571,7 +571,7 @@ export default function MCServices() {
 
         {/* MC Service Offering Finder */}
         <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6 scroll-mt-20">
-          <HubFinder />
+          <ServiceFinder />
         </section>
 
         {/* MC Services Web */}
