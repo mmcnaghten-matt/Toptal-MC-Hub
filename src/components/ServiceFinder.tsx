@@ -15,7 +15,7 @@ const TECH_ENGAGEMENTS = [
   {
     engagement: "AI / ML implementation",
     pairs: [
-      { trigger: "When your CFO asks if this is working — do you have a way to measure ROI yet?", hub: "Finance Transformation" },
+      { trigger: "When your CFO asks if this is working — do you have a way to measure ROI yet?", hub: "Finance Transformation", subtitle: "AI ROI - Value Realization", overrideLinks: [{ label: "Overview Deck", url: "https://docs.google.com/presentation/d/1OcYkwpnaHsmAcJSunA6-pbLot9Bh_0N5RLpMX6aErQQ/edit?usp=drive_link", icon: "external" as const }, { label: "Discussion Deck", url: "/ai-roi-value-realization.html", icon: "file" as const }] },
       { trigger: "The tools are live — are people actually using them? What's the resistance looking like?", hub: "Change Management" },
     ],
   },
@@ -82,13 +82,17 @@ function selectCls(isEmpty: boolean): string {
   ].join(" ");
 }
 
+interface OverrideLink { label: string; url: string; icon?: "external" | "file" }
+
 interface ResultCardProps {
   hub: string;
   trigger: string;
   path?: string;
+  subtitle?: string;
+  overrideLinks?: OverrideLink[];
 }
 
-function ResultCard({ hub, trigger, path }: ResultCardProps) {
+function ResultCard({ hub, trigger, path, subtitle, overrideLinks }: ResultCardProps) {
   const meta = HUB_META[hub];
   if (!meta) return null;
   return (
@@ -97,7 +101,10 @@ function ResultCard({ hub, trigger, path }: ResultCardProps) {
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${PRACTICE_BADGE[meta.practice] ?? ""}`}>
           {meta.practice}
         </span>
-        <h3 className="text-base font-bold" style={{ color: meta.color }}>{hub}</h3>
+        <div>
+          <h3 className="text-base font-bold leading-tight" style={{ color: meta.color }}>{hub}</h3>
+          {subtitle && <p className="text-sm font-semibold" style={{ color: meta.color }}>{subtitle}</p>}
+        </div>
         {path && path.includes(" / ") && (
           <span className="ml-auto text-xs text-muted-foreground italic">Also consider: {path.split(" / ").filter(h => h !== hub).join(", ")}</span>
         )}
@@ -106,19 +113,29 @@ function ResultCard({ hub, trigger, path }: ResultCardProps) {
         <p className="text-sm italic text-muted-foreground">"{trigger}"</p>
       </div>
       <div className="flex flex-wrap gap-4 pt-1">
-        {meta.sellersSheet && (
-          <a href={meta.sellersSheet} target="_blank" rel="noopener noreferrer"
+        {overrideLinks ? overrideLinks.map(lnk => (
+          <a key={lnk.label} href={lnk.url} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-            <FileText className="h-3.5 w-3.5" />
-            Seller's Sheet
+            {lnk.icon === "file" ? <FileText className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}
+            {lnk.label}
           </a>
-        )}
-        {meta.overviewDeck && (
-          <a href={meta.overviewDeck} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-            <ExternalLink className="h-3.5 w-3.5" />
-            Overview Deck
-          </a>
+        )) : (
+          <>
+            {meta.sellersSheet && (
+              <a href={meta.sellersSheet} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                <FileText className="h-3.5 w-3.5" />
+                Seller's Sheet
+              </a>
+            )}
+            {meta.overviewDeck && (
+              <a href={meta.overviewDeck} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                <ExternalLink className="h-3.5 w-3.5" />
+                Overview Deck
+              </a>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -232,7 +249,7 @@ export default function ServiceFinder() {
           </div>
 
           {techResult ? (
-            <ResultCard hub={techResult.hub} trigger={techResult.trigger} />
+            <ResultCard hub={techResult.hub} trigger={techResult.trigger} subtitle={techResult.subtitle} overrideLinks={techResult.overrideLinks} />
           ) : techEntry && !multiTrigger ? null : techEntry ? (
             <p className="mt-4 text-xs italic text-muted-foreground/60">
               Select a trigger question above to see the recommended hub.
