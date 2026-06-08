@@ -276,7 +276,7 @@ export default function MCPlan() {
           </h1>
           <p className="text-lg text-blue-200 mb-10">Numbers · Context · Hubs · Plan</p>
           <div className="flex flex-wrap gap-3">
-            {["MC at a Glance", "Context", "Hub Strategy", "Execution Plan"].map((label) => (
+            {["MC by the Numbers", "MC Business Narrative", "Context", "Hub Strategy", "Execution Plan"].map((label) => (
               <span
                 key={label}
                 className="flex items-center gap-2 bg-white/10 border border-white/20 text-white text-sm rounded-full px-4 py-2"
@@ -292,8 +292,7 @@ export default function MCPlan() {
       {/* ── Section 2: MC at a Glance (By the Numbers) ── */}
       <section className="bg-white py-20">
         <Container>
-          <h2 className="text-2xl font-semibold text-[#9ca3af] mb-6">MC at a Glance</h2>
-          <SectionLabel>By the Numbers</SectionLabel>
+          <SectionLabel>MC by the Numbers</SectionLabel>
           <p className="text-xs text-[#9ca3af] mb-6">As of June 5, 2026</p>
 
           {/* KPI stat bar */}
@@ -461,7 +460,7 @@ export default function MCPlan() {
           </div>
 
           {/* Narrative */}
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2563eb] mb-3">Narrative</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2563eb] mb-3">MC Business Narrative</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
             {([
               {
