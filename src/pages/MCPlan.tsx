@@ -467,7 +467,7 @@ export default function MCPlan() {
               {
                 num: "01",
                 title: "Record Growth — The Business Is Compounding",
-                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. ENT conversion has doubled. PS has grown from 4% to 14% of gross in a year. This isn't a turnaround story — it's a scaling story.",
+                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. ENT conversion has doubled. PS has grown from 4% to 14% of gross in a year. It's a scaling opportunity.",
                 titleColor: "text-emerald-700",
               },
               {
@@ -478,14 +478,14 @@ export default function MCPlan() {
               },
               {
                 num: "03",
-                title: "Enterprise Is the Engine — and the Ceiling Is Structural",
-                body: "ENT grew 25% YoY and now represents 70% of gross. $13.2M weighted pipeline entering Q2. The constraint to scale isn't demand. It's seller enablement, pursuit leadership, and offer clarity.",
+                title: "Enterprise Is the Engine — the Ceiling Is Structural",
+                body: "ENT grew 25% YoY and now represents 70% of gross. $13.2M weighted pipeline entering Q2. The constraint to scale isn't demand. It's seller enablement, pursuit leadership, offer clarity, and PS opportunity recognition.",
                 titleColor: "text-[#374151]",
               },
               {
                 num: "04",
-                title: "SMB Is a Portfolio Decision, Not a Failure",
-                body: "Five consecutive quarters of YoY decline, no account above $200K net in 12 months, three open pipeline opportunities. The SMB Talent motion works — the question is whether MC belongs in it systematically.",
+                title: "SMB Is a Portfolio Decision",
+                body: "Five consecutive quarters of YoY decline — due to a portfolio focus. The SMB Talent motion works — the question is how MC belongs in it systematically.",
                 titleColor: "text-amber-600",
               },
               {
