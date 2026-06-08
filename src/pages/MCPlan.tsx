@@ -656,7 +656,7 @@ export default function MCPlan() {
                 name: "Business Transformation",
                 tagline: "Operating model for the AI era",
                 body: "Who does what when AI changes the work? Redesign the model — not just adopt the tools.",
-                tags: ["AI operating model", "Workforce redesign", "Process intelligence"],
+                tags: ["AI operating model", "Workforce redesign", "Process intelligence", "AI governance"],
                 color: "#2B44D4",
               },
               {
