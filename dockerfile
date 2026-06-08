@@ -15,6 +15,7 @@ ENV VITE_SUPABASE_URL="https://upivmjklhgpmvhpqnjml.supabase.co"
 ENV  VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_2n7ztvmIj6vG-lnOjPUpgw_0EntQmni"
 
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 # Stage 2: Serve with Nginx
