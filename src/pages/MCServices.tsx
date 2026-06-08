@@ -429,6 +429,12 @@ const salesAssets: SalesAsset[] = [
     url: "https://docs.google.com/document/d/1rpNt0PjxIWr-WVRoci8MZrSHxkkZ69AO5V3z1oTttl4/edit",
   },
   {
+    topic: "AI | ROI - Value Realization",
+    type: "Discussion Deck",
+    document: "Proving AI ROI",
+    url: "/ai-roi-value-realization.html",
+  },
+  {
     topic: "AI | Governance",
     type: "POV",
     document: "Toptal - AI Governance Execution for Yara",
