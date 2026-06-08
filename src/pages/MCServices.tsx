@@ -175,16 +175,16 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Oman Airports Loyalty Pgm", url: "https://docs.google.com/presentation/d/1X8w3PGoG7wk2aQwAGNYgAZobaOEvktDSx_WIys0KrfQ/edit" },
     ],
+    description: "Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy.",
+    keyBuyers: "CRO, CMO, CSO · Marketing / Sales / Innovation",
   },
-  {
-    seq: 3,
-    practice: "Strategy",
-    service: "Product Strategy",
     docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1DnZ419DYA2PvP7CYOPUsKM--SDtLuVmi/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/19AUSpdMRueIZR70q64dCo6U3IKKbkPHVod6D4t_bIbw/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1Eog-BhkRgRion8wH4jtoFq0TY4XB0LzkYpAu-tBU0_k/edit",
+    description: "Embeds strategic rigor into the product development life cycle to minimize risk and maximize successful market entry. Helps businesses define (or revise) their product vision and roadmap to ensure successful product development, launch, and maintenance.",
+    keyBuyers: "CPO, CTO, VP of Product Mgmt · R&D / New Product Development / Innovation",
   },
   {
     seq: 4,
@@ -365,6 +365,8 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Owens Corning Culture", url: "https://docs.google.com/presentation/d/1guXlLNwMI1KfyJiFQBshjb6xF2pqkDMvWI4Osl9nUUU/edit" },
     ],
+    description: "Evolves talent strategy, organizational structure, and culture to meet future business needs.",
+    keyBuyers: "CHRO, CPO, COO, VP of Talent Mgmt · Human Resources",
   },
   {
     seq: 18,
