@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Presentation, BookOpen } from "lucide-react";
+import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ConstellationDiagram from "@/components/ConstellationDiagram";
 import HubFinder from "@/components/HubFinder";
@@ -675,20 +675,23 @@ export default function MCServices() {
                     </tr>,
                     ...rows.map((row) => (
                       <tr key={row.service} className="border-b border-border/50">
-                        <td className="py-2 pr-4 font-medium text-sm">
+                        <td className="py-2 pr-4 text-sm">
                           {row.isHub ? (
-                            <span className="font-semibold text-foreground">{row.service}</span>
+                            <span className="flex items-center gap-1.5 font-bold text-[#2563eb]">
+                              <Network className="w-3.5 h-3.5 shrink-0" />
+                              {row.service}
+                            </span>
                           ) : (
-                            <span className="text-muted-foreground">{row.service}</span>
+                            <span className="font-bold text-foreground">{row.service}</span>
                           )}
                           {row.description && (
-                            <p className={`text-xs mt-1 leading-snug ${row.isHub ? 'text-foreground/70' : 'text-muted-foreground'}`}>
+                            <p className={`text-xs mt-1 leading-snug font-normal ${row.isHub ? 'text-[#2563eb]/70' : 'text-muted-foreground'}`}>
                               {row.description}
                             </p>
                           )}
                           {row.keyBuyers && (
-                            <p className={`text-xs mt-0.5 leading-snug ${row.isHub ? 'text-foreground/70' : 'text-muted-foreground'}`}>
-                              <span className="font-medium">Key buyers: </span>{row.keyBuyers}
+                            <p className={`text-xs mt-0.5 leading-snug ${row.isHub ? 'text-[#2563eb]/70' : 'text-muted-foreground'}`}>
+                              <span className="font-bold">Key buyers: </span>{row.keyBuyers}
                             </p>
                           )}
                         </td>
