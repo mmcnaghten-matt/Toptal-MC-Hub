@@ -552,8 +552,8 @@ export default function MCServices() {
         {/* Section nav */}
         <nav className="flex gap-2 flex-wrap border-b border-border pb-4">
           {[
-            { label: "MC Service Offering Finder", href: "#hub-finder" },
             { label: "Introduction", href: "#introduction" },
+            { label: "MC Service Offering Finder", href: "#hub-finder" },
             { label: "Services Web", href: "#services-web" },
             { label: "Go-to-Market Materials", href: "#gtm-materials" },
             { label: "Sales Motion Documents", href: "#sales-motion" },
@@ -568,17 +568,17 @@ export default function MCServices() {
           ))}
         </nav>
 
-        {/* MC Service Offering Finder */}
-        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6 scroll-mt-20">
-          <HubFinder />
-        </section>
-
         {/* Introduction */}
         <section id="introduction" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
           <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Introduction</p>
           <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">{definition.title}</h2>
           <p className="text-sm leading-relaxed text-muted-foreground mb-3">{definition.description}</p>
           <p className="text-sm leading-relaxed text-muted-foreground">{definition.extended}</p>
+        </section>
+
+        {/* MC Service Offering Finder */}
+        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6 scroll-mt-20">
+          <HubFinder />
         </section>
 
         {/* MC Services Web */}
