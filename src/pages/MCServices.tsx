@@ -140,6 +140,8 @@ interface GTMRow {
   maturityModelUrl?: string;
   maturityDiagnosticUrl?: string;
   exampleMaterials?: { label: string; url: string }[];
+  description?: string;
+  keyBuyers?: string;
 }
 
 const PRACTICE_ORDER: Practice[] = ["Strategy", "Finance", "Operations", "People"];
@@ -160,6 +162,8 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
     ],
+    description: "Helping to identify and exploit opportunities for expansion, through market penetration, market development, product development, or diversification.",
+    keyBuyers: "CEO/President, CGO/CSO, CMO, CSO/Head of Sales, COO, CFO · Heads of Product Development/Innovation · Heads of BUs/Divisions",
   },
   {
     seq: 2,
@@ -189,6 +193,8 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link",
     pdfUrl: "https://drive.google.com/file/d/1hE0flmJ_2oyhq45I9AFqNaAPtVP1XdA7/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1caiz6eH2ZaHU5I75fZGAjD4PWr-I115tudm5OthHFhU/edit",
+    description: "Helping organizations identify, assess, and mitigate risks to comply with regulations, protect assets, enhance reputation, ensure business continuity, and drive efficiency.",
+    keyBuyers: "CFOs · Internal Auditors · General Counsels · Regulatory Affairs Managers · CIOs · CISOs · COOs · CSOs · BOD Risk Committees",
   },
   {
     seq: 5,
@@ -206,6 +212,8 @@ const gtmMaterials: GTMRow[] = [
     pdfUrl: "https://drive.google.com/file/d/1V_TlWn6ApM1n3Sb8HggNA9X-He4Exflf/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1318piklJqw05nvPrGhIKWF31hZvzGZMS1VPSS9Q_wKE/edit",
     maturityModelUrl: "https://docs.google.com/document/d/1fXDAZA5Wh0iPQksDPdtLe07SXSbz5khvvU32Wk45axI/edit",
+    description: "Improving customer interactions and satisfaction across all touchpoints to enhance brand loyalty and drive business growth.",
+    keyBuyers: "Chief Customer Officer (CCO) · CMO · COO · CIO · CEO/President",
   },
   {
     seq: 7,
@@ -216,6 +224,8 @@ const gtmMaterials: GTMRow[] = [
     battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
+    description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
+    keyBuyers: "CEOs, CIOs, CDOs, COOs · VP/Directors of Digital/IT · Operations Leads · Innovation Heads",
   },
   {
     seq: 8,
@@ -231,6 +241,8 @@ const gtmMaterials: GTMRow[] = [
       { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
       { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
     ],
+    description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
+    keyBuyers: "CEO/LOB Heads · CFO · COO · CMO · CIO · CDO · CTO · Innovation/Digital Transformation Heads",
   },
   {
     seq: 9,
@@ -239,6 +251,8 @@ const gtmMaterials: GTMRow[] = [
     docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/13o6IqM1ILpFOmoDl-H1TtuLNTgaHoJSU/view?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
+    description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
+    keyBuyers: "CEO, CIO, CTO, CDO, CRO, CLO · AI/ML Leadership · Risk & Compliance Teams · Business Unit Leaders · Ethics Committees",
   },
   {
     isHub: true,
@@ -254,6 +268,8 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
     ],
+    description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
+    keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
   },
   {
     seq: 11,
@@ -274,6 +290,8 @@ const gtmMaterials: GTMRow[] = [
     sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
     maturityDiagnosticUrl: "/diagnostics/finance-transformation",
+    description: "Helping organizations modernize their finance functions through process improvements, technology adoption, and strategic insights.",
+    keyBuyers: "CFOs · Finance Directors · COOs · CIOs · CEOs",
   },
   {
     seq: 13,
@@ -286,6 +304,8 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Corning M&A Strategy", url: "https://docs.google.com/presentation/d/1HBLq4Mv2yCbFEdCoM4BMgHAQx7YwPK0cxzNZ-ZmidHs/edit" },
     ],
+    description: "Providing strategic advice and support throughout the M&A process — acquisition strategy, target identification, due diligence, and post-merger integration.",
+    keyBuyers: "Corporate: C-Suite & Investment Committee, Corporate Development Team · PE: General Partners, Limited Partners, Portfolio Company Management",
   },
   // Operations
   {
@@ -302,6 +322,8 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Westcon-Comstor Q2C", url: "https://docs.google.com/presentation/d/11s6nm64OhYbCcMA2ACcM5zHbNGynp0heC0Ve3YEczgs/edit" },
     ],
+    description: "Enhancing organizational performance through process optimization, cost reduction, and operational efficiency.",
+    keyBuyers: "C-Level Executives (CEOs, COOs, CIOs, CFOs) · Senior Managers (HR, IT, Operations, Marketing) · Board Members · Operational Leaders",
   },
   {
     isHub: true,
@@ -314,6 +336,8 @@ const gtmMaterials: GTMRow[] = [
     sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1eKjYH3O-7GL3NGNFGS9NgcaOGtC0Pz6nvuZ8ZOv0ItA/edit",
     maturityDiagnosticUrl: "/diagnostics/supply-chain",
+    description: "Helping organizations optimize their supply chain operations, improve logistics, and enhance overall supply chain performance.",
+    keyBuyers: "CEOs, COOs, CFOs · VPs/Directors of Supply Chain/Logistics/Operations · CIOs/CTOs · Chief Sustainability Officers",
   },
   {
     seq: 16,
@@ -323,6 +347,8 @@ const gtmMaterials: GTMRow[] = [
     pdfUrl: "https://drive.google.com/file/d/1wAz229F37TvfXVXOdl_nhe4qJGKuaTLW/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1M-v3lAGlMFJlW75tHKN-caTJdexpIKxZSy8q_NoR_Jk/edit",
     maturityModelUrl: "https://docs.google.com/document/d/1UKmZO7LoyNZJQv2yMRlrfZ4voWIR-Qb2koDEnsou2l0/edit",
+    description: "Providing strategies and solutions to optimize inventory levels, reduce carrying costs, and improve inventory accuracy.",
+    keyBuyers: "COO · CFO · VP of Supply Chain/Operations · Head of Procurement · Warehouse/Logistics Manager · IT Director",
   },
   // People
   {
@@ -350,6 +376,8 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
     ],
+    description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
+    keyBuyers: "CEOs, COOs, CIOs · CHROs/VPs of HR · Program Directors/PMO · CTOs/IT Directors",
   },
 ];
 
@@ -647,7 +675,23 @@ export default function MCServices() {
                     </tr>,
                     ...rows.map((row) => (
                       <tr key={row.service} className="border-b border-border/50">
-                        <td className={`py-2 pr-4 ${row.isHub ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{row.service}</td>
+                        <td className="py-2 pr-4 font-medium text-sm">
+                          {row.isHub ? (
+                            <span className="font-semibold text-foreground">{row.service}</span>
+                          ) : (
+                            <span className="text-muted-foreground">{row.service}</span>
+                          )}
+                          {row.description && (
+                            <p className={`text-xs mt-1 leading-snug ${row.isHub ? 'text-foreground/70' : 'text-muted-foreground'}`}>
+                              {row.description}
+                            </p>
+                          )}
+                          {row.keyBuyers && (
+                            <p className={`text-xs mt-0.5 leading-snug ${row.isHub ? 'text-foreground/70' : 'text-muted-foreground'}`}>
+                              <span className="font-medium">Key buyers: </span>{row.keyBuyers}
+                            </p>
+                          )}
+                        </td>
                         <td className="py-2 px-3 text-center">
                           {row.docUrl ? (
                             <a href={row.docUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
