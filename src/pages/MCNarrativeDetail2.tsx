@@ -6,7 +6,7 @@ const points = [
   {
     num: "01",
     title: "Record Growth — The Business Is Compounding",
-    body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. ENT conversion has doubled from 12% to 27% over five quarters — that's not noise, it's a structural improvement in how we identify and close Enterprise work. PS has grown from 4% to 14% of gross revenue in twelve months, and the PS weighted pipeline is up 68% over three quarters. This isn't a recovery story or a turnaround story. It's a compounding story. The question for H2 2026 isn't whether the business works — it's how fast we can scale it.",
+    body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. ENT conversion has doubled from 12% to 27% over five quarters — a structural improvement in how we identify and close Enterprise work. PS has grown from 4% to 14% of gross revenue in twelve months, and the PS weighted pipeline is up 68% over three quarters. This is the start to a compounding story. The question for H2 2026 isn't whether the business works — it's how fast we can scale it.",
   },
   {
     num: "02",
@@ -16,12 +16,12 @@ const points = [
   {
     num: "03",
     title: "Enterprise Is the Engine — and the Ceiling Is Structural",
-    body: "ENT grew 25% YoY in Q1 2026 and now represents 70% of gross revenue. $13.2M weighted pipeline entering Q2 2026. New opportunity creation hit a record 122 in Q1 2026. The constraint to scale isn't demand. It's the model upstream: sellers need clear entry points (not 40+ services), squad leads need to be in front of the conversation (not behind it), and Talent accounts need to be formally mapped for expansion. Each of these is a solvable structural problem, not a market problem.",
+    body: "ENT grew 25% YoY in Q1 2026 and now represents 70% of gross revenue. $13.2M weighted pipeline entering Q2 2026. New opportunity creation hit a record 122 in Q1 2026. The constraint to scale isn't demand. It's the model upstream: sellers need clear entry points (not 40+ services), talent bench squad leads need to be in front of the conversation (not behind it), and Talent accounts need to be formally mapped for expansion. Each of these is a solvable structural problem, not a market problem.",
   },
   {
     num: "04",
     title: "SMB Is a Portfolio Decision, Not a Failure",
-    body: "Five consecutive quarters of YoY decline, ranging from −16% to −34%. No single SMB account has produced $200K net in the last 12 months. Three open pipeline opportunities with essentially zero tracked dollar value. ENT growth is masking this, but it needs a decision — not monitoring. The question isn't whether the SMB Talent motion works (it does). The question is whether MC belongs in it systematically: where to allocate PS pursuit effort, whether to defend SMB share or focus capacity on ENT, and what role SMB plays in the 2026 plan. Making the call is the task — either way.",
+    body: "Five consecutive quarters of YoY decline, ranging from −16% to −34%. ENT growth is masking this, but a decision on how to drive SMB is an open switch. The question isn't whether the SMB Talent motion works (it does). The question is how MC belongs in it systematically: where to allocate PS pursuit effort, whether to defend SMB share or focus capacity on ENT, and what role SMB plays in the 2026 plan. Making a call is the task — either way.",
   },
   {
     num: "05",
@@ -31,7 +31,7 @@ const points = [
   {
     num: "06",
     title: "H2 Is a Top-Line Story — Margin Follows Volume",
-    body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift toward PS. That's a remarkable achievement and a sign of operational discipline. There is no further structural margin lever to pull from mix shift or PS growth — PS margins run 31–36%, in line with Talent. The H2 2026 story has to be about revenue volume: converting the 83 Solutioning opportunities currently in pipeline, deepening relationships in the top 30 Talent accounts, winning more ENT mandates, and deciding what to do about SMB. Margin is a deal-by-deal pricing call; growth requires a motion.",
+    body: "Blended margins have held at 34–37% for five consecutive quarters through a significant mix shift toward PS. That's a remarkable achievement that may signal opportunity to attain higher margins. However, the H2 2026 story has to be about revenue volume: converting the 83 Solutioning opportunities currently in pipeline, deepening relationships in the top Talent accounts, winning more ENT deals, and deciding what to do about SMB. Margin can remain a deal-by-deal pricing call; growth requires a motion.",
   },
 ];
 
