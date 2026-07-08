@@ -134,7 +134,7 @@ interface GTMRow {
   practice: Practice;
   service: string;
   docUrl?: string;
-  pdfUrl?: string;
+  firstCallDeckUrl?: string;
   battlecardUrl?: string;
   sellersSheetUrl?: string;
   maturityModelUrl?: string;
@@ -222,7 +222,7 @@ const gtmMaterials: GTMRow[] = [
     practice: "Strategy",
     service: "AI Consulting",
     docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/1Fg_9v11GJFglH76znXgNyY2Q4vlzbXSI/view?usp=drive_link",
+    firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
@@ -269,7 +269,7 @@ const gtmMaterials: GTMRow[] = [
     practice: "Finance",
     service: "Finance Transformation",
     docUrl: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/11DwcGPcy-nI4NvzW3UziU96K8Tj4dvl8/view?usp=drive_link",
+    firstCallDeckUrl: "https://docs.google.com/presentation/d/1J6iCOBdQUkPiZLMdrYvSRym4spqpXAijxrkFsG6Jr5I/edit?usp=sharing",
     battlecardUrl: "https://docs.google.com/presentation/d/1nqdEB423iDUd3JtPWqTtGZHh-cCia6mm8diZa_14XdY/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
@@ -345,7 +345,7 @@ const gtmMaterials: GTMRow[] = [
     practice: "People",
     service: "Change Management",
     docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/1zp1hfli-auLWnpaX9St-6WZHFhNwV24F/view?usp=drive_link",
+    firstCallDeckUrl: "https://docs.google.com/presentation/d/1FngvHXpfZN8KrdgkssvFvnLt4XjgHKR1kWTRx8WVNwA/edit?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/12gpn5JP9DiR1GVuNPOQiAM9bBWqhHm4bfY9OPo8ZmLQ/edit",
     exampleMaterials: [
       { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
@@ -614,7 +614,8 @@ export default function MCServices() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="pb-2 pr-4 text-left font-semibold text-foreground align-middle">Service</th>
-                  <th colSpan={2} className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Overview Deck</th>
+                  <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Overview Deck</th>
+                  <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">First Call Deck</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Battlecard</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Sellers Sheet</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Maturity Model</th>
@@ -646,9 +647,9 @@ export default function MCServices() {
                           )}
                         </td>
                         <td className="py-2 px-3 text-center">
-                          {row.pdfUrl ? (
-                            <a href={row.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                              PDF
+                          {row.firstCallDeckUrl ? (
+                            <a href={row.firstCallDeckUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                              Doc
                             </a>
                           ) : (
                             "—"
