@@ -747,7 +747,7 @@ export default function MCServices() {
                         <tr key={`${row.service}-${sub.service}`} className="border-b border-border/30 bg-muted/30">
                           <td className="py-2 pl-8 pr-4 text-sm">
                             <span className="text-muted-foreground mr-1.5 select-none">↳</span>
-                            <span className="font-semibold text-foreground">{sub.service}</span>
+                            <span className="font-semibold text-foreground text-xs">{sub.service}</span>
                             {sub.description && (
                               <p className="text-xs mt-0.5 leading-snug text-muted-foreground font-normal">
                                 {sub.description}
