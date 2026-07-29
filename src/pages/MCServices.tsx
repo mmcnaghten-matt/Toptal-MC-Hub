@@ -128,6 +128,18 @@ const servicePortfolio: ServiceCategory[] = [
 
 type Practice = "Strategy" | "Finance" | "Operations" | "People";
 
+interface SubRow {
+  service: string;
+  description?: string;
+  docUrl?: string;
+  firstCallDeckUrl?: string;
+  battlecardUrl?: string;
+  sellersSheetUrl?: string;
+  maturityModelUrl?: string;
+  maturityDiagnosticUrl?: string;
+  exampleMaterials?: { label: string; url: string }[];
+}
+
 interface GTMRow {
   isHub?: boolean;
   seq?: number;
@@ -142,6 +154,7 @@ interface GTMRow {
   exampleMaterials?: { label: string; url: string }[];
   description?: string;
   keyBuyers?: string;
+  subRows?: SubRow[];
 }
 
 const PRACTICE_ORDER: Practice[] = ["Strategy", "Finance", "Operations", "People"];
@@ -228,7 +241,6 @@ const gtmMaterials: GTMRow[] = [
     practice: "Strategy",
     service: "AI Consulting",
     docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
-    firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
@@ -239,6 +251,13 @@ const gtmMaterials: GTMRow[] = [
     ],
     description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
     keyBuyers: "CEO/LOB Heads · CFO · COO · CMO · CIO · CDO · CTO · Innovation/Digital Transformation Heads",
+    subRows: [
+      {
+        service: "AI Core - Build AI Capability",
+        description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
+      },
+    ],
   },
   {
     seq: 9,
@@ -642,7 +661,7 @@ export default function MCServices() {
                         {practice}
                       </td>
                     </tr>,
-                    ...rows.map((row) => (
+                    ...rows.flatMap((row) => [
                       <tr key={row.service} className="border-b border-border/50">
                         <td className="py-2 pr-4 text-sm">
                           {row.isHub ? (
@@ -727,8 +746,60 @@ export default function MCServices() {
                               ))
                             : "—"}
                         </td>
-                      </tr>
-                    )),
+                      </tr>,
+                      ...(row.subRows ?? []).map((sub) => (
+                        <tr key={`${row.service}-${sub.service}`} className="border-b border-border/30 bg-muted/30">
+                          <td className="py-2 pl-8 pr-4 text-sm">
+                            <span className="text-muted-foreground mr-1.5 select-none">↳</span>
+                            <span className="font-semibold text-foreground">{sub.service}</span>
+                            {sub.description && (
+                              <p className="text-xs mt-0.5 leading-snug text-muted-foreground font-normal">
+                                {sub.description}
+                              </p>
+                            )}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            {sub.docUrl ? (
+                              <a href={sub.docUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+                            ) : "—"}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            {sub.firstCallDeckUrl ? (
+                              <a href={sub.firstCallDeckUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+                            ) : "—"}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            {sub.battlecardUrl ? (
+                              <a href={sub.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+                            ) : "—"}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            {sub.sellersSheetUrl ? (
+                              <a href={sub.sellersSheetUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+                            ) : "—"}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            {sub.maturityModelUrl || sub.maturityDiagnosticUrl ? (
+                              <span className="inline-flex items-center justify-center gap-2">
+                                {sub.maturityModelUrl && (
+                                  <a href={sub.maturityModelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+                                )}
+                                {sub.maturityDiagnosticUrl && (
+                                  <a href={sub.maturityDiagnosticUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Diagnostic</a>
+                                )}
+                              </span>
+                            ) : "—"}
+                          </td>
+                          <td className="py-2 pl-4 text-xs">
+                            {sub.exampleMaterials
+                              ? sub.exampleMaterials.map((m, i) => (
+                                  <a key={i} href={m.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block">{m.label}</a>
+                                ))
+                              : "—"}
+                          </td>
+                        </tr>
+                      )),
+                    ]),
                   ];
                 })}
               </tbody>
