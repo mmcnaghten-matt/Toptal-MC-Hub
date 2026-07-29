@@ -257,17 +257,13 @@ const gtmMaterials: GTMRow[] = [
         description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
         firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
       },
+      {
+        service: "Responsible AI",
+        description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
+        docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
+      },
     ],
-  },
-  {
-    seq: 9,
-    practice: "Strategy",
-    service: "Responsible AI",
-    docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/13o6IqM1ILpFOmoDl-H1TtuLNTgaHoJSU/view?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
-    description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
-    keyBuyers: "CEO, CIO, CTO, CDO, CRO, CLO · AI/ML Leadership · Risk & Compliance Teams · Business Unit Leaders · Ethics Committees",
   },
   {
     isHub: true,
