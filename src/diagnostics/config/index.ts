@@ -9,6 +9,7 @@ import businessTransformation from './business-transformation';
 import growthStrategy from './growth-strategy';
 import aiGovernanceMaturity from './ai-governance-maturity';
 import aiValueRealization from './ai-value-realization';
+import safeAgileMaturit from './safe-agile-maturity';
 
 const registry: Record<string, DiagnosticConfig> = {
   'ai-maturity': aiMaturity,
@@ -21,6 +22,7 @@ const registry: Record<string, DiagnosticConfig> = {
   'growth-strategy': growthStrategy,
   'ai-value-realization': aiValueRealization,
   'ai-governance-maturity': aiGovernanceMaturity,
+  'safe-agile-maturity': safeAgileMaturit,
 };
 
 export function getDiagnosticConfig(slug: string): DiagnosticConfig | undefined {

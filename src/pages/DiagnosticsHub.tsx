@@ -87,6 +87,15 @@ const mcUniversalDiagnostics = [
     path: "/diagnostics/ai-governance-maturity",
     password: "AG2026",
   },
+  {
+    slug: "safe-agile-maturity",
+    title: "SAFe Agile Maturity Assessment",
+    description:
+      "Assess your organization's SAFe Agile maturity across five pillars — Strategy & Lean Portfolio Governance, ART Execution & Flow, Technical Agility & DevOps, Event Quality & Alignment, and Lean-Agile Culture & Leadership — and receive a prioritized improvement roadmap.",
+    pillars: ["Strategy & LPG", "ART Execution", "Technical Agility", "Event Quality", "Culture & Leadership"],
+    path: "/diagnostics/safe-agile-maturity",
+    password: "SAFE2026",
+  },
 ];
 
 const industryDiagnostics = [
