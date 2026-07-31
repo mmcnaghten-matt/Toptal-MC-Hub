@@ -91,8 +91,8 @@ const mcUniversalDiagnostics = [
     slug: "safe-agile-maturity",
     title: "SAFe Agile Maturity Assessment",
     description:
-      "Assess your organization's SAFe Agile maturity across five pillars — Strategy & Lean Portfolio Governance, ART Execution & Flow, Technical Agility & DevOps, Event Quality & Alignment, and Lean-Agile Culture & Leadership — and receive a prioritized improvement roadmap.",
-    pillars: ["Strategy & LPG", "ART Execution", "Technical Agility", "Event Quality", "Culture & Leadership"],
+      "Assess your organization's SAFe Agile maturity across five pillars — Value Stream & Organizational Design, Strategic Funding & Portfolio Governance, Flow, Execution & Cadence, Technical Engineering & Architecture, and Leadership, Culture & Talent Capability — and receive a prioritized improvement roadmap.",
+    pillars: ["Value Stream & Org", "Strategic Funding", "Flow & Execution", "Technical Eng.", "Leadership & Culture"],
     path: "/diagnostics/safe-agile-maturity",
     password: "SAFE2026",
   },
