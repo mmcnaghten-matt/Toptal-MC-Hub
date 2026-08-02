@@ -88,6 +88,15 @@ const mcUniversalDiagnostics = [
     password: "AG2026",
   },
   {
+    slug: "erp-pmo-maturity",
+    title: "ERP PMO Maturity Diagnostic",
+    description:
+      "Assess your ERP program management maturity across five pillars — Strategy, Governance & Executive Alignment, Estimation Accuracy & Earned Value Analytics, Scope, Process Standardization & Change Management, Delivery Execution, Risk & Multi-Vendor Management, and Data Integration, PPM Tooling & Advanced PMO Analytics — and receive a prioritized improvement roadmap.",
+    pillars: ["Strategy & Gov.", "Estimation & EVM", "Scope & Change", "Delivery & Risk", "Data & PPM"],
+    path: "/diagnostics/erp-pmo-maturity",
+    password: "ERP2026",
+  },
+  {
     slug: "safe-agile-maturity",
     title: "SAFe Agile Maturity Assessment",
     description:

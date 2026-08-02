@@ -10,6 +10,7 @@ import growthStrategy from './growth-strategy';
 import aiGovernanceMaturity from './ai-governance-maturity';
 import aiValueRealization from './ai-value-realization';
 import safeAgileMaturit from './safe-agile-maturity';
+import erpPmoMaturity from './erp-pmo-maturity';
 
 const registry: Record<string, DiagnosticConfig> = {
   'ai-maturity': aiMaturity,
@@ -23,6 +24,7 @@ const registry: Record<string, DiagnosticConfig> = {
   'ai-value-realization': aiValueRealization,
   'ai-governance-maturity': aiGovernanceMaturity,
   'safe-agile-maturity': safeAgileMaturit,
+  'erp-pmo-maturity': erpPmoMaturity,
 };
 
 export function getDiagnosticConfig(slug: string): DiagnosticConfig | undefined {
