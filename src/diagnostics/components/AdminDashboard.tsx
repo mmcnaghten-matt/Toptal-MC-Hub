@@ -59,6 +59,74 @@ function buildContextLabel(rows: AdminRow[]): string {
 
 function SurveyResponsesModal({ config, row, onClose }: { config: DiagnosticConfig; row: AdminRow; onClose: () => void }) {
   const answers = (row.response.answers ?? {}) as Record<string, number>;
+  const { full_name, enterprise, role, job_title, email } = row.respondent;
+  const roleDisplay = role && job_title && job_title !== role ? `${role} – ${job_title}` : (role || job_title || '—');
+  const submittedDate = new Date(row.response.submitted_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  function handlePrint() {
+    let dimensionsHtml = '';
+    config.dimensions.forEach((dim, dimIdx) => {
+      const questions = config.questions.filter(q => q.dimension === dim.id);
+      let questionsHtml = '';
+      questions.forEach((q, qIdx) => {
+        const selectedIdx = answers[q.id] ?? 0;
+        const selectedLabel = q.options[selectedIdx] ?? String(selectedIdx);
+        questionsHtml += `<div class="question"><div class="q-text">${qIdx + 1}. ${q.text}</div><span class="q-answer">${selectedLabel}</span></div>`;
+      });
+      dimensionsHtml += `<div class="dimension"><div class="dim-header"><div class="dim-num">${dimIdx + 1}</div><div class="dim-title">${dim.label}</div></div><div class="questions">${questionsHtml}</div></div>`;
+    });
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${config.title} – Survey Responses</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11pt; color: #111; margin: 0; padding: 32px 40px; }
+    h1 { font-size: 15pt; margin: 0 0 4px; color: #1e3a5f; }
+    .subtitle { font-size: 10pt; color: #6b7280; margin-bottom: 16px; }
+    .header { border-bottom: 2px solid #2563eb; padding-bottom: 16px; margin-bottom: 20px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 32px; font-size: 10pt; }
+    .meta-label { font-size: 8.5pt; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1px; }
+    .meta-value { font-weight: 600; color: #111; }
+    .dimension { margin-bottom: 22px; page-break-inside: avoid; }
+    .dim-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .dim-num { width: 20px; height: 20px; border-radius: 50%; background: #2563eb; color: #fff; font-size: 9pt; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .dim-title { font-size: 11pt; font-weight: bold; color: #1e3a5f; }
+    .question { padding: 7px 0; border-bottom: 1px solid #e5e7eb; }
+    .question:last-child { border-bottom: none; }
+    .q-text { font-size: 10pt; color: #374151; margin-bottom: 4px; }
+    .q-answer { display: inline-block; background: #f3f4f6; border-radius: 4px; padding: 2px 10px; font-size: 10pt; font-weight: 600; color: #111; }
+    .footer { margin-top: 32px; padding-top: 10px; border-top: 1px solid #e5e7eb; font-size: 8.5pt; color: #9ca3af; text-align: center; }
+    @media print { body { padding: 16px 20px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>${config.title}</h1>
+    <div class="subtitle">Survey Responses</div>
+    <div class="meta">
+      <div><div class="meta-label">Name</div><div class="meta-value">${full_name}</div></div>
+      <div><div class="meta-label">Company</div><div class="meta-value">${enterprise}</div></div>
+      <div><div class="meta-label">Role / Title</div><div class="meta-value">${roleDisplay}</div></div>
+      <div><div class="meta-label">Email</div><div class="meta-value">${email}</div></div>
+      <div style="grid-column:span 2"><div class="meta-label">Submitted</div><div class="meta-value">${submittedDate}</div></div>
+    </div>
+  </div>
+  ${dimensionsHtml}
+  <div class="footer">Toptal Management Consulting Hub · ${config.title} · ${submittedDate}</div>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=820,height=960');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      win.print();
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 pt-16 px-4 overflow-y-auto"
@@ -72,10 +140,29 @@ function SurveyResponsesModal({ config, row, onClose }: { config: DiagnosticConf
           <div>
             <h2 className="text-xl font-bold text-gray-900">Survey Responses</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              {row.respondent.full_name} · {row.respondent.enterprise}
+              {full_name} · {enterprise}
             </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none mt-0.5">×</button>
+        </div>
+
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          <div>
+            <span className="text-xs text-gray-400 uppercase tracking-wide block mb-0.5">Name</span>
+            <span className="font-medium text-gray-900">{full_name}</span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400 uppercase tracking-wide block mb-0.5">Company</span>
+            <span className="font-medium text-gray-900">{enterprise}</span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400 uppercase tracking-wide block mb-0.5">Role / Title</span>
+            <span className="font-medium text-gray-900">{roleDisplay}</span>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400 uppercase tracking-wide block mb-0.5">Email</span>
+            <span className="font-medium text-gray-900">{email}</span>
+          </div>
         </div>
 
         <div className="p-6 space-y-8">
@@ -113,6 +200,18 @@ function SurveyResponsesModal({ config, row, onClose }: { config: DiagnosticConf
               </div>
             );
           })}
+        </div>
+
+        <div className="flex justify-end px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Print / Save as PDF
+          </button>
         </div>
       </div>
     </div>
