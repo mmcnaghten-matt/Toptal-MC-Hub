@@ -263,6 +263,16 @@ const gtmMaterials: GTMRow[] = [
         docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
         maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
       },
+      {
+        service: "AI Value Realization",
+        description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
+      },
+      {
+        service: "AI Governance",
+        description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
+      },
     ],
   },
   {
