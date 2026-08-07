@@ -452,6 +452,12 @@ const salesAssets: SalesAsset[] = [
   {
     topic: "AI | Governance",
     type: "POV",
+    document: "Toptal POV - AI & Agentic AI Governance",
+    url: "https://docs.google.com/presentation/d/13HaKhiqZQAi0EgWxYGkSeGeO0zSxfOQhWnA17MNgF6w/edit?usp=sharing",
+  },
+  {
+    topic: "AI | Governance",
+    type: "POV",
     document: "Toptal - AI Governance Execution for Yara",
     url: "https://docs.google.com/presentation/d/1IC5BX7pyVZFa6RO6GRDKsssQXSIHqQn1qGd8eYPO3fI/edit?usp=drive_link",
   },
