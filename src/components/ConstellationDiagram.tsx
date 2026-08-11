@@ -64,11 +64,9 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       people:   D ? {f:"#312060",s:"#7060c8",t:"#d0c8ff",e:"#7060c8"} : {f:"#5C6BC0",s:"#3949AB",t:"#fff",e:"#5C6BC0"},
     };
     const UC: ColorSet = D ? {f:"#1a2245",s:"#4d65e0",t:"#b0c4ff",e:"#4d65e0"} : {f:"#EEF2FF",s:"#2B44D4",t:"#2B44D4",e:"#2B44D4"};
-    const SC: ColorSet = D ? {f:"#181a2c",s:"#3a3e5c",t:"#8890b8",e:"#5560a0"} : {f:"#F8F9FB",s:"#CED4DA",t:"#495057",e:"#868E96"};
 
     function nc(n: DiagramNode): ColorSet {
       if (n.type === "universal") return UC;
-      if (n.type === "secondary") return SC;
       return HC[n.cat!];
     }
 
@@ -78,7 +76,6 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       [HC.ops.f,      "none", "Operations"],
       [HC.people.f,   "none", "People & Culture"],
       [UC.f, `1.5px solid ${UC.s}`, "Universal connector"],
-      [SC.f, `1px solid ${SC.s}`,   "Secondary service"],
     ] as [string, string, string][]).forEach(([bg, border, label]) => {
       const w = document.createElement("span");
       w.style.cssText = "display:flex;align-items:center;gap:5px";
@@ -98,11 +95,11 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       {id:"mna",       cat:"finance",  buyer:"Corp Dev / PE", ll:["M&A Advisory","Services"],      cx:163,cy:163,rx:78,ry:30,type:"hub",
        info:"<strong>M&A Advisory Services</strong> (Corp Dev / PE gateway) — Pursues inorganic growth through target identification, due diligence, and post-merger integration. Works alongside Strategy & Growth Consulting and Finance Transformation & CFO Advisory."},
       {id:"business",  cat:"strategy", buyer:"CEO / COO",     ll:["Business","Transformation &","Risk Advisory"], cx:517,cy:163,rx:80,ry:38,type:"hub",
-       info:"<strong>Business Transformation and Risk Advisory</strong> (CEO/COO gateway) — Enterprise-wide change to improve performance, competitiveness, and adaptability. Connects to Customer Experience (CX) and all four universal connectors."},
+       info:"<strong>Business Transformation and Risk Advisory</strong> (CEO/COO gateway) — Enterprise-wide change to improve performance, competitiveness, and adaptability. Connects to all four universal connectors."},
       {id:"growth",    cat:"strategy", buyer:"CSO / CMO",     ll:["Strategy & Growth","Consulting"],  cx:340,cy:110,rx:78,ry:30,type:"hub",
-       info:"<strong>Strategy & Growth Consulting</strong> (CSO/CMO gateway) — Identifies and exploits expansion through market penetration, product development, and diversification. Connects to Customer Experience and Product Strategy; works alongside M&A Advisory Services on inorganic growth."},
+       info:"<strong>Strategy & Growth Consulting</strong> (CSO/CMO gateway) — Identifies and exploits expansion through market penetration, product development, and diversification. Works alongside M&A Advisory Services on inorganic growth."},
       {id:"supply",    cat:"ops",      buyer:"COO",           ll:["Supply Chain &","Procurement","Consulting"], cx:163,cy:417,rx:80,ry:38,type:"hub",
-       info:"<strong>Supply Chain and Procurement Consulting</strong> (COO gateway) — Optimizes operations and logistics for resilience, transparency, and efficiency. Pulls in Digital Strategy (IoT/Digital Twins), AI Consulting, Risk & Compliance, Inventory Management, and Sustainability."},
+       info:"<strong>Supply Chain and Procurement Consulting</strong> (COO gateway) — Optimizes operations and logistics for resilience, transparency, and efficiency. Pulls in Digital Strategy (IoT/Digital Twins), AI Consulting, and Risk & Compliance."},
       {id:"perf",      cat:"ops",      buyer:"C-Level / Ops", ll:["Operations &","Performance","Improvement"], cx:340,cy:470,rx:80,ry:38,type:"hub",
        info:"<strong>Operations & Performance Improvement</strong> (C-Level/Ops gateway) — Drives EBITDA growth, cost reduction, and operational efficiency. Connects to Digital Strategy, Change Management, and AI Consulting to rewire core processes."},
       {id:"leadership",cat:"people",   buyer:"CEO / CHRO",    ll:["Leadership &","Culture"],        cx:517,cy:417,rx:78,ry:30,type:"hub",
@@ -117,14 +114,6 @@ export default function ConstellationDiagram({ compact = false }: Props) {
        info:"<strong>AI Consulting</strong> (Universal Connector — Intelligence Layer) — Drives automation and advantage through predictive analytics and generative AI. Especially critical for Adaptive Organization (reskilling for GenAI) and Finance (predictive decisioning)."},
       {id:"risk",      ll:["Risk &","Compliance"],            cx:245,cy:283,rx:62,ry:24,type:"universal",
        info:"<strong>Risk & Compliance</strong> (Universal Connector — Guardrail Layer) — The regulatory and security safety net for any major transformation. Vital for M&A due diligence, Finance regulatory intelligence, and Digital cybersecurity."},
-      {id:"product",   ll:["Product","Strategy"],             cx:255,cy:57, rx:52,ry:21,type:"secondary",
-       info:"<strong>Product Strategy</strong> — Aligns growth aspirations with product development and innovation roadmaps. A direct enabler of Strategy & Growth Consulting."},
-      {id:"inventory", ll:["Inventory","Management"],         cx:243,cy:363,rx:52,ry:21,type:"secondary",
-       info:"<strong>Inventory Management</strong> — A tactical drill-down within Supply Chain and Procurement Consulting to optimize stock levels, reduce carrying costs, and ensure supply continuity."},
-      {id:"cx",        ll:["Customer","Experience"],          cx:265,cy:-8, rx:52,ry:21,type:"secondary",
-       info:"<strong>Customer Experience (CX)</strong> — Uses seamless digital experiences and personalization as a market differentiator. Bridges Strategy & Growth Consulting and Business Transformation and Risk Advisory."},
-      {id:"gtm",       ll:["Go-to-Market","Consulting"],      cx:430,cy:-8, rx:65,ry:22,type:"secondary",
-       info:"<strong>Go-to-Market Consulting</strong> — Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Strategy & Growth Consulting."},
     ];
 
     const edges: DiagramEdge[] = [
@@ -144,11 +133,6 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       {a:"risk",   b:"supply",    s:"u"},{a:"risk",   b:"growth",    s:"u"},
       {a:"risk",   b:"workforce", s:"u"},{a:"risk",   b:"mna",       s:"u"},
       {a:"risk",   b:"leadership",s:"u"},
-      {a:"growth",   b:"product",   s:"p"},
-      {a:"growth",   b:"cx",        s:"p"},
-      {a:"business", b:"cx",        s:"p"},
-      {a:"supply",   b:"inventory", s:"p"},
-      {a:"growth",  b:"gtm",       s:"p"},
     ];
 
     const nM: Record<string, DiagramNode> = {};
