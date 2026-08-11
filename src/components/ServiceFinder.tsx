@@ -9,61 +9,61 @@ const TECH_ENGAGEMENTS = [
     engagement: "ERP / platform / Salesforce implementation",
     pairs: [
       { trigger: "How are you thinking about adoption — do your people have what they need to actually change how they work?", hub: "Change Management" },
-      { trigger: "Now that the system is live, are your processes and team model keeping up?", hub: "Business Transformation" },
+      { trigger: "Now that the system is live, are your processes and team model keeping up?", hub: "Business Transformation and Risk Advisory" },
     ],
   },
   {
     engagement: "AI / ML implementation",
     pairs: [
-      { trigger: "When your CFO asks if this is working — do you have a way to measure ROI yet?", hub: "Finance Transformation", subtitle: "AI ROI - Value Realization", overrideLinks: [{ label: "Overview Deck", url: "https://docs.google.com/presentation/d/1OcYkwpnaHsmAcJSunA6-pbLot9Bh_0N5RLpMX6aErQQ/edit?usp=drive_link", icon: "external" as const }, { label: "Discussion Deck", url: "/ai-roi-value-realization.html", icon: "file" as const }] },
+      { trigger: "When your CFO asks if this is working — do you have a way to measure ROI yet?", hub: "Finance Transformation & CFO Advisory", subtitle: "AI ROI - Value Realization", overrideLinks: [{ label: "Overview Deck", url: "https://docs.google.com/presentation/d/1OcYkwpnaHsmAcJSunA6-pbLot9Bh_0N5RLpMX6aErQQ/edit?usp=drive_link", icon: "external" as const }, { label: "Discussion Deck", url: "/ai-roi-value-realization.html", icon: "file" as const }] },
       { trigger: "The tools are live — are people actually using them? What's the resistance looking like?", hub: "Change Management" },
     ],
   },
   {
     engagement: "Agile / product model transformation",
     pairs: [
-      { trigger: "Now that the model is in place — are you confident you're building the right things?", hub: "Growth Strategy" },
+      { trigger: "Now that the model is in place — are you confident you're building the right things?", hub: "Strategy & Growth Consulting" },
       { trigger: "Are the team behaviors and structure actually keeping up with the new model?", hub: "Change Management" },
     ],
   },
   {
     engagement: "Cloud migration / app modernization",
     pairs: [
-      { trigger: "Now that infrastructure changed — how are your processes and team model keeping up?", hub: "Business Transformation" },
+      { trigger: "Now that infrastructure changed — how are your processes and team model keeping up?", hub: "Business Transformation and Risk Advisory" },
     ],
   },
   {
     engagement: "Large-scale tech talent deployment (10+ resources)",
     pairs: [
-      { trigger: "How are you thinking about your long-term talent model as AI changes what your engineers do?", hub: "Workforce Transformation" },
+      { trigger: "How are you thinking about your long-term talent model as AI changes what your engineers do?", hub: "Adaptive Organization" },
     ],
   },
   {
     engagement: "Supply chain / ERP / ops systems",
     pairs: [
-      { trigger: "Do you have visibility into where AI could automate in your value chain today?", hub: "Performance Improvement" },
-      { trigger: "How resilient is your supply chain if your primary supplier or region gets disrupted?", hub: "Supply Chain" },
+      { trigger: "Do you have visibility into where AI could automate in your value chain today?", hub: "Operations & Performance Improvement" },
+      { trigger: "How resilient is your supply chain if your primary supplier or region gets disrupted?", hub: "Supply Chain and Procurement Consulting" },
     ],
   },
 ];
 
 const TALENT_SIGNALS = [
-  { signal: "Long-term staffing engagement (18+ months, stable team)", trigger: "You've had a consistent team in place for over a year — has the business problem evolved? What are you trying to solve next?", path: "Business Transformation / Growth Strategy" },
-  { signal: "Multiple roles placed across two or more functions", trigger: "You're scaling across multiple areas at once — is that driven by a strategic shift or a capacity gap?", path: "Growth Strategy / Business Transformation" },
-  { signal: "Finance or FP&A talent placed", trigger: "Now that you have the right people — do you have the processes and tools to fully leverage them?", path: "Finance Transformation" },
+  { signal: "Long-term staffing engagement (18+ months, stable team)", trigger: "You've had a consistent team in place for over a year — has the business problem evolved? What are you trying to solve next?", path: "Business Transformation and Risk Advisory / Strategy & Growth Consulting" },
+  { signal: "Multiple roles placed across two or more functions", trigger: "You're scaling across multiple areas at once — is that driven by a strategic shift or a capacity gap?", path: "Strategy & Growth Consulting / Business Transformation and Risk Advisory" },
+  { signal: "Finance or FP&A talent placed", trigger: "Now that you have the right people — do you have the processes and tools to fully leverage them?", path: "Finance Transformation & CFO Advisory" },
   { signal: "PM or change management talent in a transformation", trigger: "You have the people in place — how's the change actually landing with the broader team?", path: "Change Management" },
-  { signal: "Ops or supply chain talent expanding", trigger: "Your ops team is growing — are processes keeping up, or are efficiency gaps building?", path: "Performance Improvement / Supply Chain" },
-  { signal: "Senior IC placed (director / VP level)", trigger: "At that seniority, they're likely driving a broader agenda — are there areas where a consulting sprint would accelerate what they're already building?", path: "Business Transformation / Workforce Transformation" },
+  { signal: "Ops or supply chain talent expanding", trigger: "Your ops team is growing — are processes keeping up, or are efficiency gaps building?", path: "Operations & Performance Improvement / Supply Chain and Procurement Consulting" },
+  { signal: "Senior IC placed (director / VP level)", trigger: "At that seniority, they're likely driving a broader agenda — are there areas where a consulting sprint would accelerate what they're already building?", path: "Business Transformation and Risk Advisory / Adaptive Organization" },
 ];
 
 const HUB_META: Record<string, { practice: string; color: string; sellersSheet?: string; overviewDeck?: string }> = {
-  "Growth Strategy":          { practice: "Strategy",   color: "#2563eb", sellersSheet: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing" },
-  "Business Transformation":  { practice: "Strategy",   color: "#2563eb", sellersSheet: "https://docs.google.com/document/d/1kKYqaVQqdZNEbw1q5HxsS-dX3Ce0a-4xdai6QpxnAS8/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link" },
-  "Finance Transformation":   { practice: "Finance",    color: "#16a34a", sellersSheet: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link" },
+  "Strategy & Growth Consulting":          { practice: "Strategy",   color: "#2563eb", sellersSheet: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing" },
+  "Business Transformation and Risk Advisory":  { practice: "Strategy",   color: "#2563eb", sellersSheet: "https://docs.google.com/document/d/1kKYqaVQqdZNEbw1q5HxsS-dX3Ce0a-4xdai6QpxnAS8/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link" },
+  "Finance Transformation & CFO Advisory":   { practice: "Finance",    color: "#16a34a", sellersSheet: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link" },
   "Change Management":        { practice: "People",     color: "#7c3aed", overviewDeck: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-  "Workforce Transformation": { practice: "People",     color: "#7c3aed", sellersSheet: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing" },
-  "Performance Improvement":  { practice: "Operations", color: "#f97316", sellersSheet: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing", overviewDeck: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link" },
-  "Supply Chain":             { practice: "Operations", color: "#f97316", sellersSheet: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing", overviewDeck: "https://docs.google.com/presentation/d/1dn-i3M0XlWLs9t0F3PxIJeaNPIHBV5bluSgaasbaBFY/edit?usp=sharing" },
+  "Adaptive Organization": { practice: "People",     color: "#7c3aed", sellersSheet: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",  overviewDeck: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing" },
+  "Operations & Performance Improvement":  { practice: "Operations", color: "#f97316", sellersSheet: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing", overviewDeck: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link" },
+  "Supply Chain and Procurement Consulting":             { practice: "Operations", color: "#f97316", sellersSheet: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing", overviewDeck: "https://docs.google.com/presentation/d/1dn-i3M0XlWLs9t0F3PxIJeaNPIHBV5bluSgaasbaBFY/edit?usp=sharing" },
 };
 
 const PRACTICE_BADGE: Record<string, string> = {

@@ -82,54 +82,54 @@ const PRACTICE_COLORS: Record<Practice, string> = {
 const hubs: Record<HubId, Hub> = {
   growth: {
     id: "growth",
-    name: "Growth Strategy",
+    name: "Strategy & Growth Consulting",
     practice: "Strategy",
-    rationale: "Connect with our Growth Strategy practice to develop a structured expansion roadmap, align your marketing and sales teams, and unlock new market opportunities.",
+    rationale: "Connect with our Strategy & Growth Consulting practice to develop a structured expansion roadmap, align your marketing and sales teams, and unlock new market opportunities.",
     docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
     sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/growth-strategy",
   },
   business: {
     id: "business",
-    name: "Business Transformation",
+    name: "Business Transformation and Risk Advisory",
     practice: "Strategy",
-    rationale: "Connect with our Business Transformation practice to build a clear transformation vision, prioritize high-impact initiatives, and drive measurable results enterprise-wide.",
+    rationale: "Connect with our Business Transformation and Risk Advisory practice to build a clear transformation vision, prioritize high-impact initiatives, and drive measurable results enterprise-wide.",
     docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
     sellersSheetUrl: "https://docs.google.com/document/d/1kKYqaVQqdZNEbw1q5HxsS-dX3Ce0a-4xdai6QpxnAS8/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/business-transformation",
   },
   finance: {
     id: "finance",
-    name: "Finance Transformation",
+    name: "Finance Transformation & CFO Advisory",
     practice: "Finance",
-    rationale: "Connect with our Finance Transformation practice to modernize financial operations, eliminate manual bottlenecks, and elevate finance into a true strategic partner.",
+    rationale: "Connect with our Finance Transformation & CFO Advisory practice to modernize financial operations, eliminate manual bottlenecks, and elevate finance into a true strategic partner.",
     docUrl: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link",
     sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/finance-transformation",
   },
   perf: {
     id: "perf",
-    name: "Performance Improvement",
+    name: "Operations & Performance Improvement",
     practice: "Operations",
-    rationale: "Connect with our Performance Improvement practice to diagnose operational drag, eliminate value leakage, and deliver sustainable efficiency and EBITDA gains.",
+    rationale: "Connect with our Operations & Performance Improvement practice to diagnose operational drag, eliminate value leakage, and deliver sustainable efficiency and EBITDA gains.",
     docUrl: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link",
     sellersSheetUrl: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/performance-improvement",
   },
   supply: {
     id: "supply",
-    name: "Supply Chain & Procurement",
+    name: "Supply Chain and Procurement Consulting",
     practice: "Operations",
-    rationale: "Connect with our Supply Chain practice to build resilience, integrate digital capabilities, and optimize end-to-end logistics and procurement performance.",
+    rationale: "Connect with our Supply Chain and Procurement Consulting practice to build resilience, integrate digital capabilities, and optimize end-to-end logistics and procurement performance.",
     docUrl: "https://docs.google.com/presentation/d/1dn-i3M0XlWLs9t0F3PxIJeaNPIHBV5bluSgaasbaBFY/edit?usp=sharing",
     sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/supply-chain",
   },
   workforce: {
     id: "workforce",
-    name: "Workforce Transformation",
+    name: "Adaptive Organization",
     practice: "People",
-    rationale: "Connect with our Workforce Transformation practice to align talent strategy, close skill gaps, and prepare your organization for the human-AI era.",
+    rationale: "Connect with our Adaptive Organization practice to align talent strategy, close skill gaps, and prepare your organization for the human-AI era.",
     docUrl: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing",
     sellersSheetUrl: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",
     diagnosticUrl: "/diagnostics/workforce-transformation",
@@ -146,7 +146,7 @@ const HUB_ADJACENTS: Record<HubId, { universals: AdjacentService[]; secondaries:
       { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
       { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
       { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
-      // AI Consulting is not connected to Growth Strategy in the services web
+      // AI Consulting is not connected to Strategy & Growth Consulting in the services web
     ],
     secondaries: [
       { name: "Product Strategy",            type: "secondary", docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing" },
@@ -175,7 +175,7 @@ const HUB_ADJACENTS: Record<HubId, { universals: AdjacentService[]; secondaries:
       { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
     ],
     secondaries: [
-      { name: "M&A Services",                type: "secondary", docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link" },
+      { name: "M&A Advisory Services",       type: "secondary", docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link" },
       { name: "Corporate Finance Consulting", type: "secondary" }, // no dedicated overview deck
     ],
   },
@@ -184,7 +184,7 @@ const HUB_ADJACENTS: Record<HubId, { universals: AdjacentService[]; secondaries:
       { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
       { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
       { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
-      // Risk & Compliance is not connected to Performance Improvement in the services web
+      // Risk & Compliance is not connected to Operations & Performance Improvement in the services web
     ],
     secondaries: [],
   },
@@ -345,7 +345,7 @@ const BUYER_HUB_PRIORITY: Record<string, HubId[]> = {
 // ── Buying signals (sourced from each hub's seller sheet) ─────────────────────
 
 const signals: Signal[] = [
-  // Growth Strategy
+  // Strategy & Growth Consulting
   { id: "gs1", tag: "Stagnant Revenue",           hub: "growth",
     shortLabel: "Revenue has flatlined — no new growth streams",
     quote: "Our revenue has flatlined, and we are struggling to identify new source streams beyond our core business." },
@@ -362,7 +362,7 @@ const signals: Signal[] = [
     shortLabel: "Want to expand but lack expertise to navigate new markets",
     quote: "We want to enter a new market or launch a new product line, but we don't have the internal expertise to navigate the competitive or regulatory barriers." },
 
-  // Business Transformation
+  // Business Transformation and Risk Advisory
   { id: "bt1", tag: "Declining Performance",      hub: "business",
     shortLabel: "Revenue falling, margins shrinking, losing customers",
     quote: "Our revenue is falling, profit margins are shrinking, or we are losing customers faster than we can acquire them." },
@@ -379,7 +379,7 @@ const signals: Signal[] = [
     shortLabel: "Dozens of projects underway but none are moving the needle",
     quote: "We have 50 projects going on, but none of them are actually 'moving the needle' or delivering results." },
 
-  // Finance Transformation
+  // Finance Transformation & CFO Advisory
   { id: "ft1", tag: "Manual Chaos",               hub: "finance",
     shortLabel: "Team spending most of their time on manual data entry",
     quote: "Our team spends 80% of their time on manual data entry and reconciliation instead of analysis." },
@@ -396,7 +396,7 @@ const signals: Signal[] = [
     shortLabel: "Finance too rigid and manual to support growth or acquisition",
     quote: "We want to expand or acquire, but our current finance processes are too rigid and manual to handle the increased volume." },
 
-  // Performance Improvement
+  // Operations & Performance Improvement
   { id: "pi1", tag: "Margin Erosion",             hub: "perf",
     shortLabel: "Revenue growing but profit margins keep shrinking",
     quote: "Our revenue is growing, but our profit margins are shrinking. We need to find and cut the waste." },
@@ -433,7 +433,7 @@ const signals: Signal[] = [
     shortLabel: "Losing ground to more agile supply chain competitors",
     quote: "We are steadily losing ground to more agile rivals who adapt their supply chain networks to disruption almost instantly." },
 
-  // Workforce Transformation
+  // Adaptive Organization
   { id: "wt1", tag: "Talent Scarcity / Skill Gaps", hub: "workforce",
     shortLabel: "Can't find specialized talent — skills becoming obsolete",
     quote: "We can't find specialized talent, and 56% of our core skills will be obsolete in five years." },
@@ -452,7 +452,7 @@ const signals: Signal[] = [
 ];
 
 // ── Section 7 service modules (Strategic Sprints) from each seller sheet ─────
-// Workforce Transformation has no Section 7 sprints table — button hidden for that hub.
+// Adaptive Organization has no Section 7 sprints table — button hidden for that hub.
 
 const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
   growth: [
@@ -468,7 +468,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
       ],
     },
     {
-      name: "The Growth Strategy Blueprint",
+      name: "The Strategy & Growth Consulting Blueprint",
       challenge: "Resource Constraints / Lack of a Plan",
       objective: "Formulating a tailored, data-driven strategy that defines exactly how to expand, whether through market penetration, product development, or diversification.",
       duration: "4–6 weeks",
@@ -560,7 +560,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
       ],
     },
     {
-      name: "Finance Transformation Blueprint & ROI Roadmap",
+      name: "Finance Transformation & CFO Advisory Blueprint & ROI Roadmap",
       challenge: "We need to modernize, but don't know where to start",
       objective: "Designing the Target Operating Model (TOM) and technology architecture while building a rigorous financial case for change.",
       duration: "4–6 weeks",
@@ -709,7 +709,7 @@ const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
       ],
     },
     {
-      name: "High-Impact Workforce Transformation Pilot",
+      name: "High-Impact Adaptive Organization Pilot",
       challenge: "We want to change our workflow model, but our legacy culture is heavily resisting it.",
       objective: "Launching and running targeted, cross-functional experiments in specific business units to test new human-AI workflows and minimize execution risks before scaling enterprise-wide.",
       duration: "8–12 weeks",
