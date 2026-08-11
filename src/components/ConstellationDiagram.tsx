@@ -93,35 +93,37 @@ export default function ConstellationDiagram({ compact = false }: Props) {
     const F = "'Proxima Nova','Nunito Sans',system-ui,sans-serif";
 
     const nodes: DiagramNode[] = [
-      {id:"finance",   cat:"finance",  buyer:"CFO",           ll:["Finance","Transformation"],    cx:180,cy:197,rx:78,ry:30,type:"hub",
+      {id:"finance",   cat:"finance",  buyer:"CFO",           ll:["Finance","Transformation","& CFO Advisory"], cx:90,cy:290,rx:80,ry:38,type:"hub",
        info:"<strong>Finance Transformation & CFO Advisory</strong> (CFO gateway) — Modernizes finance from a cost center to a strategic partner. Five pillars: Strategy & Vision, Performance Management, Process Optimization, Org & Governance, Data & Technology. Draws in Digital Strategy, AI Consulting, Risk & Compliance, and Change Management."},
-      {id:"business",  cat:"strategy", buyer:"CEO / COO",     ll:["Business","Transformation"],   cx:180,cy:383,rx:78,ry:30,type:"hub",
+      {id:"mna",       cat:"finance",  buyer:"Corp Dev / PE", ll:["M&A Advisory","Services"],      cx:163,cy:163,rx:78,ry:30,type:"hub",
+       info:"<strong>M&A Advisory Services</strong> (Corp Dev / PE gateway) — Pursues inorganic growth through target identification, due diligence, and post-merger integration. Works alongside Strategy & Growth Consulting and Finance Transformation & CFO Advisory."},
+      {id:"business",  cat:"strategy", buyer:"CEO / COO",     ll:["Business","Transformation &","Risk Advisory"], cx:163,cy:417,rx:80,ry:38,type:"hub",
        info:"<strong>Business Transformation and Risk Advisory</strong> (CEO/COO gateway) — Enterprise-wide change to improve performance, competitiveness, and adaptability. Connects to Customer Experience (CX) and all four universal connectors."},
-      {id:"growth",    cat:"strategy", buyer:"CSO / CMO",     ll:["Growth Strategy"],              cx:340,cy:105,rx:74,ry:30,type:"hub",
-       info:"<strong>Strategy & Growth Consulting</strong> (CSO/CMO gateway) — Identifies and exploits expansion through market penetration, product development, and diversification. Connects to M&A Consulting, Customer Experience, and Product Strategy."},
-      {id:"supply",    cat:"ops",      buyer:"COO",           ll:["Supply Chain &","Procurement"], cx:500,cy:197,rx:78,ry:30,type:"hub",
+      {id:"growth",    cat:"strategy", buyer:"CSO / CMO",     ll:["Strategy & Growth","Consulting"],  cx:340,cy:110,rx:78,ry:30,type:"hub",
+       info:"<strong>Strategy & Growth Consulting</strong> (CSO/CMO gateway) — Identifies and exploits expansion through market penetration, product development, and diversification. Connects to Customer Experience and Product Strategy; works alongside M&A Advisory Services on inorganic growth."},
+      {id:"supply",    cat:"ops",      buyer:"COO",           ll:["Supply Chain &","Procurement","Consulting"], cx:517,cy:163,rx:80,ry:38,type:"hub",
        info:"<strong>Supply Chain and Procurement Consulting</strong> (COO gateway) — Optimizes operations and logistics for resilience, transparency, and efficiency. Pulls in Digital Strategy (IoT/Digital Twins), AI Consulting, Risk & Compliance, Inventory Management, and Sustainability."},
-      {id:"perf",      cat:"ops",      buyer:"C-Level / Ops", ll:["Performance","Improvement"],    cx:500,cy:383,rx:78,ry:30,type:"hub",
+      {id:"perf",      cat:"ops",      buyer:"C-Level / Ops", ll:["Operations &","Performance","Improvement"], cx:590,cy:290,rx:80,ry:38,type:"hub",
        info:"<strong>Operations & Performance Improvement</strong> (C-Level/Ops gateway) — Drives EBITDA growth, cost reduction, and operational efficiency. Connects to Digital Strategy, Change Management, and AI Consulting to rewire core processes."},
-      {id:"workforce", cat:"people",   buyer:"CHRO / CPO",    ll:["Workforce","Transformation"],   cx:340,cy:475,rx:78,ry:30,type:"hub",
-       info:"<strong>Adaptive Organization</strong> (CHRO/CPO gateway) — Evolves talent strategy, organizational structure, and culture to meet future business needs. Strongly connected to AI Consulting (reskilling for GenAI), Change Management (adoption), and Digital Strategy (HR tech). Satellites: Org Design and Talent Management."},
+      {id:"leadership",cat:"people",   buyer:"CEO / CHRO",    ll:["Leadership &","Culture"],        cx:517,cy:417,rx:78,ry:30,type:"hub",
+       info:"<strong>Leadership & Culture</strong> (CEO/CHRO gateway) — Builds the leadership behaviors, culture, and operating rhythms that let an organization sustain change rather than relapse after the transformation team leaves."},
+      {id:"workforce", cat:"people",   buyer:"CHRO / CPO",    ll:["Adaptive","Organization"],       cx:340,cy:470,rx:78,ry:30,type:"hub",
+       info:"<strong>Adaptive Organization</strong> (CHRO/CPO gateway) — Evolves talent strategy, organizational structure, and culture to meet future business needs. Strongly connected to AI Consulting (reskilling for GenAI), Change Management (adoption), and Digital Strategy (HR tech). Satellites: Org Design and Talent Management; includes Workforce Transformation as a core sub-service."},
       {id:"change",    ll:["Change","Management"],            cx:340,cy:192,rx:62,ry:24,type:"universal",
-       info:"<strong>Change Management</strong> (Universal Connector — Human Layer) — 75% of transformations fail due to poor execution. Connects to all six primary hubs, bridging strategy and sustained execution. Especially critical for Adaptive Organization."},
+       info:"<strong>Change Management</strong> (Universal Connector — Human Layer) — 75% of transformations fail due to poor execution. Connects to all eight primary hubs, bridging strategy and sustained execution. Especially critical for Adaptive Organization and Leadership & Culture."},
       {id:"digital",   ll:["Digital Strategy"],               cx:435,cy:283,rx:62,ry:24,type:"universal",
-       info:"<strong>Digital Strategy</strong> (Universal Connector — Architecture Layer) — The technology roadmap for every transformation: real-time data, automation, IoT, and platform modernization. Connects to all six primary hubs."},
+       info:"<strong>Digital Strategy</strong> (Universal Connector — Architecture Layer) — The technology roadmap for every transformation: real-time data, automation, IoT, and platform modernization. Connects to all eight primary hubs."},
       {id:"ai",        ll:["AI Consulting"],                  cx:340,cy:388,rx:62,ry:24,type:"universal",
-       info:"<strong>AI Consulting</strong> (Universal Connector — Intelligence Layer) — Drives automation and advantage through predictive analytics and generative AI. Especially critical for Workforce (reskilling for GenAI) and Finance (predictive decisioning)."},
+       info:"<strong>AI Consulting</strong> (Universal Connector — Intelligence Layer) — Drives automation and advantage through predictive analytics and generative AI. Especially critical for Adaptive Organization (reskilling for GenAI) and Finance (predictive decisioning)."},
       {id:"risk",      ll:["Risk &","Compliance"],            cx:245,cy:283,rx:62,ry:24,type:"universal",
        info:"<strong>Risk & Compliance</strong> (Universal Connector — Guardrail Layer) — The regulatory and security safety net for any major transformation. Vital for M&A due diligence, Finance regulatory intelligence, and Digital cybersecurity."},
       {id:"product",   ll:["Product","Strategy"],             cx:255,cy:57, rx:52,ry:21,type:"secondary",
        info:"<strong>Product Strategy</strong> — Aligns growth aspirations with product development and innovation roadmaps. A direct enabler of Strategy & Growth Consulting."},
-      {id:"mna",       ll:["M&A","Consulting"],               cx:425,cy:57, rx:52,ry:21,type:"secondary",
-       info:"<strong>M&A Consulting</strong> — Pursues inorganic growth through target identification, due diligence, and post-merger integration. Orbits both Strategy & Growth Consulting and Finance Transformation & CFO Advisory."},
-      {id:"inventory", ll:["Inventory","Management"],         cx:580,cy:143,rx:52,ry:21,type:"secondary",
+      {id:"inventory", ll:["Inventory","Management"],         cx:597,cy:109,rx:52,ry:21,type:"secondary",
        info:"<strong>Inventory Management</strong> — A tactical drill-down within Supply Chain and Procurement Consulting to optimize stock levels, reduce carrying costs, and ensure supply continuity."},
-      {id:"sustain",   ll:["Sustainability"],                 cx:580,cy:258,rx:52,ry:21,type:"secondary",
+      {id:"sustain",   ll:["Sustainability"],                 cx:597,cy:224,rx:52,ry:21,type:"secondary",
        info:"<strong>Sustainability Consulting</strong> — Aligns logistics and operations with decarbonization goals and ESG mandates. Connected directly to Supply Chain and Procurement Consulting."},
-      {id:"cx",        ll:["Customer","Experience"],          cx:105,cy:440,rx:52,ry:21,type:"secondary",
+      {id:"cx",        ll:["Customer","Experience"],          cx:88,cy:474,rx:52,ry:21,type:"secondary",
        info:"<strong>Customer Experience (CX)</strong> — Uses seamless digital experiences and personalization as a market differentiator. Bridges Strategy & Growth Consulting and Business Transformation and Risk Advisory."},
       {id:"orgdesign", ll:["Org Design"],                     cx:265,cy:538,rx:52,ry:21,type:"secondary",
        info:"<strong>Organizational Design</strong> — Restructures departments to align with new visions and post-transformation goals. A key satellite of Adaptive Organization."},
@@ -131,7 +133,7 @@ export default function ConstellationDiagram({ compact = false }: Props) {
        info:"<strong>Go-to-Market Consulting</strong> — Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Strategy & Growth Consulting."},
       {id:"prodstrat", ll:["Product Strategy","Consulting"],  cx:265,cy:-8, rx:70,ry:22,type:"secondary",
        info:"<strong>Product Strategy Consulting</strong> — Provides structured consulting around product roadmap development, portfolio prioritization, and innovation governance. A direct enabler of Strategy & Growth Consulting outcomes."},
-      {id:"corpfin",   ll:["Corporate Finance","Consulting"], cx:80, cy:140,rx:65,ry:22,type:"secondary",
+      {id:"corpfin",   ll:["Corporate Finance","Consulting"], cx:5, cy:235,rx:65,ry:22,type:"secondary",
        info:"<strong>Corporate Finance Consulting</strong> — Supports capital allocation, valuation, financial modeling, and strategic finance decisions. A direct enabler of Finance Transformation & CFO Advisory, often engaged during M&A, restructuring, or major capital events."},
     ];
 
@@ -139,18 +141,21 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       {a:"change", b:"finance",   s:"u"},{a:"change", b:"business",  s:"u"},
       {a:"change", b:"growth",    s:"u"},{a:"change", b:"supply",    s:"u"},
       {a:"change", b:"perf",      s:"u"},{a:"change", b:"workforce", s:"u"},
+      {a:"change", b:"mna",       s:"u"},{a:"change", b:"leadership",s:"u"},
       {a:"digital",b:"finance",   s:"u"},{a:"digital",b:"business",  s:"u"},
       {a:"digital",b:"growth",    s:"u"},{a:"digital",b:"supply",    s:"u"},
       {a:"digital",b:"perf",      s:"u"},{a:"digital",b:"workforce", s:"u"},
+      {a:"digital",b:"mna",       s:"u"},{a:"digital",b:"leadership",s:"u"},
       {a:"ai",     b:"finance",   s:"u"},{a:"ai",     b:"business",  s:"u"},
       {a:"ai",     b:"supply",    s:"u"},{a:"ai",     b:"perf",      s:"u"},
-      {a:"ai",     b:"workforce", s:"u"},
+      {a:"ai",     b:"workforce", s:"u"},{a:"ai",     b:"leadership",s:"u"},
+      {a:"ai",     b:"mna",       s:"u"},
       {a:"risk",   b:"finance",   s:"u"},{a:"risk",   b:"business",  s:"u"},
       {a:"risk",   b:"supply",    s:"u"},{a:"risk",   b:"growth",    s:"u"},
-      {a:"risk",   b:"workforce", s:"u"},
-      {a:"growth",   b:"product",   s:"p"},{a:"growth",   b:"mna",       s:"p"},
+      {a:"risk",   b:"workforce", s:"u"},{a:"risk",   b:"mna",       s:"u"},
+      {a:"risk",   b:"leadership",s:"u"},
+      {a:"growth",   b:"product",   s:"p"},
       {a:"growth",   b:"cx",        s:"p"},
-      {a:"finance",  b:"mna",       s:"p"},
       {a:"business", b:"cx",        s:"p"},
       {a:"supply",   b:"inventory", s:"p"},{a:"supply",   b:"sustain",   s:"p"},
       {a:"workforce",b:"orgdesign", s:"p"},{a:"workforce",b:"talent",    s:"p"},
@@ -288,9 +293,9 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       <svg
         ref={svgRef}
         width="100%"
-        viewBox="0 -40 680 640"
+        viewBox="-70 -40 750 640"
         role="img"
-        aria-label="Toptal Management Consulting Ecosystem — Six-Hub Constellation"
+        aria-label="Toptal Management Consulting Ecosystem — Eight-Hub Constellation"
       />
       <div
         ref={infoRef}

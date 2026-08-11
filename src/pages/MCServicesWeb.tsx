@@ -38,7 +38,7 @@ export default function MCServicesWeb() {
             Management Consulting Services Web
           </h2>
           <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web to the right depicts six of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution, as well as additional, or secondary, services that are often coupled with the Hub offering. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
+            Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web to the right depicts eight of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution, as well as additional, or secondary, services that are often coupled with the Hub offering. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
           </p>
           <p className="mb-6 text-xs text-primary">
             Hover to highlight the connections · and click for service details
