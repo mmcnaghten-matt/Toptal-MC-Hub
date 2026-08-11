@@ -108,7 +108,7 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       {id:"leadership",cat:"people",   buyer:"CEO / CHRO",    ll:["Leadership &","Culture"],        cx:517,cy:417,rx:78,ry:30,type:"hub",
        info:"<strong>Leadership & Culture</strong> (CEO/CHRO gateway) — Builds the leadership behaviors, culture, and operating rhythms that let an organization sustain change rather than relapse after the transformation team leaves."},
       {id:"workforce", cat:"people",   buyer:"CHRO / CPO",    ll:["Adaptive","Organization"],       cx:590,cy:290,rx:78,ry:30,type:"hub",
-       info:"<strong>Adaptive Organization</strong> (CHRO/CPO gateway) — Evolves talent strategy, organizational structure, and culture to meet future business needs. Strongly connected to AI Consulting (reskilling for GenAI), Change Management (adoption), and Digital Strategy (HR tech). Satellites: Org Design and Talent Management; includes Workforce Transformation as a core sub-service."},
+       info:"<strong>Adaptive Organization</strong> (CHRO/CPO gateway) — Evolves talent strategy, organizational structure, and culture to meet future business needs. Strongly connected to AI Consulting (reskilling for GenAI), Change Management (adoption), and Digital Strategy (HR tech). Includes Workforce Transformation as a core sub-service."},
       {id:"change",    ll:["Change","Management"],            cx:340,cy:192,rx:62,ry:24,type:"universal",
        info:"<strong>Change Management</strong> (Universal Connector — Human Layer) — 75% of transformations fail due to poor execution. Connects to all eight primary hubs, bridging strategy and sustained execution. Especially critical for Adaptive Organization and Leadership & Culture."},
       {id:"digital",   ll:["Digital Strategy"],               cx:435,cy:283,rx:62,ry:24,type:"universal",
@@ -123,10 +123,6 @@ export default function ConstellationDiagram({ compact = false }: Props) {
        info:"<strong>Inventory Management</strong> — A tactical drill-down within Supply Chain and Procurement Consulting to optimize stock levels, reduce carrying costs, and ensure supply continuity."},
       {id:"cx",        ll:["Customer","Experience"],          cx:265,cy:-8, rx:52,ry:21,type:"secondary",
        info:"<strong>Customer Experience (CX)</strong> — Uses seamless digital experiences and personalization as a market differentiator. Bridges Strategy & Growth Consulting and Business Transformation and Risk Advisory."},
-      {id:"orgdesign", ll:["Org Design"],                     cx:560,cy:220,rx:52,ry:21,type:"secondary",
-       info:"<strong>Organizational Design</strong> — Restructures departments to align with new visions and post-transformation goals. A key satellite of Adaptive Organization."},
-      {id:"talent",    ll:["Talent","Management"],            cx:600,cy:390,rx:52,ry:21,type:"secondary",
-       info:"<strong>Talent Management</strong> — Attracts, develops, and retains the skills required for a transformed enterprise. A key satellite of Adaptive Organization."},
       {id:"gtm",       ll:["Go-to-Market","Consulting"],      cx:430,cy:-8, rx:65,ry:22,type:"secondary",
        info:"<strong>Go-to-Market Consulting</strong> — Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Strategy & Growth Consulting."},
     ];
@@ -152,7 +148,6 @@ export default function ConstellationDiagram({ compact = false }: Props) {
       {a:"growth",   b:"cx",        s:"p"},
       {a:"business", b:"cx",        s:"p"},
       {a:"supply",   b:"inventory", s:"p"},
-      {a:"workforce",b:"orgdesign", s:"p"},{a:"workforce",b:"talent",    s:"p"},
       {a:"growth",  b:"gtm",       s:"p"},
     ];
 
