@@ -24,6 +24,7 @@ import MCNarrativeDetail2 from "./pages/MCNarrativeDetail2";
 import ClientsIndex from "./pages/clients/ClientsIndex";
 import ClientVertical from "./pages/clients/ClientVertical";
 import ClientDetail from "./pages/clients/ClientDetail";
+import ServicesExecDashboardMockup from "./pages/ServicesExecDashboardMockup";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="/clients" element={<ClientsIndex />} />
                 <Route path="/clients/:vertical" element={<ClientVertical />} />
                 <Route path="/clients/:vertical/:clientId" element={<ClientDetail />} />
+                <Route path="/services-exec-dashboard-mockup" element={<ServicesExecDashboardMockup />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
