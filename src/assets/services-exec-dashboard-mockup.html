@@ -89,7 +89,7 @@
         <p style="font-size:17px; font-weight:700; margin:0; color:#ffffff;">Services performance — dashboard suite</p>
         <p style="font-size:13px; color:#CFE0FA; margin:2px 0 0;">Design mockups &middot; 6 views from the 7/30 standup discussion &middot; pilot dataset, not live-connected</p>
       </div>
-      <span style="font-size:12px; color:#ffffff; border:1px solid rgba(255,255,255,0.5); border-radius:var(--radius); padding:3px 10px;">Mock Data - v19.0</span>
+      <span style="font-size:12px; color:#ffffff; border:1px solid rgba(255,255,255,0.5); border-radius:var(--radius); padding:3px 10px;">Mock Data - v19.2</span>
     </div>
 
     <div id="tabbar" style="display:flex; gap:2px; flex-wrap:wrap; border-bottom:1px solid rgba(255,255,255,0.25);"></div>
@@ -1407,6 +1407,10 @@ function perfWeekProratedValue(catRows, bucketIdx, valueField){
 }
 
 function renderPerformance(){
+  // Respect the page-level Business Unit / Engagement Model filters too — they sit above every tab,
+  // so a selection made there should narrow this chart the same way it narrows Exec/Scorecard, on
+  // top of this tab's own Offering/Practice drill.
+  const bu = buSel.value, eng = engSel.value;
   const offering = perfOfferingSel.value;
   const practice = offering === "All" ? "All" : perfPracticeSel.value;
   const metricKey = perfMetricSel.value || "grossRevenue";
@@ -1415,6 +1419,8 @@ function renderPerformance(){
   const valueField = metricKey === "netRevenueGM" ? 8 : 6; // REVENUE_MONTHLY: 6=Gross, 8=Net(GM)
 
   let rows = REVENUE_MONTHLY;
+  if (bu !== "All") rows = rows.filter(r => r[1] === bu);
+  if (eng !== "All") rows = rows.filter(r => r[4] === eng);
   if (offering !== "All") rows = rows.filter(r => r[2] === offering);
   if (practice !== "All") rows = rows.filter(r => r[3] === practice);
 
@@ -1461,7 +1467,9 @@ function renderPerformance(){
   const grandTotal = bucketKeys.map((bk,i)=>datasetsData.reduce((s,d)=>s+d[i],0));
   const totalAll = grandTotal.reduce((a,b)=>a+b,0);
   const metricLabel = metricKey === "netRevenueGM" ? "Net Revenue (GM)" : "Gross Revenue";
-  const scopeLabel = offering === "All" ? "All offerings" : (practice && practice !== "All" ? `${offering} — ${practice}` : offering);
+  let scopeLabel = offering === "All" ? "All offerings" : (practice && practice !== "All" ? `${offering} — ${practice}` : offering);
+  const filterBits = [bu !== "All" ? bu : null, eng !== "All" ? eng : null].filter(Boolean);
+  if (filterBits.length) scopeLabel += ` (${filterBits.join(", ")})`;
   document.getElementById("perf-summary").innerHTML =
     `<strong>${escapeHtml(scopeLabel)}</strong> &middot; ${metricLabel}, by ${granularity} &middot; total across the ${bucketKeys.length} periods shown: <strong>${fmt(totalAll)}</strong>`;
 
