@@ -295,6 +295,9 @@ const gtmMaterials: GTMRow[] = [
     sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
     maturityDiagnosticUrl: "/diagnostics/finance-transformation",
+    exampleMaterials: [
+      { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
+    ],
     description: "Helping organizations modernize their finance functions through process improvements, technology adoption, and strategic insights.",
     keyBuyers: "CFOs · Finance Directors · COOs · CIOs · CEOs",
   },
