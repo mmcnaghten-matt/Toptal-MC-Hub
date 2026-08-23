@@ -172,6 +172,7 @@ const gtmMaterials: GTMRow[] = [
     sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1N8J9ejIBZNJWDf8eYl8vwl1QZB2vLCcI2xCuClEkOsQ/edit",
     maturityDiagnosticUrl: "/diagnostics/growth-strategy",
+    firstCallDeckUrl: "https://docs.google.com/presentation/d/1SUHNZn93BQNkLlyXAZZUBWOuvaPK5kDy1g-pPJ3mI0Y/edit?usp=sharing",
     exampleMaterials: [
       { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
     ],
