@@ -448,31 +448,31 @@ export default function MCPlan() {
               {
                 num: "01",
                 title: "Record Growth — The Business Is Compounding",
-                body: "Q1 2026 was the best quarter on record: $7.5M gross, +9% YoY, three consecutive quarters of growth. ENT conversion has doubled. PS has grown from 4% to 14% of gross in a year. It's a scaling opportunity.",
+                body: "Q2 2026 was the best quarter on record: $8.61M gross, +33.5% YoY, four consecutive quarters of growth. ENT now represents 74% of revenue, up from 65% a year ago. Projects (formerly Professional Services) has grown to 12% of revenue, +295% YoY. It's a scaling opportunity.",
                 titleColor: "text-emerald-700",
               },
               {
                 num: "02",
                 title: "Talent Is the Flywheel — Protect and Extend It",
-                body: "86% of revenue is Talent. Margins are strong — and we should try to increase them. Talent isn't the old model waiting to be replaced — it's the entry point for everything else. The shift is about equipping sellers to see what those relationships already make possible.",
+                body: "85% of revenue is Talent. Margins are strong — and we should try to increase them. Talent isn't the old model waiting to be replaced — it's the entry point for everything else. The shift is about equipping sellers to see what those relationships already make possible.",
                 titleColor: "text-emerald-700",
               },
               {
                 num: "03",
                 title: "Enterprise Is the Engine — the Ceiling Is Structural",
-                body: "ENT grew 25% YoY and now represents 70% of gross. $13.2M weighted pipeline entering Q2. The constraint to scale isn't demand. It's seller enablement, pursuit leadership, offer clarity, and PS opportunity recognition.",
+                body: "ENT grew 51% YoY and now represents 74% of gross. $13.2M weighted pipeline in Q2. The constraint to scale isn't demand. It's seller enablement, pursuit leadership, offer clarity, and PS opportunity recognition.",
                 titleColor: "text-[#374151]",
               },
               {
                 num: "04",
                 title: "SMB Is a Portfolio Decision",
-                body: "Five consecutive quarters of YoY decline — due to a portfolio focus. The SMB Talent motion works — the question is how MC belongs in it systematically.",
+                body: "SMB was roughly flat YoY in Q2 (–0.3%), after several straight quarters of decline — the slide may be leveling off, but it's still a portfolio call. The SMB Talent motion works — the question is how MC belongs in it systematically.",
                 titleColor: "text-amber-600",
               },
               {
                 num: "05",
-                title: "Professional Services Is the Right Bet — At the Right Scale",
-                body: "PS grew from 4% to 14% of gross in one year. The PS weighted pipeline has grown 68% over three quarters. What's missing is consistent signal recognition upstream and domain expertise embedded in pursuit leadership.",
+                title: "Projects Are the Right Bet — At the Right Scale",
+                body: "Projects grew to 12% of gross revenue, +295% YoY — the fastest-growing offering type. The PS weighted pipeline has grown 68% over three quarters. What's missing is consistent signal recognition upstream and domain expertise embedded in pursuit leadership.",
                 titleColor: "text-[#7c3aed]",
               },
               {
