@@ -17,6 +17,7 @@ import DiagnosticShell from "./diagnostics/pages/DiagnosticShell";
 import CannesDiagnosticShell from "./cannes-diagnostic/CannesDiagnosticShell";
 import MCPlan from "./pages/MCPlan";
 import MCPlanArchive from "./pages/MCPlanArchive";
+import MCPlanArchiveJun2026 from "./pages/MCPlanArchiveJun2026";
 import MCSellerReintro from "./pages/MCSellerReintro";
 import MCPipelineDetail from "./pages/MCPipelineDetail";
 import MCNarrativeDetail from "./pages/MCNarrativeDetail";
@@ -54,6 +55,7 @@ const App = () => (
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
                 <Route path="/mc-plan" element={<MCPlan />} />
                 <Route path="/mc-plan-archive" element={<MCPlanArchive />} />
+                <Route path="/mc-plan-archive-jun-2026" element={<MCPlanArchiveJun2026 />} />
                 <Route path="/mc-seller-reignite" element={<MCSellerReintro />} />
                 <Route path="/mc-pipeline" element={<MCPipelineDetail />} />
                 <Route path="/mc-narrative" element={<MCNarrativeDetail />} />

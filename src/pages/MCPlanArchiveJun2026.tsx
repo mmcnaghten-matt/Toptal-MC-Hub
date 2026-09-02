@@ -234,7 +234,7 @@ function TechTable({ engagements }: { engagements: typeof ALL_TECH_ENGAGEMENTS }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function MCPlan() {
+export default function MCPlanArchiveJun2026() {
   const navigate = useNavigate();
   const [openHub, setOpenHub] = useState<string | null>(null);
   const [pipelineAnalysis, setPipelineAnalysis] = useState(false);
@@ -260,10 +260,20 @@ export default function MCPlan() {
             <ToptalLogo className="h-9" />
           </div>
           <p className="text-sm font-semibold uppercase tracking-[0.15em] text-blue-300/80">
-            MC Plan · Confidential
+            MC Plan Archive (Jun 2026) · Confidential
           </p>
         </div>
       </header>
+
+      {/* ── Archived-version notice ── */}
+      <div className="bg-amber-50 border-b border-amber-200 py-2.5">
+        <div className="max-w-5xl mx-auto px-6 flex items-center justify-center gap-2 text-xs text-amber-800">
+          <span className="font-semibold">Archived reference — as of June 5, 2026, prior to the Q2 2026 numbers update.</span>
+          <Link to="/mc-plan" className="font-semibold underline hover:text-amber-900 transition-colors">
+            View current MC Plan →
+          </Link>
+        </div>
+      </div>
 
       {/* ── Section 1: Hero ── */}
       <section className="bg-gradient-to-br from-[#0d1b40] via-[#0f2050] to-[#0a1628] py-28">
@@ -293,56 +303,74 @@ export default function MCPlan() {
       <section className="bg-white py-20">
         <Container>
           <SectionLabel>MC by the Numbers</SectionLabel>
-          <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-            <p className="text-xs text-[#9ca3af]">As of July 15, 2026 · Source: CDR (Revenue · Job · Engagement · Company), Q2 2026 Snapshot</p>
-            <Link to="/mc-plan-archive-jun-2026" className="text-[10px] text-[#2563eb] hover:text-[#1d4ed8] font-medium transition-colors whitespace-nowrap">
-              View archived version (Jun 2026) →
-            </Link>
-          </div>
+          <p className="text-xs text-[#9ca3af] mb-6">As of June 5, 2026</p>
 
           {/* KPI stat bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
 
             {/* Gross Revenue */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Gross Revenue — Q2 '26</p>
-              <p className="text-xl font-extrabold text-[#0f172a] mb-1">$8.61M</p>
-              <p className="text-[10px] font-medium text-emerald-600">+15.6% QoQ</p>
-              <p className="text-[10px] font-medium text-emerald-600">+33.5% YoY</p>
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Gross Revenue — TTM</p>
+              <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$27.9M</p>
+              <p className="text-[10px] text-[#374151] mb-0.5">Jun '25 – May '26</p>
+              <p className="text-[10px] font-medium text-emerald-600 mb-2">Q1 '26: +9% YoY</p>
+              <div className="border-t border-[#e2e8f0] pt-2">
+                <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-0.5">Projected 2026 Gross</p>
+                <p className="text-lg font-extrabold text-emerald-600 mb-0.5">~$29.8M</p>
+                <p className="text-[10px] text-[#6b7280] mb-0.5">vs $26.3M actual 2025</p>
+                <p className="text-sm font-bold text-emerald-600">+13% YoY</p>
+              </div>
+            </div>
+
+            {/* Net Revenue */}
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Net Revenue — TTM</p>
+              <p className="text-xl font-extrabold text-[#0f172a] mb-0.5">$9.9M</p>
+              <p className="text-[10px] text-[#374151] mb-0.5">36.2% blended margin</p>
+              <p className="text-[10px] font-medium text-emerald-600 mb-2">Q1 '26: +5% YoY</p>
+              <div className="border-t border-[#e2e8f0] pt-2">
+                <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-0.5">Projected 2026 Net</p>
+                <p className="text-lg font-extrabold text-emerald-600 mb-0.5">~$10.7M</p>
+                <p className="text-[10px] text-[#6b7280] mb-0.5">vs $9.4M actual 2025</p>
+                <p className="text-sm font-bold text-emerald-600">+14% YoY</p>
+              </div>
             </div>
 
             {/* Blended Margin */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Blended Margin — Q2 '26</p>
-              <p className="text-xl font-extrabold text-[#0f172a] mb-1">~36%</p>
-              <p className="text-[10px] text-[#6b7280]">Holding steady QoQ</p>
-              <p className="text-[10px] text-[#6b7280]">Engagements: 466 → 445 (–4.5% QoQ)</p>
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1.5">Blended Margin</p>
+              <p className="text-xl font-extrabold text-[#0f172a] mb-1">36.2%</p>
+              <p className="text-[10px] text-[#6b7280]">Stable band 34–37%</p>
+              <p className="text-[10px] text-[#6b7280]">5 qtrs consistent</p>
             </div>
 
             {/* ENT vs SMB */}
             <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">ENT vs SMB — Q2 '26 YoY</p>
-              <p className="text-xl font-extrabold text-emerald-600">ENT +51%</p>
-              <p className="text-[10px] text-[#9ca3af] mb-2">SMB –0.3% (flat)</p>
-              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Mix: ENT 74% · SMB 26% (was 65/35 a year ago)</p>
+              <p className="text-[10px] font-semibold text-[#6b7280] uppercase tracking-wide mb-1">ENT vs SMB — Q1 '26 YoY</p>
+              <p className="text-xl font-extrabold text-emerald-600">ENT +25%</p>
+              <p className="text-[10px] text-[#374151] mb-2">$4.2M → $5.2M</p>
+              <p className="text-xl font-extrabold text-red-500">SMB –16%</p>
+              <p className="text-[10px] text-[#374151] mb-1">$2.7M → $2.2M</p>
+              <p className="text-[10px] text-[#9ca3af] italic mt-auto">Mix: ENT 69% · SMB 31% of TTM gross</p>
             </div>
 
-            {/* Offering Type */}
+            {/* Delivery Model Mix */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-[#6b7280] mb-1.5">Offering Type — Q2 '26</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#6b7280] mb-1.5">Delivery Model Mix — Q1 '26</p>
               <div className="flex gap-2 mb-1.5">
                 <div className="flex-1 bg-white border border-[#e2e8f0] rounded-lg p-2 text-center">
-                  <p className="text-xl font-extrabold text-[#0f172a]">85%</p>
+                  <p className="text-xl font-extrabold text-[#0f172a]">86%</p>
                   <p className="text-[10px] text-[#6b7280]">Talent</p>
-                  <p className="text-[10px] font-medium text-emerald-600">+21% YoY</p>
+                  <p className="text-[10px] font-medium text-[#374151]">$6.42M</p>
                 </div>
                 <div className="flex-1 bg-white border border-[#7c3aed]/30 rounded-lg p-2 text-center">
-                  <p className="text-xl font-extrabold text-[#7c3aed]">12%</p>
-                  <p className="text-[10px] text-[#6b7280]">Projects</p>
-                  <p className="text-[10px] font-medium text-emerald-600">+295% YoY</p>
+                  <p className="text-xl font-extrabold text-[#7c3aed]">14%</p>
+                  <p className="text-[10px] text-[#6b7280]">Prof. Services</p>
+                  <p className="text-[10px] font-medium text-[#374151]">$1.04M</p>
                 </div>
               </div>
-              <p className="text-[10px] font-medium text-[#7c3aed] mt-0.5">Projects: fastest-growing offering type</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic">Margins ~31–36% for both.</p>
+              <p className="text-[10px] font-medium text-[#7c3aed] mt-0.5">PS share: 4% → 14% in 4 quarters</p>
             </div>
 
           </div>
@@ -352,13 +380,13 @@ export default function MCPlan() {
 
             {/* Practice Mix */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue % by Practice — Q2 '26</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue % by Practice — TTM & Trend</p>
               <div className="space-y-1 flex-1">
                 {([
-                  { name: "People",     pct: 39, trend: "+35.8% YoY", color: "#7c3aed" },
-                  { name: "Strategy",   pct: 32, trend: "+40.2% YoY", color: "#16a34a" },
-                  { name: "Finance",    pct: 26, trend: "+22.3% YoY", color: "#2563eb" },
-                  { name: "Operations", pct: 3,  trend: "+33.8% YoY", color: "#f97316" },
+                  { name: "People",     pct: 38, trend: "↓ 38→37%", trendUp: false, color: "#7c3aed" },
+                  { name: "Finance",    pct: 30, trend: "↑ 28→31%", trendUp: true,  color: "#2563eb" },
+                  { name: "Strategy",   pct: 29, trend: "↓ 30→28%", trendUp: false, color: "#16a34a" },
+                  { name: "Operations", pct: 4,  trend: "↑ 3→4%",   trendUp: true,  color: "#f97316" },
                 ]).map((row) => (
                   <div key={row.name} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
@@ -367,24 +395,24 @@ export default function MCPlan() {
                       <div className="h-1.5 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.5 }} />
                     </div>
                     <span className="text-xs font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
-                    <span className="text-[10px] w-20 text-right shrink-0 text-emerald-600">{row.trend}</span>
+                    <span className={`text-[10px] w-16 text-right shrink-0 ${row.trendUp ? "text-emerald-600" : "text-[#9ca3af]"}`}>{row.trend}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">Q2 2026 revenue mix; growth shown is YoY. All four practices grew — Strategy and People led.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">TTM Jun '25–May '26. Trend = Q2 '25 share → Q1 '26 share. Finance and Operations expanding; People and Strategy stable or slightly contracting as a share.</p>
             </div>
 
             {/* Industry Vertical */}
             <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-3 flex flex-col">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue by Industry Vertical — Q2 '26</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-1.5">Gross Revenue by Industry Vertical — TTM</p>
               <div className="space-y-1 flex-1">
                 {([
-                  { name: "CPS",  pct: 24, trend: "+52.5% YoY", color: "#f97316" },
-                  { name: "IPS",  pct: 21, trend: "–17.2% YoY", color: "#2563eb" },
-                  { name: "CMET", pct: 18, trend: "+103% YoY",  color: "#16a34a" },
-                  { name: "BFSI", pct: 16, trend: "+56.4% YoY", color: "#dc2626" },
-                  { name: "HLS",  pct: 13, trend: "+32.0% YoY", color: "#7c3aed" },
-                  { name: "EMEA", pct: 8,  trend: "+70.2% YoY", color: "#9f1239" },
+                  { name: "IPS",   pct: 30, val: "$8.4M", color: "#2563eb" },
+                  { name: "CPS",   pct: 21, val: "$5.7M", color: "#f97316" },
+                  { name: "CMET",  pct: 17, val: "$4.7M", color: "#16a34a" },
+                  { name: "HLS",   pct: 13, val: "$3.6M", color: "#7c3aed" },
+                  { name: "BFSI",  pct: 12, val: "$3.3M", color: "#dc2626" },
+                  { name: "INT'L", pct: 1,  val: "$0.3M", color: "#9f1239" },
                 ]).map((row) => (
                   <div key={row.name} className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
@@ -393,11 +421,11 @@ export default function MCPlan() {
                       <div className="h-1.5 rounded-full" style={{ width: `${row.pct}%`, backgroundColor: row.color, opacity: 0.45 }} />
                     </div>
                     <span className="text-xs font-bold text-[#0f172a] w-8 text-right shrink-0">{row.pct}%</span>
-                    <span className={`text-[10px] w-20 text-right shrink-0 ${row.trend.startsWith("+") ? "text-emerald-600" : "text-red-500"}`}>{row.trend}</span>
+                    <span className="text-[10px] text-[#6b7280] w-12 text-right shrink-0">{row.val}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">Consumer Products & Services is now #1, overtaking Industrial Products & Services. EMEA = EMEA Growth Markets.</p>
+              <p className="text-[10px] text-[#9ca3af] leading-tight italic mt-1.5">IPS: Schneider Electric & Carrier. CPS: PepsiCo & Deckers. HLS: Zoetis, Pfizer, Syngenta. INT'L = EMEA-region accounts only.</p>
             </div>
 
             {/* Active Pipeline */}
