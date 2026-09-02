@@ -54,9 +54,11 @@ const HUB_COLORS: Record<string, { bg: string; text: string }> = {
   "Growth Strategy":         { bg: "#EEF2FF", text: "#2B44D4" },
   "Business Transformation": { bg: "#EEF2FF", text: "#2B44D4" },
   "Finance Transformation":  { bg: "#ECFDF5", text: "#0CA678" },
+  "M&A Advisory Services":   { bg: "#ECFDF5", text: "#0CA678" },
   "Performance Improvement": { bg: "#FFF7ED", text: "#E86B4A" },
   "Supply Chain":            { bg: "#FFF7ED", text: "#E86B4A" },
   "Workforce Transformation":{ bg: "#EDE9FE", text: "#5C6BC0" },
+  "Leadership & Culture":    { bg: "#EDE9FE", text: "#5C6BC0" },
   "Change Management":       { bg: "#F1F5F9", text: "#475569" },
 };
 
@@ -79,6 +81,12 @@ const HUB_DETAILS: Record<string, { definition: string; buyer: string; buyingCen
     buyingCenter: "Finance",
     rationale: "Modernize financial operations, eliminate manual bottlenecks, and elevate finance into a true strategic partner.",
   },
+  "M&A Advisory Services": {
+    definition: "Provides strategic advice and support throughout the M&A process — acquisition strategy, target identification, due diligence, and post-merger integration.",
+    buyer: "Corp Dev / PE",
+    buyingCenter: "Corporate Development / Investment Committee",
+    rationale: "Identify the right targets, run disciplined diligence, and land the integration — so the deal creates value instead of destroying it.",
+  },
   "Performance Improvement": {
     definition: "Drives EBITDA growth, cost reduction, and operational efficiency by rewiring core processes through digital strategy, change management, and AI.",
     buyer: "C-Level / Ops",
@@ -96,6 +104,12 @@ const HUB_DETAILS: Record<string, { definition: string; buyer: string; buyingCen
     buyer: "CHRO / CPO",
     buyingCenter: "Human Resources / People",
     rationale: "Align talent strategy, close skill gaps, and prepare your organization for the human-AI era.",
+  },
+  "Leadership & Culture": {
+    definition: "Builds the leadership behaviors, culture, and operating rhythms that let an organization sustain change rather than relapse after the transformation team leaves.",
+    buyer: "CEO / CHRO",
+    buyingCenter: "Executive Leadership / Human Resources",
+    rationale: "Equip leaders with the behaviors and rhythms that make transformation stick, long after the consultants are gone.",
   },
 };
 
@@ -523,7 +537,7 @@ export default function MCPlan() {
               },
               {
                 title: "Recognition ceiling",
-                body: "Recognizing a PS signal requires a different lens. Six hubs with clear entry points changes the equation.",
+                body: "Recognizing a PS signal requires a different lens. Eight hubs with clear entry points changes the equation.",
               },
               {
                 title: "Pursuit leadership ceiling",
@@ -598,11 +612,11 @@ export default function MCPlan() {
               <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-4">Future State</p>
               <ul className="space-y-3">
                 {[
-                  "SMB Talent motion stays intact — six-hub PS signal screen added at discovery",
+                  "SMB Talent motion stays intact — eight-hub PS signal screen added at discovery",
                   "ENT sellers equipped with hub entry points and vertical trigger guides",
                   "Domain experts lead the pursuit — squad lead drives conversations and orals",
                   "Talent expansion becomes a motion — high-tenure accounts monitored for signals",
-                  "Six hubs, one clear conversation per hub",
+                  "Eight hubs, one clear conversation per hub",
                   "Market presence builds brand — squad lead content, hub POVs, targeted outbound",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-[#1e3a8a]">
@@ -620,7 +634,7 @@ export default function MCPlan() {
       <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Hub Offerings</SectionLabel>
-          <SectionHeading>Six hubs — sharpened to where the market is right now</SectionHeading>
+          <SectionHeading>Eight hubs — sharpened to where the market is right now</SectionHeading>
           <Body className="max-w-2xl mb-12">
             Each hub is an entry point into a conversation already happening in the C-suite. CPs and ESEs carry one clear door per hub. Squad leads own the depth conversation behind it.
           </Body>
@@ -649,6 +663,13 @@ export default function MCPlan() {
                 color: "#0CA678",
               },
               {
+                name: "M&A Advisory Services",
+                tagline: "Inorganic growth, de-risked",
+                body: "Target identification, diligence, and post-merger integration — run by people who've actually done the deal, not just advised on it.",
+                tags: ["Deal strategy", "Diligence", "Post-merger integration"],
+                color: "#0CA678",
+              },
+              {
                 name: "Performance Improvement",
                 tagline: "Do more with what you have",
                 body: "Post-cut productivity gap. Processes designed for a bigger team — never redesigned.",
@@ -667,6 +688,13 @@ export default function MCPlan() {
                 tagline: "Workforce for what's next",
                 body: "Reskilling, role redesign, org structure for AI agents. AI readiness for people.",
                 tags: ["AI readiness", "Org design", "Role redesign"],
+                color: "#5C6BC0",
+              },
+              {
+                name: "Leadership & Culture",
+                tagline: "Change that doesn't snap back",
+                body: "Leadership behaviors and operating rhythms are what decide whether a transformation sticks — or quietly reverts once the project team leaves.",
+                tags: ["Leadership behavior", "Culture design", "Operating rhythms"],
                 color: "#5C6BC0",
               },
             ].map((hub) => (
@@ -938,7 +966,7 @@ export default function MCPlan() {
                 owner: "SDR / ESE / CP — by vertical",
                 phase: "Find & qualify",
                 items: [
-                  "SMB: SDR discovery + six-hub PS signal screen",
+                  "SMB: SDR discovery + eight-hub PS signal screen",
                   "ENT: ESE/CP + squad lead paired with top clients",
                   "Vertical SDRs support discovery",
                   "Hub trigger guides for all sellers",
@@ -1019,9 +1047,9 @@ export default function MCPlan() {
                 timeframe: "Now → 90 days",
                 title: "Strengthen the foundation",
                 items: [
-                  "Seller enablement: 6 hubs, vertical trigger guides, squad lead pairings",
+                  "Seller enablement: 8 hubs, vertical trigger guides, squad lead pairings",
                   "Pursuit leadership: squad leads lead conversations and orals, TCP at scoping",
-                  "SMB discovery screen: six-hub PS signal check added to discovery",
+                  "SMB discovery screen: eight-hub PS signal check added to discovery",
                   "Talent expansion: top 20 accounts identified, expansion trigger guide live",
                   "SMB: portfolio decision made",
                 ],
@@ -1115,7 +1143,7 @@ export default function MCPlan() {
               },
               {
                 label: "Recognition ceiling",
-                body: "PS signals exist in nearly every engagement but go unrecognized without a clear framework. A finance transformation in progress, a restructuring underway, a new CFO agenda — these are all conversations MC can lead. Six hubs with clear entry points give the entire sales and delivery organization a common language for spotting them.",
+                body: "PS signals exist in nearly every engagement but go unrecognized without a clear framework. A finance transformation in progress, a restructuring underway, a new CFO agenda — these are all conversations MC can lead. Eight hubs with clear entry points give the entire sales and delivery organization a common language for spotting them.",
               },
               {
                 label: "Pursuit leadership ceiling",
@@ -1157,7 +1185,7 @@ export default function MCPlan() {
           <div className="space-y-5 mt-4">
             <div className="bg-[#eff6ff] rounded-xl p-4 border border-[#dbeafe]">
               <p className="text-xs font-bold text-[#2563eb] uppercase tracking-wider mb-2">SMB: protect and add one screen</p>
-              <p className="text-sm text-[#374151] leading-relaxed">The SMB inbound Talent motion works — protect it. One addition: a six-hub PS signal screen at discovery. One structured question that covers all six entry points. Low friction, high upside. No structural change to the SMB Talent motion.</p>
+              <p className="text-sm text-[#374151] leading-relaxed">The SMB inbound Talent motion works — protect it. One addition: an eight-hub PS signal screen at discovery. One structured question that covers all eight entry points. Low friction, high upside. No structural change to the SMB Talent motion.</p>
             </div>
             <div>
               <p className="text-xs font-bold text-[#0f172a] uppercase tracking-wider mb-3">ENT: three upgrades</p>
@@ -1166,7 +1194,7 @@ export default function MCPlan() {
                   {
                     num: "1",
                     title: "Seller enablement",
-                    body: "CPs and ESEs can't carry 40+ services. Six hubs with vertical trigger guides gives them one door to open per account type. The first conversation changes: instead of 'what does Toptal MC do,' it becomes 'we see companies in your space navigating [specific pressure] — are you feeling that too?'",
+                    body: "CPs and ESEs can't carry 40+ services. Eight hubs with vertical trigger guides gives them one door to open per account type. The first conversation changes: instead of 'what does Toptal MC do,' it becomes 'we see companies in your space navigating [specific pressure] — are you feeling that too?'",
                   },
                   {
                     num: "2",
