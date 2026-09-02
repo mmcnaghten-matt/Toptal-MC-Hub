@@ -57,7 +57,7 @@ const HUB_COLORS: Record<string, { bg: string; text: string }> = {
   "M&A Advisory Services":   { bg: "#ECFDF5", text: "#0CA678" },
   "Performance Improvement": { bg: "#FFF7ED", text: "#E86B4A" },
   "Supply Chain":            { bg: "#FFF7ED", text: "#E86B4A" },
-  "Workforce Transformation":{ bg: "#EDE9FE", text: "#5C6BC0" },
+  "Adaptive Organization":{ bg: "#EDE9FE", text: "#5C6BC0" },
   "Leadership & Culture":    { bg: "#EDE9FE", text: "#5C6BC0" },
   "Change Management":       { bg: "#F1F5F9", text: "#475569" },
 };
@@ -99,7 +99,7 @@ const HUB_DETAILS: Record<string, { definition: string; buyer: string; buyingCen
     buyingCenter: "Operations / Procurement",
     rationale: "Build resilience, integrate digital capabilities, and optimize end-to-end logistics and procurement performance.",
   },
-  "Workforce Transformation": {
+  "Adaptive Organization": {
     definition: "Evolves talent strategy, organizational structure, and culture to meet future business needs — with strong connection to AI reskilling, change management, and HR technology.",
     buyer: "CHRO / CPO",
     buyingCenter: "Human Resources / People",
@@ -158,7 +158,7 @@ const ALL_TECH_ENGAGEMENTS = [
   {
     engagement: "Large-scale tech talent deployment (10+ resources)",
     pairs: [
-      { trigger: '"How are you thinking about your long-term talent model as AI changes what your engineers do?"', hub: "Workforce Transformation" },
+      { trigger: '"How are you thinking about your long-term talent model as AI changes what your engineers do?"', hub: "Adaptive Organization" },
     ],
   },
   {
@@ -201,7 +201,7 @@ const TALENT_EXPANSION_ROWS = [
   {
     signal: "Senior IC placed (director / VP level)",
     trigger: '"At that seniority, they\'re likely driving a broader agenda — are there areas where a consulting sprint would accelerate what they\'re already building?"',
-    path: "Business Transformation / Workforce Transformation",
+    path: "Business Transformation / Adaptive Organization",
   },
 ];
 
@@ -684,7 +684,7 @@ export default function MCPlan() {
                 color: "#E86B4A",
               },
               {
-                name: "Workforce Transformation",
+                name: "Adaptive Organization",
                 tagline: "Workforce for what's next",
                 body: "Reskilling, role redesign, org structure for AI agents. AI readiness for people.",
                 tags: ["AI readiness", "Org design", "Role redesign"],
