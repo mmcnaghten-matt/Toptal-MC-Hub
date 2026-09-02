@@ -221,7 +221,7 @@ const pursuitStages = [
     yours: true,
     items: [
       "Spot the MC trigger signal",
-      "Warm intro to squad lead",
+      "Warm intro to MC Talent SME",
       "Leverage your tech account relationship",
       "Monitor active Talent engagements for expansion signals",
       "Keep the broader deal in motion",
@@ -230,7 +230,7 @@ const pursuitStages = [
   {
     num: "2",
     phase: "Pursue & solution",
-    owner: "Squad Lead + Pursuit Ops",
+    owner: "MC Talent SME + Pursuit Ops",
     yours: false,
     items: [
       "Drives discovery & scoping calls",
@@ -242,7 +242,7 @@ const pursuitStages = [
   {
     num: "3",
     phase: "Propose & win",
-    owner: "Squad Lead + Pursuit Ops",
+    owner: "MC Talent SME + Pursuit Ops",
     yours: false,
     items: [
       "Presents in client orals",
@@ -254,11 +254,11 @@ const pursuitStages = [
   {
     num: "4",
     phase: "Deliver & expand",
-    owner: "You + Squad lead",
+    owner: "You + MC Talent SME",
     yours: true,
     items: [
       "You stay in monthly client relationship",
-      "Squad lead holds advisory touch",
+      "MC Talent SME holds advisory touch",
       "Expand: MC → Tech, Tech → MC, or Talent → PS",
       "Case study captured — you share in the win",
     ],
@@ -337,7 +337,7 @@ export default function MCSellerReintro() {
             <Card>
               <h3 className="text-base font-bold text-[#0f172a] mb-3">What's changing for you</h3>
               <p className="text-sm text-[#374151] leading-relaxed">
-                Your role shifts to finding the signal and making the intro — and your Talent relationships are the best place to start. Expert squad leads take the pursuit from there. You stay in the relationship — without carrying the hard work of solutioning.
+                Your role shifts to finding the signal and making the intro — and your Talent relationships are the best place to start. Expert MC Talent SMEs take the pursuit from there. You stay in the relationship — without carrying the hard work of solutioning.
               </p>
             </Card>
           </div>
@@ -355,7 +355,7 @@ export default function MCSellerReintro() {
           <SectionLabel>Vision: A New Model - Less is More!</SectionLabel>
           <SectionHeading>You find the door. MC experts walk through it.</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            This isn't more work — it's a cleaner motion. Spot the signal, make the warm intro, stay in the relationship. The squad lead, with pursuit ops help, handles everything from qualification to proposal.
+            This isn't more work — it's a cleaner motion. Spot the signal, make the warm intro, stay in the relationship. The MC Talent SME, with pursuit ops help, handles everything from qualification to proposal.
           </Body>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="border-[#2563eb]/30">
@@ -367,7 +367,7 @@ export default function MCSellerReintro() {
                 {[
                   "Client relationship — you own it throughout",
                   "Spotting the MC trigger signal in account conversations",
-                  "Making the warm intro to the right squad lead",
+                  "Making the warm intro to the right MC Talent SME",
                   "Monitoring your active Talent engagements for MC expansion signals — tenure, growing scope, adjacent pain",
                   "Staying in the loop on pursuit progress",
                   "Credit for the MC engagement in your account",
@@ -381,8 +381,8 @@ export default function MCSellerReintro() {
             </Card>
             <Card className="border-[#64748b]/30 bg-[#f8fafc]">
               <div className="flex items-center gap-2 mb-4">
-                <span className="bg-[#475569] text-white text-xs font-bold rounded-full px-3 py-1 uppercase tracking-wide">Squad lead</span>
-                <h3 className="text-base font-bold text-[#0f172a]">What the squad lead carries</h3>
+                <span className="bg-[#475569] text-white text-xs font-bold rounded-full px-3 py-1 uppercase tracking-wide">MC Talent SME</span>
+                <h3 className="text-base font-bold text-[#0f172a]">What the MC Talent SME carries</h3>
               </div>
               <ul className="space-y-2.5">
                 {[
@@ -564,7 +564,7 @@ export default function MCSellerReintro() {
           <SectionLabel>How it works</SectionLabel>
           <SectionHeading>The pursuit model: your role and the handoff</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            You own stages 1 and 4. The squad lead and pursuit ops drives everything in between. You never lose the client — you gain a consulting win in your account.
+            You own stages 1 and 4. The MC Talent SME and pursuit ops drives everything in between. You never lose the client — you gain a consulting win in your account.
           </Body>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
             {pursuitStages.map((stage) => (

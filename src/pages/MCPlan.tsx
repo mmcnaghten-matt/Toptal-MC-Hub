@@ -614,10 +614,10 @@ export default function MCPlan() {
                 {[
                   "SMB Talent motion stays intact — eight-hub PS signal screen added at discovery",
                   "ENT sellers equipped with hub entry points and vertical trigger guides",
-                  "Domain experts lead the pursuit — squad lead drives conversations and orals",
+                  "Domain experts lead the pursuit — MC Talent SME drives conversations and orals",
                   "Talent expansion becomes a motion — high-tenure accounts monitored for signals",
                   "Eight hubs, one clear conversation per hub",
-                  "Market presence builds brand — squad lead content, hub POVs, targeted outbound",
+                  "Market presence builds brand — MC Talent SME content, hub POVs, targeted outbound",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-[#1e3a8a]">
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#2563eb] shrink-0" />
@@ -636,7 +636,7 @@ export default function MCPlan() {
           <SectionLabel>Hub Offerings</SectionLabel>
           <SectionHeading>Eight hubs — sharpened to where the market is right now</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Each hub is an entry point into a conversation already happening in the C-suite. CPs and ESEs carry one clear door per hub. Squad leads own the depth conversation behind it.
+            Each hub is an entry point into a conversation already happening in the C-suite. CPs and ESEs carry one clear door per hub. MC Talent SMEs own the depth conversation behind it.
           </Body>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
@@ -720,7 +720,7 @@ export default function MCPlan() {
           <div className="bg-[#0d1b40] rounded-xl px-6 py-5">
             <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Talent as hub entry</p>
             <p className="text-sm text-blue-100 leading-relaxed max-w-3xl">
-              Every active Talent engagement is a potential hub entry point. The CP already has the trust — the trigger question is what turns a staffing relationship into an MC conversation. Squad leads make the transition seamless.
+              Every active Talent engagement is a potential hub entry point. The CP already has the trust — the trigger question is what turns a staffing relationship into an MC conversation. MC Talent SMEs make the transition seamless.
             </p>
           </div>
 
@@ -901,7 +901,7 @@ export default function MCPlan() {
 
           {/* Surface 1: Tech Services */}
           <p className="text-base font-bold text-[#0f172a] mb-1">Surface 1: Tech Services Accounts</p>
-          <p className="text-xs text-[#6b7280] mb-5">Every tech engagement creates downstream business problems. Train CPs and ESEs to spot the trigger — then hand off to the right squad lead.</p>
+          <p className="text-xs text-[#6b7280] mb-5">Every tech engagement creates downstream business problems. Train CPs and ESEs to spot the trigger — then hand off to the right MC Talent SME.</p>
 
           <div className="mb-8">
             <TechTable engagements={ALL_TECH_ENGAGEMENTS} />
@@ -923,7 +923,7 @@ export default function MCPlan() {
               <thead>
                 <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
                   <th className="text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Talent engagement signal</th>
-                  <th className="text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question squad lead/CP asks</th>
+                  <th className="text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#6b7280]">Trigger question MC Talent SME/CP asks</th>
                   <th className="text-left px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#2563eb]">Expansion path</th>
                 </tr>
               </thead>
@@ -944,7 +944,7 @@ export default function MCPlan() {
           <InnerCard>
             <p className="text-xs font-bold uppercase tracking-widest text-[#2563eb] mb-2">Key insight</p>
             <p className="text-sm text-[#374151] leading-relaxed">
-              The Talent relationship is the trust asset. The squad lead's job on a Talent account isn't to sell — it's to stay close enough to see the next problem.
+              The Talent relationship is the trust asset. The MC Talent SME's job on a Talent account isn't to sell — it's to stay close enough to see the next problem.
             </p>
           </InnerCard>
         </Container>
@@ -956,7 +956,7 @@ export default function MCPlan() {
           <SectionLabel>Future Model</SectionLabel>
           <SectionHeading>The future value chain: find to deliver</SectionHeading>
           <Body className="max-w-2xl mb-12">
-            Two on-ramps. One delivery engine. Squad leads and pursuit ops drive everything from qualification through delivery and expansion.
+            Two on-ramps. One delivery engine. MC Talent SMEs and pursuit ops drive everything from qualification through delivery and expansion.
           </Body>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-10">
@@ -967,17 +967,17 @@ export default function MCPlan() {
                 phase: "Find & qualify",
                 items: [
                   "SMB: SDR discovery + eight-hub PS signal screen",
-                  "ENT: ESE/CP + squad lead paired with top clients",
+                  "ENT: ESE/CP + MC Talent SME paired with top clients",
                   "Vertical SDRs support discovery",
                   "Hub trigger guides for all sellers",
                 ],
               },
               {
                 num: "2",
-                owner: "Squad Lead + Pursuit Ops",
+                owner: "MC Talent SME + Pursuit Ops",
                 phase: "Pursue & solution",
                 items: [
-                  "Squad lead leads discovery and scoping calls",
+                  "MC Talent SME leads discovery and scoping calls",
                   "TCP engaged at scoping",
                   "AI diagnostic tools deployed",
                   "Right-sized scope, fast proposal",
@@ -985,10 +985,10 @@ export default function MCPlan() {
               },
               {
                 num: "3",
-                owner: "Squad Lead + Pursuit Ops",
+                owner: "MC Talent SME + Pursuit Ops",
                 phase: "Propose & win",
                 items: [
-                  "Squad lead presents in orals",
+                  "MC Talent SME presents in orals",
                   "Tight, priced-to-win proposals",
                   "Talent relationships as proof points",
                   "Expert credibility closes the trust gap",
@@ -996,10 +996,10 @@ export default function MCPlan() {
               },
               {
                 num: "4",
-                owner: "Squad Lead + CP + Team",
+                owner: "MC Talent SME + CP + Team",
                 phase: "Deliver & expand",
                 items: [
-                  "Monthly client touch (squad lead)",
+                  "Monthly client touch (MC Talent SME)",
                   "CP retains account relationship",
                   "Case study captured at close",
                   "Expansion path mapped at kickoff",
@@ -1047,20 +1047,20 @@ export default function MCPlan() {
                 timeframe: "Now → 90 days",
                 title: "Strengthen the foundation",
                 items: [
-                  "Seller enablement: 8 hubs, vertical trigger guides, squad lead pairings",
-                  "Pursuit leadership: squad leads lead conversations and orals, TCP at scoping",
+                  "Seller enablement: 8 hubs, vertical trigger guides, MC Talent SME pairings",
+                  "Pursuit leadership: MC Talent SMEs lead conversations and orals, TCP at scoping",
                   "SMB discovery screen: eight-hub PS signal check added to discovery",
                   "Talent expansion: top 20 accounts identified, expansion trigger guide live",
                   "SMB: portfolio decision made",
                 ],
-                outcome: "Sellers equipped. Squad leads leading pursuits. Talent expansion motion live. SMB role defined.",
+                outcome: "Sellers equipped. MC Talent SMEs leading pursuits. Talent expansion motion live. SMB role defined.",
               },
               {
                 phase: "Phase 2",
                 timeframe: "90 days → 6 months",
                 title: "Activate the market",
                 items: [
-                  "Squad lead LinkedIn POV content by hub",
+                  "MC Talent SME LinkedIn POV content by hub",
                   "One anchor POV document per hub in market",
                   "PS campaign visibility under Services",
                   "First 3 Talent-to-MC case studies live",
@@ -1073,7 +1073,7 @@ export default function MCPlan() {
                 timeframe: "6 months+",
                 title: "Scale the engine",
                 items: [
-                  "Squad leads hold vertical relationships independently",
+                  "MC Talent SMEs hold vertical relationships independently",
                   "Talent expansion systematized across top accounts",
                   "AI diagnostic tools live as lead-gen marketing assets",
                   "International coverage through squad-to-region pairings",
@@ -1139,7 +1139,7 @@ export default function MCPlan() {
             {[
               {
                 label: "Brand ceiling",
-                body: "Clients know us for Talent and don't naturally reach for consulting. We need to be visible in the right C-suite conversations before we're in the room. That's a content and presence play — squad lead POVs, hub visibility, targeted outbound. Not a product problem.",
+                body: "Clients know us for Talent and don't naturally reach for consulting. We need to be visible in the right C-suite conversations before we're in the room. That's a content and presence play — MC Talent SME POVs, hub visibility, targeted outbound. Not a product problem.",
               },
               {
                 label: "Recognition ceiling",
@@ -1147,7 +1147,7 @@ export default function MCPlan() {
               },
               {
                 label: "Pursuit leadership ceiling",
-                body: "CPs and ESEs are excellent at their jobs. The MC pursuit motion requires something different at the front of the conversation — domain expertise, not account management. The model works when squad leads drive discovery and orals. That's the upgrade, not a replacement. CPs keep the relationship; squad leads run the MC portion.",
+                body: "CPs and ESEs are excellent at their jobs. The MC pursuit motion requires something different at the front of the conversation — domain expertise, not account management. The model works when MC Talent SMEs drive discovery and orals. That's the upgrade, not a replacement. CPs keep the relationship; MC Talent SMEs run the MC portion.",
               },
               {
                 label: "Talent expansion ceiling",
@@ -1199,12 +1199,12 @@ export default function MCPlan() {
                   {
                     num: "2",
                     title: "Pursuit leadership",
-                    body: "Right now, MC mostly supports the CP-led pursuit. The upgrade: squad leads lead the discovery call, drive the scoping conversation, and present in orals. CPs and ESEs handle the intro and keep the relationship. The domain expert runs the MC part of the pursuit. This closes the trust gap that slows ENT close rates.",
+                    body: "Right now, MC mostly supports the CP-led pursuit. The upgrade: MC Talent SMEs lead the discovery call, drive the scoping conversation, and present in orals. CPs and ESEs handle the intro and keep the relationship. The domain expert runs the MC part of the pursuit. This closes the trust gap that slows ENT close rates.",
                   },
                   {
                     num: "3",
                     title: "Talent expansion",
-                    body: "Identify the top 20 Talent accounts, pair a squad lead with the CP on each, and create a monthly check-in trigger to ask the simple question: 'is there a business problem behind the hiring trend?' The answer is often yes. The infrastructure to activate it is the missing piece.",
+                    body: "Identify the top 20 Talent accounts, pair an MC Talent SME with the CP on each, and create a monthly check-in trigger to ask the simple question: 'is there a business problem behind the hiring trend?' The answer is often yes. The infrastructure to activate it is the missing piece.",
                   },
                 ].map((item) => (
                   <div key={item.num} className="flex gap-4">

@@ -16,7 +16,7 @@ const points = [
   {
     num: "03",
     title: "Enterprise Is the Engine — and the Ceiling Is Structural",
-    body: "ENT grew 25% YoY in Q1 2026 and now represents 70% of gross revenue. $13.2M weighted pipeline entering Q2 2026. New opportunity creation hit a record 122 in Q1 2026. The constraint to scale isn't demand. It's the model upstream: sellers need clear entry points (not 40+ services), talent bench squad leads need to be in front of the conversation (not behind it), and Talent accounts need to be formally mapped for expansion. Each of these is a solvable structural problem, not a market problem.",
+    body: "ENT grew 25% YoY in Q1 2026 and now represents 70% of gross revenue. $13.2M weighted pipeline entering Q2 2026. New opportunity creation hit a record 122 in Q1 2026. The constraint to scale isn't demand. It's the model upstream: sellers need clear entry points (not 40+ services), talent bench MC Talent SMEs need to be in front of the conversation (not behind it), and Talent accounts need to be formally mapped for expansion. Each of these is a solvable structural problem, not a market problem.",
   },
   {
     num: "04",
