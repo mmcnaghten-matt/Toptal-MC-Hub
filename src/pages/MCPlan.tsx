@@ -954,7 +954,7 @@ export default function MCPlan() {
       <section className="bg-[#f8fafc] py-20">
         <Container>
           <SectionLabel>Future Model</SectionLabel>
-          <SectionHeading>The future value chain: find to deliver</SectionHeading>
+          <SectionHeading>The Future Pursuit Motion: find to deliver</SectionHeading>
           <Body className="max-w-2xl mb-12">
             Two on-ramps. One delivery engine. MC Talent SMEs and pursuit ops drive everything from qualification through delivery and expansion.
           </Body>
