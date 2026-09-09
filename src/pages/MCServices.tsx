@@ -138,6 +138,7 @@ interface SubRow {
   maturityModelUrl?: string;
   maturityDiagnosticUrl?: string;
   exampleMaterials?: { label: string; url: string }[];
+  subRows?: SubRow[];
 }
 
 interface GTMRow {
@@ -206,60 +207,6 @@ const gtmMaterials: GTMRow[] = [
     ],
   },
   {
-    seq: 3,
-    practice: "Strategy",
-    service: "Digital Strategy",
-    docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/19Bj0TbM74IX5jODeHOBb67gt1FJ4huZY/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
-    description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
-    keyBuyers: "CEOs, CIOs, CDOs, COOs · VP/Directors of Digital/IT · Operations Leads · Innovation Heads",
-  },
-  {
-    seq: 4,
-    practice: "Strategy",
-    service: "AI Consulting",
-    docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
-    battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
-    maturityDiagnosticUrl: "/diagnostics/ai-maturity",
-    exampleMaterials: [
-      { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
-      { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
-    ],
-    description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
-    keyBuyers: "CEO/LOB Heads · CFO · COO · CMO · CIO · CDO · CTO · Innovation/Digital Transformation Heads",
-    subRows: [
-      {
-        service: "AI Core - Build AI Capability",
-        description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
-        firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
-        exampleMaterials: [
-          { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
-        ],
-      },
-      {
-        service: "Responsible AI",
-        description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
-        docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
-      },
-      {
-        service: "AI Value Realization",
-        description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
-        firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
-      },
-      {
-        service: "AI Governance",
-        description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
-        firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
-      },
-    ],
-  },
-  {
     isHub: true,
     seq: 2,
     practice: "Strategy",
@@ -281,6 +228,53 @@ const gtmMaterials: GTMRow[] = [
         docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link",
         battlecardUrl: "https://docs.google.com/presentation/d/1caiz6eH2ZaHU5I75fZGAjD4PWr-I115tudm5OthHFhU/edit",
         description: "Helping organizations identify, assess, and mitigate risks to comply with regulations, protect assets, enhance reputation, ensure business continuity, and drive efficiency.",
+      },
+      {
+        service: "Digital Strategy",
+        docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
+        description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
+      },
+      {
+        service: "AI Consulting",
+        docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
+        maturityDiagnosticUrl: "/diagnostics/ai-maturity",
+        exampleMaterials: [
+          { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
+          { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
+        ],
+        description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
+        subRows: [
+          {
+            service: "AI Core - Build AI Capability",
+            description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
+            exampleMaterials: [
+              { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
+            ],
+          },
+          {
+            service: "Responsible AI",
+            description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
+            docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
+          },
+          {
+            service: "AI Value Realization",
+            description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
+          },
+          {
+            service: "AI Governance",
+            description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
+          },
+        ],
       },
     ],
   },
@@ -383,13 +377,7 @@ const gtmMaterials: GTMRow[] = [
     ],
   },
   {
-    isHub: true,
     seq: 18,
-    practice: "People",
-    service: "Leadership & Culture",
-  },
-  {
-    seq: 19,
     practice: "People",
     service: "Change Management",
     docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
@@ -400,6 +388,12 @@ const gtmMaterials: GTMRow[] = [
     ],
     description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
     keyBuyers: "CEOs, COOs, CIOs · CHROs/VPs of HR · Program Directors/PMO · CTOs/IT Directors",
+  },
+  {
+    isHub: true,
+    seq: 19,
+    practice: "People",
+    service: "Leadership & Culture",
   },
 ];
 
@@ -558,6 +552,78 @@ const pillarColors: Record<string, string> = {
   People: "bg-muted text-muted-foreground",
 };
 
+// Shared data-column cells (Overview Deck, First Call Deck, Battlecard, Sellers
+// Sheet, Maturity Model, Example Materials) — identical markup at every nesting
+// level of the GTM Materials table, so top-level rows, sub-rows, and nested
+// sub-rows all render through this.
+function ServiceDataCells({ row }: { row: SubRow }) {
+  return (
+    <>
+      <td className="py-2 px-3 text-center">
+        {row.docUrl ? (
+          <a href={row.docUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+        ) : "—"}
+      </td>
+      <td className="py-2 px-3 text-center">
+        {row.firstCallDeckUrl ? (
+          <a href={row.firstCallDeckUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+        ) : "—"}
+      </td>
+      <td className="py-2 px-3 text-center">
+        {row.battlecardUrl ? (
+          <a href={row.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+        ) : "—"}
+      </td>
+      <td className="py-2 px-3 text-center">
+        {row.sellersSheetUrl ? (
+          <a href={row.sellersSheetUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+        ) : "—"}
+      </td>
+      <td className="py-2 px-3 text-center">
+        {row.maturityModelUrl || row.maturityDiagnosticUrl ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            {row.maturityModelUrl && (
+              <a href={row.maturityModelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
+            )}
+            {row.maturityDiagnosticUrl && (
+              <a href={row.maturityDiagnosticUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Diagnostic</a>
+            )}
+          </span>
+        ) : "—"}
+      </td>
+      <td className="py-2 pl-4 text-xs">
+        {row.exampleMaterials
+          ? row.exampleMaterials.map((m, i) => (
+              <a key={i} href={m.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block">{m.label}</a>
+            ))
+          : "—"}
+      </td>
+    </>
+  );
+}
+
+// Renders a sub-row and (recursively) any of its own nested sub-rows, indenting
+// one step further at each depth.
+function renderSubRowTree(subRows: SubRow[] | undefined, parentKey: string, depth = 1) {
+  if (!subRows) return [];
+  const indentClass = depth === 1 ? "pl-8" : "pl-14";
+  return subRows.flatMap((sub) => [
+    <tr key={`${parentKey}-${sub.service}`} className="border-b border-border/30 bg-muted/30">
+      <td className={`py-2 ${indentClass} pr-4 text-sm`}>
+        <span className="text-muted-foreground mr-1.5 select-none">↳</span>
+        <span className="font-semibold text-foreground text-xs">{sub.service}</span>
+        {sub.description && (
+          <p className="text-xs mt-0.5 leading-snug text-muted-foreground font-normal">
+            {sub.description}
+          </p>
+        )}
+      </td>
+      <ServiceDataCells row={sub} />
+    </tr>,
+    ...renderSubRowTree(sub.subRows, `${parentKey}-${sub.service}`, depth + 1),
+  ]);
+}
+
 export default function MCServices() {
   const navigate = useNavigate();
 
@@ -701,122 +767,9 @@ export default function MCServices() {
                             </p>
                           )}
                         </td>
-                        <td className="py-2 px-3 text-center">
-                          {row.docUrl ? (
-                            <a href={row.docUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                              Doc
-                            </a>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className="py-2 px-3 text-center">
-                          {row.firstCallDeckUrl ? (
-                            <a href={row.firstCallDeckUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                              Doc
-                            </a>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className="py-2 px-3 text-center">
-                          {row.battlecardUrl ? (
-                            <a href={row.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                              Doc
-                            </a>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className="py-2 px-3 text-center">
-                          {row.sellersSheetUrl ? (
-                            <a href={row.sellersSheetUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                              Doc
-                            </a>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className="py-2 px-3 text-center">
-                          {row.maturityModelUrl || row.maturityDiagnosticUrl ? (
-                            <span className="inline-flex items-center justify-center gap-2">
-                              {row.maturityModelUrl && (
-                                <a href={row.maturityModelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                                  Doc
-                                </a>
-                              )}
-                              {row.maturityDiagnosticUrl && (
-                                <a href={row.maturityDiagnosticUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
-                                  Diagnostic
-                                </a>
-                              )}
-                            </span>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                        <td className="py-2 pl-4 text-xs">
-                          {row.exampleMaterials
-                            ? row.exampleMaterials.map((m, i) => (
-                                <a key={i} href={m.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block">
-                                  {m.label}
-                                </a>
-                              ))
-                            : "—"}
-                        </td>
+                        <ServiceDataCells row={row} />
                       </tr>,
-                      ...(row.subRows ?? []).map((sub) => (
-                        <tr key={`${row.service}-${sub.service}`} className="border-b border-border/30 bg-muted/30">
-                          <td className="py-2 pl-8 pr-4 text-sm">
-                            <span className="text-muted-foreground mr-1.5 select-none">↳</span>
-                            <span className="font-semibold text-foreground text-xs">{sub.service}</span>
-                            {sub.description && (
-                              <p className="text-xs mt-0.5 leading-snug text-muted-foreground font-normal">
-                                {sub.description}
-                              </p>
-                            )}
-                          </td>
-                          <td className="py-2 px-3 text-center">
-                            {sub.docUrl ? (
-                              <a href={sub.docUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
-                            ) : "—"}
-                          </td>
-                          <td className="py-2 px-3 text-center">
-                            {sub.firstCallDeckUrl ? (
-                              <a href={sub.firstCallDeckUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
-                            ) : "—"}
-                          </td>
-                          <td className="py-2 px-3 text-center">
-                            {sub.battlecardUrl ? (
-                              <a href={sub.battlecardUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
-                            ) : "—"}
-                          </td>
-                          <td className="py-2 px-3 text-center">
-                            {sub.sellersSheetUrl ? (
-                              <a href={sub.sellersSheetUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
-                            ) : "—"}
-                          </td>
-                          <td className="py-2 px-3 text-center">
-                            {sub.maturityModelUrl || sub.maturityDiagnosticUrl ? (
-                              <span className="inline-flex items-center justify-center gap-2">
-                                {sub.maturityModelUrl && (
-                                  <a href={sub.maturityModelUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Doc</a>
-                                )}
-                                {sub.maturityDiagnosticUrl && (
-                                  <a href={sub.maturityDiagnosticUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Diagnostic</a>
-                                )}
-                              </span>
-                            ) : "—"}
-                          </td>
-                          <td className="py-2 pl-4 text-xs">
-                            {sub.exampleMaterials
-                              ? sub.exampleMaterials.map((m, i) => (
-                                  <a key={i} href={m.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block">{m.label}</a>
-                                ))
-                              : "—"}
-                          </td>
-                        </tr>
-                      )),
+                      ...renderSubRowTree(row.subRows, row.service),
                     ]),
                   ];
                 })}
