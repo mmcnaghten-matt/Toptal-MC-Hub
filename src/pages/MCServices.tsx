@@ -537,6 +537,12 @@ const salesAssets: SalesAsset[] = [
     document: "Schneider Electric Canada — Commercial Innovation Workshop",
     url: "https://docs.google.com/presentation/d/1qQXPXQHCGseS2d4eHNWNwoiXglL-P9xBpqLw8v4G1qI/edit",
   },
+  {
+    topic: "Change Management",
+    type: "POV",
+    document: "Toptal POV - Change Management",
+    url: "https://docs.google.com/presentation/d/1RfNd4MllIYGGrnJ3RrwYFozQMVOl8UbXb6z9vaNhWOk/edit?slide=id.g2e42f2ed76d_0_5018#slide=id.g2e42f2ed76d_0_5018",
+  },
 ];
 
 const pillarColors: Record<string, string> = {
