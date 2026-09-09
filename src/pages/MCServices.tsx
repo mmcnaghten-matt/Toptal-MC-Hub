@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
-import ConstellationDiagram from "@/components/ConstellationDiagram";
 import ServiceFinder from "@/components/ServiceFinder";
 
 const definition = {
@@ -552,6 +551,82 @@ const pillarColors: Record<string, string> = {
   People: "bg-muted text-muted-foreground",
 };
 
+// Same brand colors used for these hubs in ConstellationDiagram and MCPlan's Hub
+// Offering cards.
+const HUB_OFFERING_COLORS: Record<Practice, { text: string; bg: string }> = {
+  Strategy: { text: "#2B44D4", bg: "#EEF2FF" },
+  Finance: { text: "#0CA678", bg: "#ECFDF5" },
+  Operations: { text: "#E86B4A", bg: "#FFF7ED" },
+  People: { text: "#5C6BC0", bg: "#EDE9FE" },
+};
+
+interface HubOffering {
+  practice: Practice;
+  name: string;
+  tagline: string;
+  body: string;
+  tags: string[];
+}
+
+const hubOfferings: HubOffering[] = [
+  {
+    practice: "Strategy",
+    name: "Strategy & Growth Consulting",
+    tagline: "Growth in a constrained market",
+    body: "(CSO/CMO gateway) — Identifies and exploits expansion through market penetration, product development, and diversification. Works alongside M&A Advisory Services on inorganic growth.",
+    tags: ["Profitable growth", "Portfolio rationalization", "Pricing power"],
+  },
+  {
+    practice: "Strategy",
+    name: "Business Transformation and Risk Advisory",
+    tagline: "Operating model for the AI era",
+    body: "(CEO/COO gateway) — Enterprise-wide change to improve performance, competitiveness, and adaptability.",
+    tags: ["AI operating model", "Workforce redesign", "Process intelligence", "AI governance"],
+  },
+  {
+    practice: "Finance",
+    name: "Finance Transformation & CFO Advisory",
+    tagline: "The CFO's AI agenda",
+    body: "(CFO gateway) — Modernizes finance from a cost center to a strategic partner. Five pillars: Strategy & Vision, Performance Management, Process Optimization, Org & Governance, and Data & Technology.",
+    tags: ["AI ROI", "FP&A modernization", "Finance automation"],
+  },
+  {
+    practice: "Finance",
+    name: "M&A Advisory Services",
+    tagline: "Inorganic growth, de-risked",
+    body: "(Corp Dev / PE gateway) — Pursues inorganic growth through target identification, due diligence, and post-merger integration. Works alongside Strategy & Growth Consulting and Finance Transformation & CFO Advisory.",
+    tags: ["Deal strategy", "Diligence", "Post-merger integration"],
+  },
+  {
+    practice: "Operations",
+    name: "Operations & Performance Improvement",
+    tagline: "Do more with what you have",
+    body: "(C-Level/Ops gateway) — Drives EBITDA growth, cost reduction, and operational efficiency by rewiring core processes.",
+    tags: ["Operational productivity", "Process mining", "AI-assisted ops"],
+  },
+  {
+    practice: "Operations",
+    name: "Supply Chain and Procurement Consulting",
+    tagline: "Resilience and AI visibility",
+    body: "(COO gateway) — Optimizes operations and logistics for resilience, transparency, and efficiency.",
+    tags: ["Supply resilience", "Nearshoring", "AI demand sensing"],
+  },
+  {
+    practice: "People",
+    name: "Adaptive Organization",
+    tagline: "Workforce for what's next",
+    body: "(CHRO/CPO gateway) — Evolves talent strategy, organizational structure, and culture to meet future business needs. Strongly connected to AI Consulting (reskilling for GenAI) and Digital Strategy (HR tech). Includes Workforce Transformation as a core sub-service.",
+    tags: ["AI readiness", "Org design", "Role redesign", "Change Management"],
+  },
+  {
+    practice: "People",
+    name: "Leadership & Culture",
+    tagline: "Change that doesn't snap back",
+    body: "(CEO/CHRO gateway) — Builds the leadership behaviors, culture, and operating rhythms that let an organization sustain change rather than relapse after the transformation team leaves.",
+    tags: ["Leadership behavior", "Culture design", "Operating rhythms"],
+  },
+];
+
 // Shared data-column cells (Overview Deck, First Call Deck, Battlecard, Sellers
 // Sheet, Maturity Model, Example Materials) — identical markup at every nesting
 // level of the GTM Materials table, so top-level rows, sub-rows, and nested
@@ -685,24 +760,46 @@ export default function MCServices() {
 
         {/* MC Services Web */}
         <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
-          <div className="grid gap-6 lg:grid-cols-5 items-start">
-            <div className="lg:col-span-2">
-              <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                Services Web
-              </p>
-              <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
-                Management Consulting Services Web
-              </h2>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The web to the right depicts eight of these core hubs and their relationship with "universal connector services" that are often paired with the Hub offering solution. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
-              </p>
-              <p className="mt-3 text-xs text-primary">
-                Hover to highlight the connections · and click for service details
-              </p>
-            </div>
-            <div className="lg:col-span-3">
-              <ConstellationDiagram compact />
-            </div>
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Services Web
+          </p>
+          <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
+            Management Consulting Services Web
+          </h2>
+          <p className="mb-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The eight hub offerings below are organized by practice — Strategy, Finance, Operations, and People. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
+          </p>
+
+          <div className="space-y-8">
+            {PRACTICE_ORDER.map((practice) => {
+              const hubs = hubOfferings.filter((h) => h.practice === practice);
+              const colors = HUB_OFFERING_COLORS[practice];
+              return (
+                <div key={practice}>
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-foreground">{practice}</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {hubs.map((hub) => (
+                      <div key={hub.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
+                        <p className="mb-1 text-xs font-semibold" style={{ color: colors.text }}>{hub.tagline}</p>
+                        <h3 className="mb-2 text-base font-bold" style={{ color: colors.text }}>{hub.name}</h3>
+                        <p className="mb-3 flex-1 text-sm leading-relaxed text-muted-foreground">{hub.body}</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {hub.tags.map((t) => (
+                            <span
+                              key={t}
+                              className="inline-block rounded px-2 py-0.5 text-xs font-medium"
+                              style={{ backgroundColor: colors.bg, color: colors.text }}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
