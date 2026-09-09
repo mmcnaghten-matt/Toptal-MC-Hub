@@ -731,7 +731,7 @@ export default function MCServices() {
           {[
             { label: "Introduction", href: "#introduction" },
             { label: "MC Service Offering Finder", href: "#hub-finder" },
-            { label: "Services Web", href: "#services-web" },
+            { label: "Service Offerings", href: "#services-web" },
             { label: "Go-to-Market Materials", href: "#gtm-materials" },
             { label: "Sales Motion Documents", href: "#sales-motion" },
           ].map(({ label, href }) => (
@@ -758,13 +758,13 @@ export default function MCServices() {
           <ServiceFinder />
         </section>
 
-        {/* MC Services Web */}
+        {/* Service Offerings */}
         <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
           <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Services Web
+            Service Offerings
           </p>
           <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
-            Management Consulting Services Web
+            Management Consulting Hub Services
           </h2>
           <p className="mb-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">
             Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The eight hub offerings below are organized by practice — Strategy, Finance, Operations, and People. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
