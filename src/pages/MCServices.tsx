@@ -4,7 +4,7 @@ import ToptalLogo from "@/components/ToptalLogo";
 import ServiceFinder from "@/components/ServiceFinder";
 
 const definition = {
-  title: "Management Consulting Services",
+  title: "Management Consulting",
   description:
     "Management Consulting provides organizations with expert advice to solve complex business challenges, improve performance, and drive strategic growth. It often involves diagnosing problems, devising actionable solutions, and implementing strategies to enhance operational efficiency and achieve long-term success.",
   extended:
