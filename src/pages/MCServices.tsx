@@ -131,6 +131,7 @@ interface SubRow {
   service: string;
   description?: string;
   docUrl?: string;
+  pdfUrl?: string;
   firstCallDeckUrl?: string;
   battlecardUrl?: string;
   sellersSheetUrl?: string;
@@ -210,18 +211,62 @@ const gtmMaterials: GTMRow[] = [
     seq: 2,
     practice: "Strategy",
     service: "Business Transformation and Risk Advisory",
-    docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/1R-ZpyubSfT3l5ipbbhFkv-dWDClE7Ju8/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1lOGfxA4iMazV9Kfn1tPJH2Q0M4GWJgRpUVBv-p7xI1M/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1kKYqaVQqdZNEbw1q5HxsS-dX3Ce0a-4xdai6QpxnAS8/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1syzt0kO66n6vCgOzasujXt0jDdd4by6LGn_pTngLcrU/edit",
-    maturityDiagnosticUrl: "/diagnostics/business-transformation",
-    exampleMaterials: [
-      { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
-    ],
-    description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
     keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
     subRows: [
+      {
+        service: "Business Transformation",
+        docUrl: "https://docs.google.com/presentation/d/1L7DIECcuUXwp76rC2kpDlY9fhrsVLBzT4-4HrA18LvA/edit?usp=sharing",
+        pdfUrl: "https://drive.google.com/file/d/1R-ZpyubSfT3l5ipbbhFkv-dWDClE7Ju8/view?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/1lOGfxA4iMazV9Kfn1tPJH2Q0M4GWJgRpUVBv-p7xI1M/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1kKYqaVQqdZNEbw1q5HxsS-dX3Ce0a-4xdai6QpxnAS8/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1syzt0kO66n6vCgOzasujXt0jDdd4by6LGn_pTngLcrU/edit",
+        maturityDiagnosticUrl: "/diagnostics/business-transformation",
+        exampleMaterials: [
+          { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
+        ],
+        description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
+        subRows: [
+          {
+            service: "AI Consulting",
+            docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
+            battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
+            sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
+            maturityDiagnosticUrl: "/diagnostics/ai-maturity",
+            exampleMaterials: [
+              { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
+              { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
+            ],
+            description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
+            subRows: [
+              {
+                service: "AI Core - Build AI Capability",
+                description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
+                firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
+                exampleMaterials: [
+                  { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
+                ],
+              },
+              {
+                service: "Responsible AI",
+                description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
+                docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
+                maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
+              },
+              {
+                service: "AI Value Realization",
+                description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
+                firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
+              },
+              {
+                service: "AI Governance",
+                description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
+                firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
+              },
+            ],
+          },
+        ],
+      },
       {
         service: "Risk Management Services",
         docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link",
@@ -235,45 +280,6 @@ const gtmMaterials: GTMRow[] = [
         sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
         maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
         description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
-      },
-      {
-        service: "AI Consulting",
-        docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
-        maturityDiagnosticUrl: "/diagnostics/ai-maturity",
-        exampleMaterials: [
-          { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
-          { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
-        ],
-        description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
-        subRows: [
-          {
-            service: "AI Core - Build AI Capability",
-            description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
-            firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
-            exampleMaterials: [
-              { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
-            ],
-          },
-          {
-            service: "Responsible AI",
-            description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
-            docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
-            maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
-          },
-          {
-            service: "AI Value Realization",
-            description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
-            firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
-          },
-          {
-            service: "AI Governance",
-            description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
-            firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
-          },
-        ],
       },
     ],
   },
@@ -682,7 +688,7 @@ function ServiceDataCells({ row }: { row: SubRow }) {
 // one step further at each depth.
 function renderSubRowTree(subRows: SubRow[] | undefined, parentKey: string, depth = 1) {
   if (!subRows) return [];
-  const indentClass = depth === 1 ? "pl-8" : "pl-14";
+  const indentClass = depth === 1 ? "pl-8" : depth === 2 ? "pl-14" : "pl-20";
   return subRows.flatMap((sub) => [
     <tr key={`${parentKey}-${sub.service}`} className="border-b border-border/30 bg-muted/30">
       <td className={`py-2 ${indentClass} pr-4 text-sm`}>
