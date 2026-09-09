@@ -341,17 +341,15 @@ const gtmMaterials: GTMRow[] = [
     maturityDiagnosticUrl: "/diagnostics/supply-chain",
     description: "Helping organizations optimize their supply chain operations, improve logistics, and enhance overall supply chain performance.",
     keyBuyers: "CEOs, COOs, CFOs · VPs/Directors of Supply Chain/Logistics/Operations · CIOs/CTOs · Chief Sustainability Officers",
-  },
-  {
-    seq: 16,
-    practice: "Operations",
-    service: "Inventory Management",
-    docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/1wAz229F37TvfXVXOdl_nhe4qJGKuaTLW/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1M-v3lAGlMFJlW75tHKN-caTJdexpIKxZSy8q_NoR_Jk/edit",
-    maturityModelUrl: "https://docs.google.com/document/d/1UKmZO7LoyNZJQv2yMRlrfZ4voWIR-Qb2koDEnsou2l0/edit",
-    description: "Providing strategies and solutions to optimize inventory levels, reduce carrying costs, and improve inventory accuracy.",
-    keyBuyers: "COO · CFO · VP of Supply Chain/Operations · Head of Procurement · Warehouse/Logistics Manager · IT Director",
+    subRows: [
+      {
+        service: "Inventory Management",
+        docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1M-v3lAGlMFJlW75tHKN-caTJdexpIKxZSy8q_NoR_Jk/edit",
+        maturityModelUrl: "https://docs.google.com/document/d/1UKmZO7LoyNZJQv2yMRlrfZ4voWIR-Qb2koDEnsou2l0/edit",
+        description: "Providing strategies and solutions to optimize inventory levels, reduce carrying costs, and improve inventory accuracy.",
+      },
+    ],
   },
   // People
   {
@@ -373,24 +371,21 @@ const gtmMaterials: GTMRow[] = [
         ],
         description: "Evolves talent strategy, organizational structure, and culture to meet future business needs.",
       },
+      {
+        service: "Change Management",
+        docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1FngvHXpfZN8KrdgkssvFvnLt4XjgHKR1kWTRx8WVNwA/edit?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/12gpn5JP9DiR1GVuNPOQiAM9bBWqhHm4bfY9OPo8ZmLQ/edit",
+        exampleMaterials: [
+          { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
+        ],
+        description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
+      },
     ],
-  },
-  {
-    seq: 18,
-    practice: "People",
-    service: "Change Management",
-    docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
-    firstCallDeckUrl: "https://docs.google.com/presentation/d/1FngvHXpfZN8KrdgkssvFvnLt4XjgHKR1kWTRx8WVNwA/edit?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/12gpn5JP9DiR1GVuNPOQiAM9bBWqhHm4bfY9OPo8ZmLQ/edit",
-    exampleMaterials: [
-      { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
-    ],
-    description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
-    keyBuyers: "CEOs, COOs, CIOs · CHROs/VPs of HR · Program Directors/PMO · CTOs/IT Directors",
   },
   {
     isHub: true,
-    seq: 19,
+    seq: 18,
     practice: "People",
     service: "Leadership & Culture",
   },
@@ -730,8 +725,8 @@ export default function MCServices() {
         <nav className="flex gap-2 flex-wrap border-b border-border pb-4">
           {[
             { label: "Introduction", href: "#introduction" },
-            { label: "MC Service Offering Finder", href: "#hub-finder" },
             { label: "Service Offerings", href: "#services-web" },
+            { label: "MC Service Offering Finder", href: "#hub-finder" },
             { label: "Go-to-Market Materials", href: "#gtm-materials" },
             { label: "Sales Motion Documents", href: "#sales-motion" },
           ].map(({ label, href }) => (
@@ -751,11 +746,6 @@ export default function MCServices() {
           <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">{definition.title}</h2>
           <p className="text-sm leading-relaxed text-muted-foreground mb-3">{definition.description}</p>
           <p className="text-sm leading-relaxed text-muted-foreground">{definition.extended}</p>
-        </section>
-
-        {/* MC Service Offering Finder */}
-        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6 scroll-mt-20">
-          <ServiceFinder />
         </section>
 
         {/* Service Offerings */}
@@ -803,6 +793,11 @@ export default function MCServices() {
           </div>
         </section>
 
+        {/* MC Service Offering Finder */}
+        <section id="hub-finder" className="fade-in rounded-lg border border-primary/20 bg-primary/5 p-6 scroll-mt-20">
+          <ServiceFinder />
+        </section>
+
         {/* GTM Materials (slide 7) */}
         <section id="gtm-materials" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
           <div className="mb-4 flex items-center gap-2">
@@ -842,32 +837,41 @@ export default function MCServices() {
                         {practice}
                       </td>
                     </tr>,
-                    ...rows.flatMap((row) => [
-                      <tr key={row.service} className="border-b border-border/50">
-                        <td className="py-2 pr-4 text-sm">
-                          {row.isHub ? (
-                            <span className="flex items-center gap-1.5 font-bold text-[#2563eb]">
-                              <Network className="w-3.5 h-3.5 shrink-0" />
-                              {row.service}
-                            </span>
-                          ) : (
-                            <span className="font-bold text-foreground">{row.service}</span>
-                          )}
-                          {row.description && (
-                            <p className={`text-xs mt-1 leading-snug font-normal ${row.isHub ? 'text-[#2563eb]/70' : 'text-muted-foreground'}`}>
-                              {row.description}
-                            </p>
-                          )}
-                          {row.keyBuyers && (
-                            <p className={`text-xs mt-0.5 leading-snug ${row.isHub ? 'text-[#2563eb]/70' : 'text-muted-foreground'}`}>
-                              <span className="font-bold">Key buyers: </span>{row.keyBuyers}
-                            </p>
-                          )}
-                        </td>
-                        <ServiceDataCells row={row} />
-                      </tr>,
-                      ...renderSubRowTree(row.subRows, row.service),
-                    ]),
+                    ...rows.flatMap((row) => {
+                      const hubColor = HUB_OFFERING_COLORS[practice].text;
+                      return [
+                        <tr key={row.service} className="border-b border-border/50">
+                          <td className="py-2 pr-4 text-sm">
+                            {row.isHub ? (
+                              <span className="flex items-center gap-1.5 font-bold" style={{ color: hubColor }}>
+                                <Network className="w-3.5 h-3.5 shrink-0" />
+                                {row.service}
+                              </span>
+                            ) : (
+                              <span className="font-bold text-foreground">{row.service}</span>
+                            )}
+                            {row.description && (
+                              <p
+                                className={`text-xs mt-1 leading-snug font-normal ${row.isHub ? '' : 'text-muted-foreground'}`}
+                                style={row.isHub ? { color: hubColor, opacity: 0.7 } : undefined}
+                              >
+                                {row.description}
+                              </p>
+                            )}
+                            {row.keyBuyers && (
+                              <p
+                                className={`text-xs mt-0.5 leading-snug ${row.isHub ? '' : 'text-muted-foreground'}`}
+                                style={row.isHub ? { color: hubColor, opacity: 0.7 } : undefined}
+                              >
+                                <span className="font-bold">Key buyers: </span>{row.keyBuyers}
+                              </p>
+                            )}
+                          </td>
+                          <ServiceDataCells row={row} />
+                        </tr>,
+                        ...renderSubRowTree(row.subRows, row.service),
+                      ];
+                    }),
                   ];
                 })}
               </tbody>
