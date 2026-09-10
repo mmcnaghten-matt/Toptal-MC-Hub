@@ -248,30 +248,32 @@ const gtmMaterials: GTMRow[] = [
                 ],
               },
               {
-                service: "Responsible AI",
-                description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
-                docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
-                maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
-              },
-              {
                 service: "AI Value Realization",
                 description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
                 firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
-              },
-              {
-                service: "AI Governance",
-                description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
-                firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
               },
             ],
           },
         ],
       },
       {
-        service: "Risk Management Services",
-        docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link",
+        service: "Risk & Compliance Advisory",
+        docUrl: "https://docs.google.com/presentation/d/1cafzmkz671k9stPLWUZSmuL34SRm1MsKErE0t4tBieg/edit?usp=sharing",
         battlecardUrl: "https://docs.google.com/presentation/d/1caiz6eH2ZaHU5I75fZGAjD4PWr-I115tudm5OthHFhU/edit",
         description: "Helping organizations identify, assess, and mitigate risks to comply with regulations, protect assets, enhance reputation, ensure business continuity, and drive efficiency.",
+        subRows: [
+          {
+            service: "Responsible AI",
+            description: "Guiding organizations through the ethical, fair, and secure development, deployment, and operation of AI systems across their entire lifecycle.",
+            docUrl: "https://docs.google.com/presentation/d/18TY-uoEWX6pukByM1Bm4DWnLT5pwZljJWg7b37jvAm8/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/document/d/1-umEX0FqpsufBBuKxudgBe741JC4QtO6n4ZC-4WPBiE/edit",
+          },
+          {
+            service: "AI Governance",
+            description: "Guides organizations in building the policies, oversight structures, and technical controls needed to govern AI and agentic systems in production — before risk outpaces the ability to manage it.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1LYwdQyPJWnihRItB-zyjoWZqbtpPyOsT0_2ft_CWsjM/edit?usp=sharing",
+          },
+        ],
       },
       {
         service: "Digital Strategy",
