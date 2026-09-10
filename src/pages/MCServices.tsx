@@ -211,6 +211,7 @@ const gtmMaterials: GTMRow[] = [
     seq: 2,
     practice: "Strategy",
     service: "Business Transformation and Risk Advisory",
+    docUrl: "https://docs.google.com/presentation/d/1L7DIECcuUXwp76rC2kpDlY9fhrsVLBzT4-4HrA18LvA/edit?usp=sharing",
     keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
     subRows: [
       {
