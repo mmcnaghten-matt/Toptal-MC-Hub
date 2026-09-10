@@ -590,7 +590,7 @@ const hubOfferings: HubOffering[] = [
     practice: "Strategy",
     name: "Business Transformation and Risk Advisory",
     tagline: "Operating model for the AI era",
-    body: "(CEO/COO gateway) — Enterprise-wide change to improve performance, competitiveness, and adaptability.",
+    body: "(CEO/COO gateway) — Guides organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability, while helping them identify, assess, and mitigate risk to protect assets, ensure regulatory compliance, and sustain business continuity.",
     tags: ["AI operating model", "Workforce redesign", "Process intelligence", "AI governance"],
   },
   {
