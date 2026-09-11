@@ -325,7 +325,7 @@ const gtmMaterials: GTMRow[] = [
     seq: 14,
     practice: "Operations",
     service: "Operations & Performance Improvement",
-    docUrl: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link",
+    docUrl: "https://docs.google.com/presentation/d/1yxloBs1fEVFWaf6nhN3MXJR5aMBfI0sp35-ALC-l0gc/edit?usp=sharing",
     pdfUrl: "https://drive.google.com/file/d/1y4_Tu_MVGhSq1W4hYgOJP2G5NU3sq77J/view?usp=drive_link",
     battlecardUrl: "https://docs.google.com/presentation/d/1Gm9I5zaX01X1DlTp6J2eB4G3zE4vcGYxvJ8lwbe6-MM/edit",
     sellersSheetUrl: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing",
