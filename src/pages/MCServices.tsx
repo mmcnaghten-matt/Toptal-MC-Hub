@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
@@ -715,6 +716,13 @@ function renderSubRowTree(subRows: SubRow[] | undefined, parentKey: string, dept
 
 export default function MCServices() {
   const navigate = useNavigate();
+  const [expandedHubs, setExpandedHubs] = useState<Set<string>>(new Set());
+  const toggleHub = (service: string) =>
+    setExpandedHubs((prev) => {
+      const next = new Set(prev);
+      next.has(service) ? next.delete(service) : next.add(service);
+      return next;
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -863,6 +871,18 @@ export default function MCServices() {
                           <td className="py-2 pr-4 text-sm">
                             {row.isHub ? (
                               <span className="flex items-center gap-1.5 font-bold" style={{ color: hubColor }}>
+                                {row.subRows?.length ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleHub(row.service)}
+                                    className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border text-xs font-bold leading-none text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    aria-label={expandedHubs.has(row.service) ? `Collapse ${row.service}` : `Expand ${row.service}`}
+                                  >
+                                    {expandedHubs.has(row.service) ? "−" : "+"}
+                                  </button>
+                                ) : (
+                                  <span className="w-4 shrink-0" />
+                                )}
                                 <Network className="w-3.5 h-3.5 shrink-0" />
                                 {row.service}
                               </span>
@@ -888,7 +908,7 @@ export default function MCServices() {
                           </td>
                           <ServiceDataCells row={row} />
                         </tr>,
-                        ...renderSubRowTree(row.subRows, row.service),
+                        ...(expandedHubs.has(row.service) ? renderSubRowTree(row.subRows, row.service) : []),
                       ];
                     }),
                   ];
