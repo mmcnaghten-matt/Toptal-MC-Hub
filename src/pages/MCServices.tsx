@@ -772,7 +772,7 @@ export default function MCServices() {
             Management Consulting Hub Services
           </h2>
           <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Individual consulting services are rarely delivered in isolation from one another. However, there are core "Hub" offerings that align to different leaders and buying centers within the typical client organization. The eight hub offerings below are organized by practice — Strategy, Finance, Operations, and People. Keep in mind that your initial client conversation may not always start at the "Hub" offering but may ultimately lead you there.
+            Toptal's core Management Consulting "Hub" service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization. The eight hub offerings below are organized by practice — Strategy, Finance, Operations, and People.
           </p>
 
           <div className="space-y-8">
