@@ -156,6 +156,7 @@ interface GTMRow {
   exampleMaterials?: { label: string; url: string }[];
   description?: string;
   keyBuyers?: string;
+  note?: string;
   subRows?: SubRow[];
 }
 
@@ -370,6 +371,7 @@ const gtmMaterials: GTMRow[] = [
     service: "Adaptive Organization",
     description: "Evolving human capital, structure, and culture into fluid, skill-based operating models built for digital disruption.",
     keyBuyers: "CHRO, CPO, COO, VP of Talent Mgmt · Human Resources",
+    note: "Revision coming soon",
     subRows: [
       {
         service: "Workforce Transformation",
@@ -402,6 +404,7 @@ const gtmMaterials: GTMRow[] = [
     service: "Leadership & Talent",
     description: "Building the leadership behaviors, talent capabilities, and operating rhythms that sustain change long after transformation ends.",
     keyBuyers: "CEO, CHRO, CPO · Board of Directors · Heads of Leadership Development · Organizational Development Leaders",
+    note: "Revision coming soon",
   },
 ];
 
@@ -887,6 +890,11 @@ export default function MCServices() {
                                 )}
                                 <Network className="w-3.5 h-3.5 shrink-0" />
                                 {row.service}
+                                {row.note && (
+                                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">
+                                    {row.note}
+                                  </span>
+                                )}
                               </span>
                             ) : (
                               <span className="font-bold text-foreground">{row.service}</span>
