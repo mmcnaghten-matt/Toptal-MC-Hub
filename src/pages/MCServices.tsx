@@ -177,7 +177,7 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
     ],
-    description: "Helping to identify and exploit opportunities for expansion, through market penetration, market development, product development, or diversification.",
+    description: "Aligning corporate direction and executing targeted growth — market penetration, new market entry, product development, or diversification.",
     keyBuyers: "CEO/President, CGO/CSO, CMO, CSO/Head of Sales, COO, CFO · Heads of Product Development/Innovation · Heads of BUs/Divisions",
     subRows: [
       {
@@ -212,6 +212,7 @@ const gtmMaterials: GTMRow[] = [
     practice: "Strategy",
     service: "Business Transformation and Risk Advisory",
     docUrl: "https://docs.google.com/presentation/d/1L7DIECcuUXwp76rC2kpDlY9fhrsVLBzT4-4HrA18LvA/edit?usp=sharing",
+    description: "Redesigning the operational core while building proactive governance — pairing transformation with risk mitigation and compliance.",
     keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
     subRows: [
       {
@@ -301,7 +302,7 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
     ],
-    description: "Helping organizations modernize their finance functions through process improvements, technology adoption, and strategic insights.",
+    description: "Transforming finance from a cost center into a proactive, value-creating strategic partner.",
     keyBuyers: "CFOs · Finance Directors · COOs · CIOs · CEOs",
   },
   {
@@ -316,7 +317,7 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Corning M&A Strategy", url: "https://docs.google.com/presentation/d/1HBLq4Mv2yCbFEdCoM4BMgHAQx7YwPK0cxzNZ-ZmidHs/edit" },
     ],
-    description: "Providing strategic advice and support throughout the M&A process — acquisition strategy, target identification, due diligence, and post-merger integration.",
+    description: "Navigating the full deal lifecycle — acquisition strategy, target identification, due diligence, and post-merger integration.",
     keyBuyers: "Corporate: C-Suite & Investment Committee, Corporate Development Team · PE: General Partners, Limited Partners, Portfolio Company Management",
   },
   // Operations
@@ -334,7 +335,7 @@ const gtmMaterials: GTMRow[] = [
     exampleMaterials: [
       { label: "Westcon-Comstor Q2C", url: "https://docs.google.com/presentation/d/11s6nm64OhYbCcMA2ACcM5zHbNGynp0heC0Ve3YEczgs/edit" },
     ],
-    description: "Enhancing organizational performance through process optimization, cost reduction, and operational efficiency.",
+    description: "Maximizing operational efficiency and sustainable EBITDA growth through rewired workflows and AI-enabled automation.",
     keyBuyers: "C-Level Executives (CEOs, COOs, CIOs, CFOs) · Senior Managers (HR, IT, Operations, Marketing) · Board Members · Operational Leaders",
   },
   {
@@ -348,7 +349,7 @@ const gtmMaterials: GTMRow[] = [
     sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
     maturityModelUrl: "https://docs.google.com/document/d/1eKjYH3O-7GL3NGNFGS9NgcaOGtC0Pz6nvuZ8ZOv0ItA/edit",
     maturityDiagnosticUrl: "/diagnostics/supply-chain",
-    description: "Helping organizations optimize their supply chain operations, improve logistics, and enhance overall supply chain performance.",
+    description: "Building resilient, transparent, cost-efficient supply chain and procurement ecosystems through modernized logistics and sourcing.",
     keyBuyers: "CEOs, COOs, CFOs · VPs/Directors of Supply Chain/Logistics/Operations · CIOs/CTOs · Chief Sustainability Officers",
     subRows: [
       {
@@ -366,6 +367,7 @@ const gtmMaterials: GTMRow[] = [
     seq: 17,
     practice: "People",
     service: "Adaptive Organization",
+    description: "Evolving human capital, structure, and culture into fluid, skill-based operating models built for digital disruption.",
     keyBuyers: "CHRO, CPO, COO, VP of Talent Mgmt · Human Resources",
     subRows: [
       {
@@ -396,7 +398,9 @@ const gtmMaterials: GTMRow[] = [
     isHub: true,
     seq: 18,
     practice: "People",
-    service: "Leadership & Culture",
+    service: "Leadership & Talent",
+    description: "Building the leadership behaviors, talent capabilities, and operating rhythms that sustain change long after transformation ends.",
+    keyBuyers: "CEO, CHRO, CPO · Board of Directors · Heads of Leadership Development · Organizational Development Leaders",
   },
 ];
 
