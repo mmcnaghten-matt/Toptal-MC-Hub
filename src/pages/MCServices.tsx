@@ -832,9 +832,11 @@ export default function MCServices() {
             <h2 className="text-xl font-bold text-card-foreground">Go-to-Market Materials</h2>
           </div>
           <p className="mb-1 text-sm text-muted-foreground">
-            Overview decks, battlecards, maturity diagnostic models, and example client materials available per service.
+            Overview decks, first call decks, battlecards, maturity diagnostic models, and example client materials available per service offering.
             <br />
-            [Click on the blue links - Doc, PDF, Diagnostic, or Example Name - to access GTM material]
+            - Click on the blue links - Doc, PDF, Diagnostic, or Example Name - to access content
+            <br />
+            - Click on the "+" sign to access additional related sub-offering content
           </p>
           <p className="mb-4 text-xs text-primary">
             [Note to Talent - Your access to overview decks is restricted to the PDF version. Contact MC leadership for a Google Slide copy as needed]
@@ -875,13 +877,13 @@ export default function MCServices() {
                                   <button
                                     type="button"
                                     onClick={() => toggleHub(row.service)}
-                                    className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-border text-xs font-bold leading-none text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-border text-sm font-bold leading-none text-muted-foreground hover:bg-muted hover:text-foreground"
                                     aria-label={expandedHubs.has(row.service) ? `Collapse ${row.service}` : `Expand ${row.service}`}
                                   >
                                     {expandedHubs.has(row.service) ? "−" : "+"}
                                   </button>
                                 ) : (
-                                  <span className="w-4 shrink-0" />
+                                  <span className="w-5 shrink-0" />
                                 )}
                                 <Network className="w-3.5 h-3.5 shrink-0" />
                                 {row.service}
