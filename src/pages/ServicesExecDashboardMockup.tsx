@@ -47,7 +47,7 @@ export default function ServicesExecDashboardMockup() {
             <div>
               <h3 className="text-lg font-bold text-card-foreground">Future Vision v23.0</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                The long-term target state for services performance reporting.
+                The long-term target state for services performance reporting - includes Pipeline and Performance (revenue) metrics and 7 report tabs.
               </p>
             </div>
             <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
@@ -60,7 +60,7 @@ export default function ServicesExecDashboardMockup() {
             <div>
               <h3 className="text-lg font-bold text-card-foreground">Wave 1 Dashboard v23.0</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                The first-release scope of the dashboard, reflecting what ships initially.
+                The first-release scope of the dashboard, reflecting what ships initially. Includes 4 report tabs - Executive cross-cut - Offering scorecard - Pipeline funnel - Engagement mix - and is restricted to SFDC Pipeline (no revenue metrics in wave 1).
               </p>
             </div>
             <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
