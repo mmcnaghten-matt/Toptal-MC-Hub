@@ -26,6 +26,9 @@ import ClientsIndex from "./pages/clients/ClientsIndex";
 import ClientVertical from "./pages/clients/ClientVertical";
 import ClientDetail from "./pages/clients/ClientDetail";
 import ServicesExecDashboardMockup from "./pages/ServicesExecDashboardMockup";
+import ServicesExecDashboardVision from "./pages/ServicesExecDashboardVision";
+import ServicesExecDashboardWave1 from "./pages/ServicesExecDashboardWave1";
+import ServicesExecDashboardV22Archive from "./pages/ServicesExecDashboardV22Archive";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +67,9 @@ const App = () => (
                 <Route path="/clients/:vertical" element={<ClientVertical />} />
                 <Route path="/clients/:vertical/:clientId" element={<ClientDetail />} />
                 <Route path="/services-exec-dashboard-mockup" element={<ServicesExecDashboardMockup />} />
+                <Route path="/services-exec-dashboard-mockup/vision" element={<ServicesExecDashboardVision />} />
+                <Route path="/services-exec-dashboard-mockup/wave1" element={<ServicesExecDashboardWave1 />} />
+                <Route path="/services-exec-dashboard-mockup-v22-archive" element={<ServicesExecDashboardV22Archive />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
