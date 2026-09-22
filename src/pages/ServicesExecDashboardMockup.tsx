@@ -21,7 +21,7 @@ export default function ServicesExecDashboardMockup() {
               <h1 className="text-lg font-semibold tracking-tight text-primary-foreground">
                 Services Performance Dashboards
               </h1>
-              <p className="text-xs text-primary-foreground/80">Mockup v23.0 · Confidential</p>
+              <p className="text-xs text-primary-foreground/80">Mockup v25.0 · Confidential</p>
             </div>
           </div>
           <ToptalLogo className="h-8" />
@@ -36,7 +36,7 @@ export default function ServicesExecDashboardMockup() {
           Services Performance Reporting Framework
         </h2>
         <p className="mb-10 text-sm leading-relaxed text-muted-foreground">
-          Two versions of the v23.0 dashboard mockup are available — pick the one you want to view.
+          Two versions of the v25.0 dashboard mockup are available — pick the one you want to view.
         </p>
 
         <div className="space-y-4">
@@ -45,7 +45,7 @@ export default function ServicesExecDashboardMockup() {
             className="group flex items-center justify-between rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary"
           >
             <div>
-              <h3 className="text-lg font-bold text-card-foreground">Future Vision v23.0</h3>
+              <h3 className="text-lg font-bold text-card-foreground">Future Vision v25.0</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 The long-term target state for services performance reporting - includes Pipeline and Performance (revenue) metrics and 7 report tabs.
               </p>
@@ -58,7 +58,7 @@ export default function ServicesExecDashboardMockup() {
             className="group flex items-center justify-between rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary"
           >
             <div>
-              <h3 className="text-lg font-bold text-card-foreground">Wave 1 Dashboard v23.0</h3>
+              <h3 className="text-lg font-bold text-card-foreground">Wave 1 Dashboard v25.0</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 The first-release scope of the dashboard, reflecting what ships initially. Includes 4 report tabs - Executive cross-cut - Offering scorecard - Pipeline funnel - Engagement mix - and is restricted to SFDC Pipeline (no revenue metrics in wave 1).
               </p>
