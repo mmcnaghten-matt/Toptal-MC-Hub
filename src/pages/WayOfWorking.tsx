@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-import { ChevronLeft, Layers, Sparkles, ClipboardCheck, ArrowRight, Bot } from "lucide-react";
+import { ChevronLeft, Layers, ClipboardCheck, ArrowRight } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 const phases = [
@@ -80,46 +80,6 @@ const phases = [
     ]
   }
 ];
-
-
-const accelerators = [
-{
-  name: "Toptal MC - Account Trigger Filter",
-  description:
-    "Initial screening tool to identify high-potential client accounts and engagement triggers for MC services.",
-  url: "https://gemini.google.com/gem/1djs5AHeNWklhGFyXZh9lCJpajp-rf-WQ?usp=sharing"
-},
-{
-  name: "Toptal MC - Account Briefing",
-  description:
-  "Maps account challenges/needs to Toptal MC Service Offerings. Enter the Account to generate a briefing.",
-  url: "https://gemini.google.com/gem/1WJ7d_oKkW-g9cDtE_RD20rfmy2G5lRfp?usp=sharing"
-},
-{
-  name: "Toptal MC - Account Market Intelligence",
-  description:
-  "AI-powered competitive intelligence tool — enter a company name to generate a full market research report with SWOT, Porter's Five Forces, and MC opportunity mapping.",
-  url: "/account-market-intel",
-  isInternal: true
-},
-{
-  name: "Toptal MC - Make Draft Engagement Solution Approach",
-  description:
-  "AI-guided tool that asks for inputs and generates a draft engagement solution approach.",
-  url: "https://gemini.google.com/gem/1CnddfrkU5M93vysqWGmTYlz6L9Uy7chD?usp=sharing"
-},
-{
-  name: "Toptal MC - Industry Briefing & MC Service Offerings",
-  description:
-  "Enter an industry or sub-sector and get a detailed briefing with mapped MC service offerings.",
-  url: "https://gemini.google.com/gem/1XLDSmzZ2PZFn0WLWubxmabdpkcJ_crLw?usp=sharing"
-},
-{
-  name: "Toptal MC - Make Toptal Maturity Model for a Topic",
-  description:
-  "Creates a CMMI-type maturity model for any topic input at runtime.",
-  url: "https://gemini.google.com/gem/18FLkFqSaPTvGlwC3egMVHtOF7bruWluA?usp=sharing"
-}];
 
 
 const maturityPillars = [
@@ -272,42 +232,6 @@ export default function WayOfWorking() {
                   </ul>
                 </div>
               </div>
-            )}
-          </div>
-        </section>
-
-        {/* AI Accelerators (slide 14) */}
-        <section className="fade-in rounded-lg border border-border bg-card p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <h2 className="text-xl font-bold text-card-foreground">AI Accelerators</h2>
-          </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Pre-defined GEMs in Google Gemini that facilitate speed and consistency across engagements.
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {accelerators.map((acc) =>
-              acc.isInternal ? (
-                <Link
-                  key={acc.name}
-                  to={acc.url}
-                  className="rounded-md border border-border bg-background p-4 transition-colors hover:bg-primary/5"
-                >
-                  <h4 className="font-medium text-foreground text-sm mb-1 flex items-center gap-1.5"><Bot className="h-4 w-4 text-primary shrink-0" />{acc.name} <ArrowRight className="h-3 w-3 text-primary" /></h4>
-                  <p className="text-xs text-muted-foreground">{acc.description}</p>
-                </Link>
-              ) : (
-                <a
-                  key={acc.name}
-                  href={acc.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md border border-border bg-background p-4 transition-colors hover:bg-primary/5"
-                >
-                  <h4 className="font-medium text-foreground text-sm mb-1 flex items-center gap-1.5"><Bot className="h-4 w-4 text-primary shrink-0" />{acc.name} <ArrowRight className="h-3 w-3 text-primary" /></h4>
-                  <p className="text-xs text-muted-foreground">{acc.description}</p>
-                </a>
-              )
             )}
           </div>
         </section>
