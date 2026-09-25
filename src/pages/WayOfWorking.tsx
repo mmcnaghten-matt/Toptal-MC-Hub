@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-import { ChevronLeft, Layers, ClipboardCheck, ArrowRight } from "lucide-react";
+import { ChevronLeft, Layers, ClipboardCheck, ArrowRight, FileText } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 
 const phases = [
@@ -89,6 +89,17 @@ const maturityPillars = [
 { name: "Operating Model & Organization", desc: "Designing AI-compatible components and processes" },
 { name: "Responsible AI & Governance", desc: "Ensuring ethical, fair accountability" },
 { name: "Transformation & Change Mgmt", desc: "Orchestrating enterprise-wide AI deployment" }];
+
+
+const scopeOfServicesSections = [
+{ name: "Governance & Engagement Management", desc: "Structure, roles, and accountability from kickoff through closeout" },
+{ name: "Communications", desc: "Cadence, channels, and principles for clear, timely client communication" },
+{ name: "Deliverable Standards", desc: "What a Toptal deliverable is, and the quality bar it must meet" },
+{ name: "Change Control", desc: "How scope changes are identified, evaluated, and formally authorized" },
+{ name: "Talent Standards", desc: "How Toptal vets, selects, and manages the consultants on every engagement" },
+{ name: "Engagement Workspace", desc: "The shared source of truth for all engagement materials and decisions" },
+{ name: "Assumptions & Client Responsibilities", desc: "The conditions every engagement is scoped against, and what clients provide" },
+{ name: "Definitions", desc: "Key terms used consistently across the Scope of Services and its annexes" }];
 
 
 interface DeliverableCategory {
@@ -236,6 +247,66 @@ export default function WayOfWorking() {
           </div>
         </section>
 
+        {/* Delivery Standards (slide 16) */}
+        <section className="fade-in rounded-lg border border-border bg-card p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4 text-primary" />
+            <h2 className="text-xl font-bold text-card-foreground">Delivery Standards</h2>
+          </div>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Standard components utilized in delivery to improve quality, visibility, and consistency.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {deliverableStandards.map((cat) =>
+            <div key={cat.phase}>
+                <h4 className="text-xs font-semibold text-foreground mb-2">{cat.phase}</h4>
+                <ul className="space-y-1">
+                  {cat.items.map((item) =>
+                <li key={item} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                      <span className="mt-1 text-primary">☐</span>
+                      {item}
+                    </li>
+                )}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Management Consulting Scope of Services */}
+        <section className="fade-in rounded-lg border border-border bg-card p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" />
+            <h2 className="text-xl font-bold text-card-foreground">Management Consulting Scope of Services</h2>
+          </div>
+          <p className="mb-3 text-sm text-muted-foreground leading-relaxed">
+            Toptal's Management Consulting service line delivers both talent staffing and professional services engagements to organizations navigating complex strategic, operational, and organizational challenges. We bring expert consultants — rigorously vetted, deeply experienced, and ready to work — to problems that require not just capable people, but structured thinking, disciplined delivery, and accountable outcomes.
+          </p>
+          <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
+            This Scope of Services document defines how Toptal Management Consulting operates project or professional services engagements (the standards and practices may also be useful for some talent staffing engagements, but it is aimed at project work). It establishes the standards, practices, and expectations that govern every professional services engagement we deliver — regardless of offering area, industry, or engagement size.
+          </p>
+          <a
+            href="https://docs.google.com/document/d/1YySZGQnIrYfFEggrCPLY_9Lo6i5p_4kBCEGzmOd7KAc/edit?usp=sharing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-4 flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 px-4 py-3 hover:bg-primary/10 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">View the Master Scope of Services document</span>
+            </div>
+            <ArrowRight className="h-4 w-4 text-primary" />
+          </a>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {scopeOfServicesSections.map((s, i) =>
+            <div key={s.name} className="rounded-md border border-border bg-background p-3">
+                <h5 className="text-xs font-semibold text-foreground">Section {i + 1}: {s.name}</h5>
+                <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+              </div>
+            )}
+          </div>
+        </section>
+
         {/* Maturity Models (slide 15) */}
         <section className="fade-in rounded-lg border border-border bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
@@ -281,31 +352,6 @@ export default function WayOfWorking() {
           </Link>
         </section>
 
-        {/* Delivery Standards (slide 16) */}
-        <section className="fade-in rounded-lg border border-border bg-card p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <ClipboardCheck className="h-4 w-4 text-primary" />
-            <h2 className="text-xl font-bold text-card-foreground">Delivery Standards</h2>
-          </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Standard components utilized in delivery to improve quality, visibility, and consistency.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {deliverableStandards.map((cat) =>
-            <div key={cat.phase}>
-                <h4 className="text-xs font-semibold text-foreground mb-2">{cat.phase}</h4>
-                <ul className="space-y-1">
-                  {cat.items.map((item) =>
-                <li key={item} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <span className="mt-1 text-primary">☐</span>
-                      {item}
-                    </li>
-                )}
-                </ul>
-              </div>
-            )}
-          </div>
-        </section>
       </main>
     </div>);
 
