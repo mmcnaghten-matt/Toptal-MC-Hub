@@ -55,7 +55,7 @@ export default function Landing() {
             <h1 className="text-lg font-semibold tracking-tight text-primary-foreground">
               Toptal Management Consulting
             </h1>
-            <p className="text-xs text-primary-foreground/80">Q2 2026 · Confidential</p>
+            <p className="text-xs text-primary-foreground/80">Q4 2026 · Confidential</p>
           </div>
           <div className="flex items-center gap-3">
             <SignOutButton />
