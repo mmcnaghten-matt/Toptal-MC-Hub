@@ -579,72 +579,66 @@ const HUB_OFFERING_COLORS: Record<Practice, { text: string; bg: string }> = {
   People: { text: "#5C6BC0", bg: "#EDE9FE" },
 };
 
-interface HubOffering {
-  practice: Practice;
+interface MCDomain {
   name: string;
-  tagline: string;
-  body: string;
-  tags: string[];
+  buyers: string;
+  description: string;
+  l3s: string[];
+  color: string;
+  bg: string;
 }
 
-const hubOfferings: HubOffering[] = [
+const mcDomains: MCDomain[] = [
   {
-    practice: "Strategy",
-    name: "Strategy & Growth Consulting",
-    tagline: "Growth in a constrained market",
-    body: "(CSO/CMO gateway) — Aligns corporate direction and sustainable growth pathways, partnering with leadership to sharpen competitive positioning and execute targeted growth initiatives — market penetration, new market entry, product development, or diversification.",
-    tags: ["Profitable growth", "Portfolio rationalization", "Pricing power"],
+    name: "Strategy & Transformation",
+    buyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
+    description: "Help executive leadership define enterprise strategy, prioritize transformation investments, design operating models, and coordinate cross-functional value creation.",
+    l3s: ["Corporate Strategy", "Operating Model", "M&A & Divestitures", "Performance Improvement", "Transformation Management", "Change Management", "Program & Portfolio Management"],
+    color: "#2B44D4",
+    bg: "#EEF2FF",
   },
   {
-    practice: "Strategy",
-    name: "Business Transformation and Risk Advisory",
-    tagline: "Operating model for the AI era",
-    body: "(CEO/COO gateway) — Redesigns the operational core while building proactive governance to protect long-term value, guiding leadership through business transformation, digital strategy, and AI deployment paired with risk mitigation, regulatory compliance, and continuity.",
-    tags: ["AI operating model", "Workforce redesign", "Process intelligence", "AI governance"],
+    name: "Finance",
+    buyers: "CFO; Chief Accounting Officer; Controller",
+    description: "Improve how the finance function plans, operates, controls, and supports business decisions, including the business use of technology and AI.",
+    l3s: ["Finance Strategy", "Finance Operating Model", "Finance Processes & Operations", "Financial Planning & Analysis", "Finance Technology", "Finance AI", "Change Management", "Program & Portfolio Management"],
+    color: "#0CA678",
+    bg: "#ECFDF5",
   },
   {
-    practice: "Finance",
-    name: "Finance Transformation & CFO Advisory",
-    tagline: "The CFO's AI agenda",
-    body: "(CFO gateway) — Transforms finance from an administrative cost center into a proactive, value-creating partner, overhauling financial operations, modernizing technology architectures, and building predictive capabilities aligned to business growth.",
-    tags: ["AI ROI", "FP&A modernization", "Finance automation"],
+    name: "Supply Chain & Operations",
+    buyers: "COO; Chief Supply Chain Officer; Chief Procurement Officer",
+    description: "Improve end-to-end supply chain and operational performance across planning, procurement, manufacturing, service operations, and fulfillment.",
+    l3s: ["Supply Chain Strategy", "Supply Chain Planning", "Procurement", "Manufacturing & Operations", "Logistics & Fulfillment", "Supply Chain & Operations Technology", "Supply Chain & Operations AI", "Change Management", "Program & Portfolio Management"],
+    color: "#E86B4A",
+    bg: "#FFF7ED",
   },
   {
-    practice: "Finance",
-    name: "M&A Advisory Services",
-    tagline: "Inorganic growth, de-risked",
-    body: "(Corp Dev / PE gateway) — Navigates complex deal dynamics across the full transaction lifecycle, advising executive teams from acquisition strategy and target identification through due diligence, valuation modeling, and post-merger integration.",
-    tags: ["Deal strategy", "Diligence", "Post-merger integration"],
+    name: "Customer & Growth",
+    buyers: "Chief Revenue Officer; CMO; Chief Customer Officer",
+    description: "Improve commercial performance across growth strategy, sales, marketing, customer experience, and the business use of commercial platforms and AI.",
+    l3s: ["Growth Strategy", "Sales", "Marketing", "Customer Experience", "Customer Service & Success", "Customer & Growth Technology", "Customer & Growth AI", "Change Management", "Program & Portfolio Management"],
+    color: "#D6336C",
+    bg: "#FDF2F8",
   },
   {
-    practice: "Operations",
-    name: "Operations & Performance Improvement",
-    tagline: "Do more with what you have",
-    body: "(C-Level/Ops gateway) — Maximizes operational efficiency and sustainable EBITDA growth, rewiring workflows, eliminating cost inefficiencies, and integrating enabling technologies — including AI and process automation — to elevate enterprise performance.",
-    tags: ["Operational productivity", "Process mining", "AI-assisted ops"],
+    name: "People & Organization",
+    buyers: "CHRO; Chief People Officer",
+    description: "Help organizations align structure, talent, leadership, learning, and the HR function to business priorities and sustained performance.",
+    l3s: ["Organization Strategy", "Organization Design", "Talent & Leadership", "Learning & Capability Development", "HR Operations & Services", "HR Technology", "HR AI", "Change Management", "Program & Portfolio Management"],
+    color: "#5C6BC0",
+    bg: "#EDE9FE",
   },
   {
-    practice: "Operations",
-    name: "Supply Chain and Procurement Consulting",
-    tagline: "Resilience and AI visibility",
-    body: "(COO gateway) — Builds resilient, transparent, cost-efficient supply chain and procurement ecosystems, modernizing logistics, executing strategic sourcing, and optimizing supplier networks to protect continuity and reduce costs.",
-    tags: ["Supply resilience", "Nearshoring", "AI demand sensing"],
-  },
-  {
-    practice: "People",
-    name: "Adaptive Organization",
-    tagline: "Workforce for what's next",
-    body: "(CHRO/CPO gateway) — Evolves human capital, structure, and culture to thrive amid digital disruption, transitioning from rigid hierarchies into fluid, skill-based operating models with modern HR tech, AI reskilling, and structured change management.",
-    tags: ["AI readiness", "Org design", "Role redesign", "Change Management"],
-  },
-  {
-    practice: "People",
-    name: "Leadership & Talent",
-    tagline: "Change that doesn't snap back",
-    body: "(CEO/CHRO gateway) — Builds the leadership behaviors, talent capabilities, and operating rhythms that sustain change long after transformation teams leave, cultivating adaptive leadership and continuous learning frameworks that prevent relapse.",
-    tags: ["Leadership behavior", "Culture design", "Operating rhythms"],
+    name: "Risk & Compliance",
+    buyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
+    description: "Improve enterprise risk management, governance, controls, compliance, and internal audit effectiveness, including risk technology and AI governance.",
+    l3s: ["Enterprise Risk Management", "Third-Party Risk Management", "Operational Risk & Resilience", "Governance & Controls", "Compliance & Regulatory", "Internal Audit", "Risk Technology", "Risk AI", "Change Management", "Program & Portfolio Management"],
+    color: "#9C2B2B",
+    bg: "#FEF2F2",
   },
 ];
+
 
 // Shared data-column cells (Overview Deck, First Call Deck, Battlecard, Sellers
 // Sheet, Maturity Model, Example Materials) — identical markup at every nesting
@@ -788,39 +782,30 @@ export default function MCServices() {
             Management Consulting Hub Services
           </h2>
           <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Toptal's core Management Consulting "Hub" service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization. The eight hub offerings below are organized by practice — Strategy, Finance, Operations, and People.
+            Toptal's core Management Consulting "Hub" service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization. The six hub offerings below span Strategy & Transformation, Finance, Supply Chain & Operations, Customer & Growth, People & Organization, and Risk & Compliance.
           </p>
 
-          <div className="space-y-8">
-            {PRACTICE_ORDER.map((practice) => {
-              const hubs = hubOfferings.filter((h) => h.practice === practice);
-              const colors = HUB_OFFERING_COLORS[practice];
-              return (
-                <div key={practice}>
-                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-foreground">{practice}</p>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {hubs.map((hub) => (
-                      <div key={hub.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
-                        <p className="mb-1 text-xs font-semibold" style={{ color: colors.text }}>{hub.tagline}</p>
-                        <h3 className="mb-2 text-base font-bold" style={{ color: colors.text }}>{hub.name}</h3>
-                        <p className="mb-3 flex-1 text-sm leading-relaxed text-muted-foreground">{hub.body}</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {hub.tags.map((t) => (
-                            <span
-                              key={t}
-                              className="inline-block rounded px-2 py-0.5 text-xs font-medium"
-                              style={{ backgroundColor: colors.bg, color: colors.text }}
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {mcDomains.map((domain) => (
+              <div key={domain.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
+                <h3 className="mb-1 text-base font-bold" style={{ color: domain.color }}>{domain.name}</h3>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  <span className="font-semibold">Key buyers: </span>{domain.buyers}
+                </p>
+                <p className="mb-3 flex-1 text-sm leading-relaxed text-muted-foreground">{domain.description}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {domain.l3s.map((t) => (
+                    <span
+                      key={t}
+                      className="inline-block rounded px-2 py-0.5 text-xs font-medium"
+                      style={{ backgroundColor: domain.bg, color: domain.color }}
+                    >
+                      {t}
+                    </span>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </section>
 
