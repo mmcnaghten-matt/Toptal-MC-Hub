@@ -126,7 +126,7 @@ const servicePortfolio: ServiceCategory[] = [
   },
 ];
 
-type Practice = "Strategy" | "Finance" | "Operations" | "People";
+type Practice = "Strategy & Transformation" | "Finance" | "Supply Chain & Operations" | "Customer & Growth" | "People & Organization" | "Risk & Compliance";
 
 interface SubRow {
   service: string;
@@ -160,65 +160,46 @@ interface GTMRow {
   subRows?: SubRow[];
 }
 
-const PRACTICE_ORDER: Practice[] = ["Strategy", "Finance", "Operations", "People"];
+const PRACTICE_ORDER: Practice[] = ["Strategy & Transformation", "Finance", "Supply Chain & Operations", "Customer & Growth", "People & Organization", "Risk & Compliance"];
 
 const gtmMaterials: GTMRow[] = [
-  // Strategy
+  // Strategy & Transformation
   {
     isHub: true,
     seq: 1,
-    practice: "Strategy",
-    service: "Strategy & Growth Consulting",
-    docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/1Ilu2WNeBBXj-Y_yEDaipkIkV0cpXUbzh/view?usp=sharing",
-    battlecardUrl: "https://docs.google.com/presentation/d/1KQ4jH3CHvMQJ4xYRyBbqsMOBMHaUmznl_20J003HyZc/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1N8J9ejIBZNJWDf8eYl8vwl1QZB2vLCcI2xCuClEkOsQ/edit",
-    maturityDiagnosticUrl: "/diagnostics/growth-strategy",
-    firstCallDeckUrl: "https://docs.google.com/presentation/d/1SUHNZn93BQNkLlyXAZZUBWOuvaPK5kDy1g-pPJ3mI0Y/edit?usp=sharing",
-    exampleMaterials: [
-      { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
-    ],
-    description: "Aligning corporate direction and executing targeted growth — market penetration, new market entry, product development, or diversification.",
-    keyBuyers: "CEO/President, CGO/CSO, CMO, CSO/Head of Sales, COO, CFO · Heads of Product Development/Innovation · Heads of BUs/Divisions",
+    practice: "Strategy & Transformation",
+    service: "Strategy & Transformation",
+    keyBuyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
     subRows: [
+      { service: "Corporate Strategy" },
+      { service: "Operating Model" },
       {
-        service: "Go-to-Market",
-        docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1BZFtld0jo68AGSexX8OyEWMgVh-6YrnHwAnrxwFt7LQ/edit?usp=sharing",
+        service: "M&A & Divestitures",
+        docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link",
+        pdfUrl: "https://drive.google.com/file/d/1NQ_tVI2lOSyTEWZHrE6VBnTWRo7RVGL_/view?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/1aXcpZ99MVB45enGGOE4MXXYCTbWfBs_AatmGaoc5aRk/edit",
+        maturityModelUrl: "https://docs.google.com/document/d/1XiHzrdbxPXGek7C4jzfrS753wSyQkdFvA3wTdK_XKJs/edit",
         exampleMaterials: [
-          { label: "Oman Airports Loyalty Pgm", url: "https://docs.google.com/presentation/d/1X8w3PGoG7wk2aQwAGNYgAZobaOEvktDSx_WIys0KrfQ/edit" },
+          { label: "Corning M&A Strategy", url: "https://docs.google.com/presentation/d/1HBLq4Mv2yCbFEdCoM4BMgHAQx7YwPK0cxzNZ-ZmidHs/edit" },
         ],
-        description: "Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy.",
+        description: "Navigating the full deal lifecycle — acquisition strategy, target identification, due diligence, and post-merger integration.",
       },
       {
-        service: "Product Strategy",
-        docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/19AUSpdMRueIZR70q64dCo6U3IKKbkPHVod6D4t_bIbw/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1Eog-BhkRgRion8wH4jtoFq0TY4XB0LzkYpAu-tBU0_k/edit",
-        description: "Embeds strategic rigor into the product development life cycle to minimize risk and maximize successful market entry. Helps businesses define (or revise) their product vision and roadmap to ensure successful product development, launch, and maintenance.",
+        service: "Performance Improvement",
+        docUrl: "https://docs.google.com/presentation/d/1yxloBs1fEVFWaf6nhN3MXJR5aMBfI0sp35-ALC-l0gc/edit?usp=sharing",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1fhMvdjVSin6DBE1ZRfhiRSY5XOevKbmv68fN7t_o2Xc/edit?usp=sharing",
+        pdfUrl: "https://drive.google.com/file/d/1y4_Tu_MVGhSq1W4hYgOJP2G5NU3sq77J/view?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/1Gm9I5zaX01X1DlTp6J2eB4G3zE4vcGYxvJ8lwbe6-MM/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1bQIwVkhYrgvTK-S_jDKZbOCtnjUPsltD6Kndvx92h4A/edit",
+        maturityDiagnosticUrl: "/diagnostics/performance-improvement",
+        exampleMaterials: [
+          { label: "Westcon-Comstor Q2C", url: "https://docs.google.com/presentation/d/11s6nm64OhYbCcMA2ACcM5zHbNGynp0heC0Ve3YEczgs/edit" },
+        ],
+        description: "Maximizing operational efficiency and sustainable EBITDA growth through rewired workflows and AI-enabled automation.",
       },
       {
-        service: "Customer Experience",
-        docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link",
-        battlecardUrl: "https://docs.google.com/presentation/d/1318piklJqw05nvPrGhIKWF31hZvzGZMS1VPSS9Q_wKE/edit",
-        maturityModelUrl: "https://docs.google.com/document/d/1fXDAZA5Wh0iPQksDPdtLe07SXSbz5khvvU32Wk45axI/edit",
-        description: "Improving customer interactions and satisfaction across all touchpoints to enhance brand loyalty and drive business growth.",
-      },
-    ],
-  },
-  {
-    isHub: true,
-    seq: 2,
-    practice: "Strategy",
-    service: "Business Transformation and Risk Advisory",
-    docUrl: "https://docs.google.com/presentation/d/1L7DIECcuUXwp76rC2kpDlY9fhrsVLBzT4-4HrA18LvA/edit?usp=sharing",
-    description: "Redesigning the operational core while building proactive governance — pairing transformation with risk mitigation and compliance.",
-    keyBuyers: "CEO, COO, CFO · Business Unit Leaders · Chief Transformation Officers · CIO, CDO",
-    subRows: [
-      {
-        service: "Business Transformation",
+        service: "Transformation Management",
         docUrl: "https://docs.google.com/presentation/d/1L7DIECcuUXwp76rC2kpDlY9fhrsVLBzT4-4HrA18LvA/edit?usp=sharing",
         pdfUrl: "https://drive.google.com/file/d/1R-ZpyubSfT3l5ipbbhFkv-dWDClE7Ju8/view?usp=drive_link",
         battlecardUrl: "https://docs.google.com/presentation/d/1lOGfxA4iMazV9Kfn1tPJH2Q0M4GWJgRpUVBv-p7xI1M/edit",
@@ -229,42 +210,233 @@ const gtmMaterials: GTMRow[] = [
           { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
         ],
         description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
+      },
+      { service: "Change Management" },
+      { service: "Program & Portfolio Management" },
+      {
+        service: "Enterprise AI",
+        docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
+        maturityDiagnosticUrl: "/diagnostics/ai-maturity",
+        exampleMaterials: [
+          { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
+          { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
+        ],
+        description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
         subRows: [
           {
-            service: "AI Consulting",
-            docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
-            battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
-            sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
-            maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
-            maturityDiagnosticUrl: "/diagnostics/ai-maturity",
+            service: "AI Core - Build AI Capability",
+            description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
             exampleMaterials: [
-              { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
-              { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
+              { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
             ],
-            description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
-            subRows: [
-              {
-                service: "AI Core - Build AI Capability",
-                description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
-                firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
-                exampleMaterials: [
-                  { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
-                ],
-              },
-              {
-                service: "AI Value Realization",
-                description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
-                firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
-              },
-            ],
+          },
+          {
+            service: "AI Value Realization",
+            description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
           },
         ],
       },
       {
-        service: "Risk & Compliance Advisory",
+        service: "Enterprise Digital & Technology",
+        docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
+        description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
+      },
+    ],
+  },
+  // Finance
+  {
+    isHub: true,
+    seq: 2,
+    practice: "Finance",
+    service: "Finance",
+    keyBuyers: "CFO; Chief Accounting Officer; Controller",
+    subRows: [
+      {
+        service: "Finance Strategy",
+        docUrl: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1J6iCOBdQUkPiZLMdrYvSRym4spqpXAijxrkFsG6Jr5I/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1nqdEB423iDUd3JtPWqTtGZHh-cCia6mm8diZa_14XdY/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
+        maturityDiagnosticUrl: "/diagnostics/finance-transformation",
+        exampleMaterials: [
+          { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
+        ],
+        description: "Transforming finance from a cost center into a proactive, value-creating strategic partner.",
+      },
+      { service: "Finance Operating Model" },
+      { service: "Finance Processes & Operations" },
+      { service: "Financial Planning & Analysis" },
+      { service: "Finance Technology" },
+      { service: "Finance AI" },
+      { service: "Change Management" },
+      { service: "Program & Portfolio Management" },
+    ],
+  },
+  // Supply Chain & Operations
+  {
+    isHub: true,
+    seq: 3,
+    practice: "Supply Chain & Operations",
+    service: "Supply Chain & Operations",
+    keyBuyers: "COO; Chief Supply Chain Officer; Chief Procurement Officer",
+    subRows: [
+      {
+        service: "Supply Chain Strategy",
+        docUrl: "https://docs.google.com/presentation/d/1dn-i3M0XlWLs9t0F3PxIJeaNPIHBV5bluSgaasbaBFY/edit?usp=sharing",
+        pdfUrl: "https://drive.google.com/file/d/1lceoWsWXmrhx_yLjDQTUPnCVcK5DNHdf/view?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/1aIPsWUe1o6CHR-YszRpiwyACLLSw9qzZFCg0ZO7L72Q/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1eKjYH3O-7GL3NGNFGS9NgcaOGtC0Pz6nvuZ8ZOv0ItA/edit",
+        maturityDiagnosticUrl: "/diagnostics/supply-chain",
+        description: "Building resilient, transparent, cost-efficient supply chain and procurement ecosystems through modernized logistics and sourcing.",
+      },
+      {
+        service: "Supply Chain Planning",
+        docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1M-v3lAGlMFJlW75tHKN-caTJdexpIKxZSy8q_NoR_Jk/edit",
+        maturityModelUrl: "https://docs.google.com/document/d/1UKmZO7LoyNZJQv2yMRlrfZ4voWIR-Qb2koDEnsou2l0/edit",
+        description: "Providing strategies and solutions to optimize inventory levels, reduce carrying costs, and improve inventory accuracy.",
+      },
+      { service: "Procurement" },
+      { service: "Manufacturing & Operations" },
+      { service: "Logistics & Fulfillment" },
+      { service: "Supply Chain & Operations Technology" },
+      { service: "Supply Chain & Operations AI" },
+      { service: "Change Management" },
+      { service: "Program & Portfolio Management" },
+    ],
+  },
+  // Customer & Growth
+  {
+    isHub: true,
+    seq: 4,
+    practice: "Customer & Growth",
+    service: "Customer & Growth",
+    keyBuyers: "Chief Revenue Officer; CMO; Chief Customer Officer",
+    subRows: [
+      {
+        service: "Growth Strategy",
+        docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
+        pdfUrl: "https://drive.google.com/file/d/1Ilu2WNeBBXj-Y_yEDaipkIkV0cpXUbzh/view?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1KQ4jH3CHvMQJ4xYRyBbqsMOBMHaUmznl_20J003HyZc/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1N8J9ejIBZNJWDf8eYl8vwl1QZB2vLCcI2xCuClEkOsQ/edit",
+        maturityDiagnosticUrl: "/diagnostics/growth-strategy",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1SUHNZn93BQNkLlyXAZZUBWOuvaPK5kDy1g-pPJ3mI0Y/edit?usp=sharing",
+        exampleMaterials: [
+          { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
+        ],
+        description: "Aligning corporate direction and executing targeted growth — market penetration, new market entry, product development, or diversification.",
+        subRows: [
+          {
+            service: "Go-to-Market",
+            docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/document/d/1BZFtld0jo68AGSexX8OyEWMgVh-6YrnHwAnrxwFt7LQ/edit?usp=sharing",
+            exampleMaterials: [
+              { label: "Oman Airports Loyalty Pgm", url: "https://docs.google.com/presentation/d/1X8w3PGoG7wk2aQwAGNYgAZobaOEvktDSx_WIys0KrfQ/edit" },
+            ],
+            description: "Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy.",
+          },
+          {
+            service: "Product Strategy",
+            docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
+            battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
+            sellersSheetUrl: "https://docs.google.com/document/d/19AUSpdMRueIZR70q64dCo6U3IKKbkPHVod6D4t_bIbw/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/document/d/1Eog-BhkRgRion8wH4jtoFq0TY4XB0LzkYpAu-tBU0_k/edit",
+            description: "Embeds strategic rigor into the product development life cycle to minimize risk and maximize successful market entry. Helps businesses define (or revise) their product vision and roadmap to ensure successful product development, launch, and maintenance.",
+          },
+        ],
+      },
+      { service: "Sales" },
+      { service: "Marketing" },
+      {
+        service: "Customer Experience",
+        docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/1318piklJqw05nvPrGhIKWF31hZvzGZMS1VPSS9Q_wKE/edit",
+        maturityModelUrl: "https://docs.google.com/document/d/1fXDAZA5Wh0iPQksDPdtLe07SXSbz5khvvU32Wk45axI/edit",
+        description: "Improving customer interactions and satisfaction across all touchpoints to enhance brand loyalty and drive business growth.",
+      },
+      { service: "Customer Service & Success" },
+      { service: "Customer & Growth Technology" },
+      { service: "Customer & Growth AI" },
+      { service: "Change Management" },
+      { service: "Program & Portfolio Management" },
+    ],
+  },
+  // People & Organization
+  {
+    isHub: true,
+    seq: 5,
+    practice: "People & Organization",
+    service: "People & Organization",
+    keyBuyers: "CHRO; Chief People Officer",
+    note: "Revision coming soon",
+    subRows: [
+      {
+        service: "Organization Strategy",
+        docUrl: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1Kvou1MHJWg5lj7HE2_Qy75m4b2IPMtBe99EeOwjPhQ0/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1lIi3-yMadUeoyRvz1oLKwdm5UABWkjedOqSyzTgMN7k/edit",
+        maturityDiagnosticUrl: "/diagnostics/workforce-transformation",
+        exampleMaterials: [
+          { label: "Owens Corning Culture", url: "https://docs.google.com/presentation/d/1guXlLNwMI1KfyJiFQBshjb6xF2pqkDMvWI4Osl9nUUU/edit" },
+        ],
+        description: "Evolves talent strategy, organizational structure, and culture to meet future business needs.",
+      },
+      { service: "Organization Design" },
+      {
+        service: "Talent & Leadership",
+        description: "Building the leadership behaviors, talent capabilities, and operating rhythms that sustain change long after transformation ends.",
+      },
+      { service: "Learning & Capability Development" },
+      { service: "HR Operations & Services" },
+      { service: "HR Technology" },
+      { service: "HR AI" },
+      {
+        service: "Change Management",
+        docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1FngvHXpfZN8KrdgkssvFvnLt4XjgHKR1kWTRx8WVNwA/edit?usp=drive_link",
+        battlecardUrl: "https://docs.google.com/presentation/d/12gpn5JP9DiR1GVuNPOQiAM9bBWqhHm4bfY9OPo8ZmLQ/edit",
+        exampleMaterials: [
+          { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
+        ],
+        description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
+      },
+      { service: "Program & Portfolio Management" },
+    ],
+  },
+  // Risk & Compliance
+  {
+    isHub: true,
+    seq: 6,
+    practice: "Risk & Compliance",
+    service: "Risk & Compliance",
+    keyBuyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
+    subRows: [
+      { service: "Enterprise Risk Management" },
+      { service: "Third-Party Risk Management" },
+      {
+        service: "Operational Risk & Resilience",
         docUrl: "https://docs.google.com/presentation/d/1cafzmkz671k9stPLWUZSmuL34SRm1MsKErE0t4tBieg/edit?usp=sharing",
         battlecardUrl: "https://docs.google.com/presentation/d/1caiz6eH2ZaHU5I75fZGAjD4PWr-I115tudm5OthHFhU/edit",
         description: "Helping organizations identify, assess, and mitigate risks to comply with regulations, protect assets, enhance reputation, ensure business continuity, and drive efficiency.",
+      },
+      { service: "Governance & Controls" },
+      { service: "Compliance & Regulatory" },
+      { service: "Internal Audit" },
+      { service: "Risk Technology" },
+      {
+        service: "Risk AI",
         subRows: [
           {
             service: "Responsible AI",
@@ -279,133 +451,9 @@ const gtmMaterials: GTMRow[] = [
           },
         ],
       },
-      {
-        service: "Digital Strategy",
-        docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
-        description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
-      },
+      { service: "Change Management" },
+      { service: "Program & Portfolio Management" },
     ],
-  },
-  // Finance
-  {
-    isHub: true,
-    seq: 12,
-    practice: "Finance",
-    service: "Finance Transformation & CFO Advisory",
-    docUrl: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link",
-    firstCallDeckUrl: "https://docs.google.com/presentation/d/1J6iCOBdQUkPiZLMdrYvSRym4spqpXAijxrkFsG6Jr5I/edit?usp=sharing",
-    battlecardUrl: "https://docs.google.com/presentation/d/1nqdEB423iDUd3JtPWqTtGZHh-cCia6mm8diZa_14XdY/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
-    maturityDiagnosticUrl: "/diagnostics/finance-transformation",
-    exampleMaterials: [
-      { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
-    ],
-    description: "Transforming finance from a cost center into a proactive, value-creating strategic partner.",
-    keyBuyers: "CFOs · Finance Directors · COOs · CIOs · CEOs",
-  },
-  {
-    isHub: true,
-    seq: 13,
-    practice: "Finance",
-    service: "M&A Advisory Services",
-    docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link",
-    pdfUrl: "https://drive.google.com/file/d/1NQ_tVI2lOSyTEWZHrE6VBnTWRo7RVGL_/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1aXcpZ99MVB45enGGOE4MXXYCTbWfBs_AatmGaoc5aRk/edit",
-    maturityModelUrl: "https://docs.google.com/document/d/1XiHzrdbxPXGek7C4jzfrS753wSyQkdFvA3wTdK_XKJs/edit",
-    exampleMaterials: [
-      { label: "Corning M&A Strategy", url: "https://docs.google.com/presentation/d/1HBLq4Mv2yCbFEdCoM4BMgHAQx7YwPK0cxzNZ-ZmidHs/edit" },
-    ],
-    description: "Navigating the full deal lifecycle — acquisition strategy, target identification, due diligence, and post-merger integration.",
-    keyBuyers: "Corporate: C-Suite & Investment Committee, Corporate Development Team · PE: General Partners, Limited Partners, Portfolio Company Management",
-  },
-  // Operations
-  {
-    isHub: true,
-    seq: 14,
-    practice: "Operations",
-    service: "Operations & Performance Improvement",
-    docUrl: "https://docs.google.com/presentation/d/1yxloBs1fEVFWaf6nhN3MXJR5aMBfI0sp35-ALC-l0gc/edit?usp=sharing",
-    firstCallDeckUrl: "https://docs.google.com/presentation/d/1fhMvdjVSin6DBE1ZRfhiRSY5XOevKbmv68fN7t_o2Xc/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/1y4_Tu_MVGhSq1W4hYgOJP2G5NU3sq77J/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1Gm9I5zaX01X1DlTp6J2eB4G3zE4vcGYxvJ8lwbe6-MM/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1bQIwVkhYrgvTK-S_jDKZbOCtnjUPsltD6Kndvx92h4A/edit",
-    maturityDiagnosticUrl: "/diagnostics/performance-improvement",
-    exampleMaterials: [
-      { label: "Westcon-Comstor Q2C", url: "https://docs.google.com/presentation/d/11s6nm64OhYbCcMA2ACcM5zHbNGynp0heC0Ve3YEczgs/edit" },
-    ],
-    description: "Maximizing operational efficiency and sustainable EBITDA growth through rewired workflows and AI-enabled automation.",
-    keyBuyers: "C-Level Executives (CEOs, COOs, CIOs, CFOs) · Senior Managers (HR, IT, Operations, Marketing) · Board Members · Operational Leaders",
-  },
-  {
-    isHub: true,
-    seq: 15,
-    practice: "Operations",
-    service: "Supply Chain and Procurement Consulting",
-    docUrl: "https://docs.google.com/presentation/d/1dn-i3M0XlWLs9t0F3PxIJeaNPIHBV5bluSgaasbaBFY/edit?usp=sharing",
-    pdfUrl: "https://drive.google.com/file/d/1lceoWsWXmrhx_yLjDQTUPnCVcK5DNHdf/view?usp=drive_link",
-    battlecardUrl: "https://docs.google.com/presentation/d/1aIPsWUe1o6CHR-YszRpiwyACLLSw9qzZFCg0ZO7L72Q/edit",
-    sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
-    maturityModelUrl: "https://docs.google.com/document/d/1eKjYH3O-7GL3NGNFGS9NgcaOGtC0Pz6nvuZ8ZOv0ItA/edit",
-    maturityDiagnosticUrl: "/diagnostics/supply-chain",
-    description: "Building resilient, transparent, cost-efficient supply chain and procurement ecosystems through modernized logistics and sourcing.",
-    keyBuyers: "CEOs, COOs, CFOs · VPs/Directors of Supply Chain/Logistics/Operations · CIOs/CTOs · Chief Sustainability Officers",
-    subRows: [
-      {
-        service: "Inventory Management",
-        docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/1M-v3lAGlMFJlW75tHKN-caTJdexpIKxZSy8q_NoR_Jk/edit",
-        maturityModelUrl: "https://docs.google.com/document/d/1UKmZO7LoyNZJQv2yMRlrfZ4voWIR-Qb2koDEnsou2l0/edit",
-        description: "Providing strategies and solutions to optimize inventory levels, reduce carrying costs, and improve inventory accuracy.",
-      },
-    ],
-  },
-  // People
-  {
-    isHub: true,
-    seq: 17,
-    practice: "People",
-    service: "Adaptive Organization",
-    description: "Evolving human capital, structure, and culture into fluid, skill-based operating models built for digital disruption.",
-    keyBuyers: "CHRO, CPO, COO, VP of Talent Mgmt · Human Resources",
-    note: "Revision coming soon",
-    subRows: [
-      {
-        service: "Workforce Transformation",
-        docUrl: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/1Kvou1MHJWg5lj7HE2_Qy75m4b2IPMtBe99EeOwjPhQ0/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1lIi3-yMadUeoyRvz1oLKwdm5UABWkjedOqSyzTgMN7k/edit",
-        maturityDiagnosticUrl: "/diagnostics/workforce-transformation",
-        exampleMaterials: [
-          { label: "Owens Corning Culture", url: "https://docs.google.com/presentation/d/1guXlLNwMI1KfyJiFQBshjb6xF2pqkDMvWI4Osl9nUUU/edit" },
-        ],
-        description: "Evolves talent strategy, organizational structure, and culture to meet future business needs.",
-      },
-      {
-        service: "Change Management",
-        docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
-        firstCallDeckUrl: "https://docs.google.com/presentation/d/1FngvHXpfZN8KrdgkssvFvnLt4XjgHKR1kWTRx8WVNwA/edit?usp=drive_link",
-        battlecardUrl: "https://docs.google.com/presentation/d/12gpn5JP9DiR1GVuNPOQiAM9bBWqhHm4bfY9OPo8ZmLQ/edit",
-        exampleMaterials: [
-          { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
-        ],
-        description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
-      },
-    ],
-  },
-  {
-    isHub: true,
-    seq: 18,
-    practice: "People",
-    service: "Leadership & Talent",
-    description: "Building the leadership behaviors, talent capabilities, and operating rhythms that sustain change long after transformation ends.",
-    keyBuyers: "CEO, CHRO, CPO · Board of Directors · Heads of Leadership Development · Organizational Development Leaders",
-    note: "Revision coming soon",
   },
 ];
 
@@ -573,10 +621,12 @@ const pillarColors: Record<string, string> = {
 // Same brand colors used for these hubs in ConstellationDiagram and MCPlan's Hub
 // Offering cards.
 const HUB_OFFERING_COLORS: Record<Practice, { text: string; bg: string }> = {
-  Strategy: { text: "#2B44D4", bg: "#EEF2FF" },
+  "Strategy & Transformation": { text: "#2B44D4", bg: "#EEF2FF" },
   Finance: { text: "#0CA678", bg: "#ECFDF5" },
-  Operations: { text: "#E86B4A", bg: "#FFF7ED" },
-  People: { text: "#5C6BC0", bg: "#EDE9FE" },
+  "Supply Chain & Operations": { text: "#E86B4A", bg: "#FFF7ED" },
+  "Customer & Growth": { text: "#D6336C", bg: "#FDF2F8" },
+  "People & Organization": { text: "#5C6BC0", bg: "#EDE9FE" },
+  "Risk & Compliance": { text: "#9C2B2B", bg: "#FEF2F2" },
 };
 
 interface MCDomain {
