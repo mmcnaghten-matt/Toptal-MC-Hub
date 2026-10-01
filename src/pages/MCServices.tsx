@@ -4,14 +4,6 @@ import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ServiceFinder from "@/components/ServiceFinder";
 
-const definition = {
-  title: "Management Consulting",
-  description:
-    "Management Consulting provides organizations with expert advice to solve complex business challenges, improve performance, and drive strategic growth. It often involves diagnosing problems, devising actionable solutions, and implementing strategies to enhance operational efficiency and achieve long-term success.",
-  extended:
-    "Moreover, management consulting services can operate as an external extension of the client's team, providing ongoing support and specialized expertise.",
-};
-
 interface ServiceCategory {
   pillar: string;
   groups: { name: string; services: string[] }[];
@@ -799,8 +791,7 @@ export default function MCServices() {
         {/* Section nav */}
         <nav className="flex gap-2 flex-wrap border-b border-border pb-4">
           {[
-            { label: "Introduction", href: "#introduction" },
-            { label: "Service Offerings", href: "#services-web" },
+            { label: "About Management Consulting", href: "#about-mc" },
             { label: "MC Service Offering Finder", href: "#hub-finder" },
             { label: "Go-to-Market Materials", href: "#gtm-materials" },
             { label: "Sales Motion Documents", href: "#sales-motion" },
@@ -815,24 +806,14 @@ export default function MCServices() {
           ))}
         </nav>
 
-        {/* Introduction */}
-        <section id="introduction" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
-          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">Introduction</p>
-          <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">{definition.title}</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground mb-3">{definition.description}</p>
-          <p className="text-sm leading-relaxed text-muted-foreground">{definition.extended}</p>
-        </section>
-
-        {/* Service Offerings */}
-        <section id="services-web" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
-          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Service Offerings
+        {/* About Management Consulting */}
+        <section id="about-mc" className="fade-in rounded-lg border border-border bg-card p-6 scroll-mt-20">
+          <h2 className="mb-4 text-2xl font-bold text-card-foreground tracking-tight">About Management Consulting</h2>
+          <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+            Management Consulting provides organizations with expert advice to solve complex business challenges, improve performance, and drive strategic growth. It often involves diagnosing problems, devising actionable solutions, and implementing strategies to enhance operational efficiency and achieve long-term success.
           </p>
-          <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
-            Management Consulting Practices and Services
-          </h2>
           <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Toptal's core Management Consulting Practice areas and service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization.
+            <span className="font-semibold">Practices and Service Offerings: </span>Toptal's core Management Consulting Practice areas and service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
