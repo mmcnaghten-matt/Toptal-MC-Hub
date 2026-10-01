@@ -829,10 +829,10 @@ export default function MCServices() {
             Service Offerings
           </p>
           <h2 className="mb-3 text-2xl font-bold text-card-foreground tracking-tight">
-            Management Consulting Hub Services
+            Management Consulting Practices and Services
           </h2>
           <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Toptal's core Management Consulting "Hub" service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization. The six hub offerings below span Strategy & Transformation, Finance, Supply Chain & Operations, Customer & Growth, People & Organization, and Risk & Compliance.
+            Toptal's core Management Consulting Practice areas and service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
