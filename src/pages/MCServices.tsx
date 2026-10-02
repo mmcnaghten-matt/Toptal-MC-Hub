@@ -351,8 +351,6 @@ const gtmMaterials: GTMRow[] = [
           },
         ],
       },
-      { service: "Sales" },
-      { service: "Marketing" },
       {
         service: "Customer Experience",
         docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link",
@@ -662,7 +660,7 @@ const mcDomains: MCDomain[] = [
     name: "Customer & Growth",
     buyers: "Chief Revenue Officer; CMO; Chief Customer Officer",
     description: "Improve commercial performance across growth strategy, sales, marketing, customer experience, and the business use of commercial platforms and AI.",
-    l3s: ["Growth Strategy", "Sales", "Marketing", "Customer Experience", "Customer Service & Success", "Customer & Growth Technology", "Customer & Growth AI", "Change Management", "Program & Portfolio Management"],
+    l3s: ["Growth Strategy", "Customer Experience", "Customer Service & Success", "Customer & Growth Technology", "Customer & Growth AI", "Change Management", "Program & Portfolio Management"],
     color: "#D6336C",
     bg: "#FDF2F8",
   },
