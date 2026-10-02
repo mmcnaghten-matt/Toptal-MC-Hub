@@ -1,6 +1,5 @@
 import { Need } from "@/data/industryData";
-import { battlecardLinks } from "@/data/battlecardLinks";
-import { ChevronLeft, Radio, Briefcase, MessageSquareText, ExternalLink } from "lucide-react";
+import { ChevronLeft, Radio, Briefcase, MessageSquareText } from "lucide-react";
 
 interface Props {
   need: Need;
@@ -60,28 +59,14 @@ export function NeedDetail({ need, onBack }: Props) {
             Consulting services that address this need
           </p>
           <div className="space-y-2">
-            {need.mcOffers.map((offer) => {
-              const url = battlecardLinks[offer];
-              return url ? (
-                <a
-                  key={offer}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
-                >
-                  {offer}
-                  <ExternalLink className="h-3.5 w-3.5 shrink-0 ml-2 opacity-60" />
-                </a>
-              ) : (
-                <div
-                  key={offer}
-                  className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary"
-                >
-                  {offer}
-                </div>
-              );
-            })}
+            {need.mcOffers.map((offer) => (
+              <div
+                key={offer}
+                className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary"
+              >
+                {offer}
+              </div>
+            ))}
           </div>
         </section>
 

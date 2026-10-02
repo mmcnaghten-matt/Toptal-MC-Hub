@@ -1,6 +1,5 @@
 import { SubIndustry, Need } from "@/data/industryData";
-import { battlecardLinks } from "@/data/battlecardLinks";
-import { AlertTriangle, Rocket, ArrowRight, Target, ExternalLink } from "lucide-react";
+import { AlertTriangle, Rocket, ArrowRight, Target } from "lucide-react";
 
 interface Props {
   subIndustry: SubIndustry & { updatedAt?: string };
@@ -100,29 +99,14 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                 {need.name}
               </h4>
               <div className="flex flex-wrap gap-1">
-                {need.mcOffers.slice(0, 2).map((offer) => {
-                  const url = battlecardLinks[offer];
-                  return url ? (
-                    <a
-                      key={offer}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 rounded-full bg-primary/8 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/15 transition-colors"
-                    >
-                      {offer}
-                      <ExternalLink className="h-2.5 w-2.5 opacity-60" />
-                    </a>
-                  ) : (
-                    <span
-                      key={offer}
-                      className="rounded-full bg-primary/8 px-2.5 py-0.5 text-xs font-medium text-primary"
-                    >
-                      {offer}
-                    </span>
-                  );
-                })}
+                {need.mcOffers.slice(0, 2).map((offer) => (
+                  <span
+                    key={offer}
+                    className="rounded-full bg-primary/8 px-2.5 py-0.5 text-xs font-medium text-primary"
+                  >
+                    {offer}
+                  </span>
+                ))}
                 {need.mcOffers.length > 2 && (
                   <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">
                     +{need.mcOffers.length - 2}
