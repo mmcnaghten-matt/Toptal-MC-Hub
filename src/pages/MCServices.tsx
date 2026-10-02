@@ -163,8 +163,8 @@ const gtmMaterials: GTMRow[] = [
     service: "Strategy & Transformation",
     keyBuyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
     subRows: [
-      { service: "Corporate Strategy" },
-      { service: "Operating Model" },
+      { service: "Corporate Strategy", description: "Enterprise-level strategy that defines where and how the company competes, including strategic planning, business portfolio choices, market entry, and enterprise growth strategy." },
+      { service: "Operating Model", description: "Design of the enterprise target operating model across business units and functions, including decision rights, shared services strategy, and global business services design." },
       {
         service: "M&A & Divestitures",
         docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link",
@@ -174,7 +174,7 @@ const gtmMaterials: GTMRow[] = [
         exampleMaterials: [
           { label: "Corning M&A Strategy", url: "https://docs.google.com/presentation/d/1HBLq4Mv2yCbFEdCoM4BMgHAQx7YwPK0cxzNZ-ZmidHs/edit" },
         ],
-        description: "Navigating the full deal lifecycle — acquisition strategy, target identification, due diligence, and post-merger integration.",
+        description: "Transaction support across the deal lifecycle, including commercial and operational due diligence, integration strategy, post-merger integration, Day One readiness, and carve-outs and separations.",
       },
       {
         service: "Performance Improvement",
@@ -188,7 +188,7 @@ const gtmMaterials: GTMRow[] = [
         exampleMaterials: [
           { label: "Westcon-Comstor Q2C", url: "https://docs.google.com/presentation/d/11s6nm64OhYbCcMA2ACcM5zHbNGynp0heC0Ve3YEczgs/edit" },
         ],
-        description: "Maximizing operational efficiency and sustainable EBITDA growth through rewired workflows and AI-enabled automation.",
+        description: "Enterprise-wide cost and productivity improvement, including cost transformation, productivity assessments, operating margin improvement, and value creation roadmaps.",
       },
       {
         service: "Transformation Management",
@@ -201,7 +201,7 @@ const gtmMaterials: GTMRow[] = [
         exampleMaterials: [
           { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
         ],
-        description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
+        description: "Design of the enterprise transformation architecture, including transformation assessments, roadmaps, transformation office and governance design, and benefits frameworks.",
       },
       {
         service: "Enterprise AI",
@@ -214,7 +214,7 @@ const gtmMaterials: GTMRow[] = [
           { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
           { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
         ],
-        description: "Advising businesses as they develop strategies and plans for, and integrate, artificial intelligence technologies to improve decision-making, automate processes, drive productivity, and enhance experiences.",
+        description: "Enterprise-level AI business strategy spanning multiple functions, including AI ambition, enterprise use case prioritization, and AI adoption roadmaps; technical build coordinated with AI Services.",
         subRows: [
           {
             service: "AI Core - Build AI Capability",
@@ -237,10 +237,10 @@ const gtmMaterials: GTMRow[] = [
         battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
         sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
         maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
-        description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
+        description: "Enterprise-level advisory on how digital and technology investments enable corporate strategy, including enterprise technology strategy, digital roadmaps, and investment prioritization; technical delivery coordinated with Technology Services.",
       },
-      { service: "Change Management" },
-      { service: "Program & Portfolio Management" },
+      { service: "Change Management", description: "Change management for enterprise, cross-functional transformations, including change strategy, change readiness assessments, stakeholder alignment, and communications and adoption." },
+      { service: "Program & Portfolio Management", description: "Delivery and governance of enterprise programs, including enterprise PMO, program leadership, portfolio prioritization, Integration Management Offices, and benefits tracking." },
     ],
   },
   // Finance
@@ -259,20 +259,21 @@ const gtmMaterials: GTMRow[] = [
         sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
         maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
         maturityDiagnosticUrl: "/diagnostics/finance-transformation",
-        description: "Transforming finance from a cost center into a proactive, value-creating strategic partner.",
+        description: "Defines the direction of the finance function, including CFO strategy assessments, finance vision and priorities, finance transformation roadmaps, and value cases.",
       },
-      { service: "Finance Operating Model" },
+      { service: "Finance Operating Model", description: "Design of how the finance function is organized and delivered, including the finance target operating model, organization design, shared services, and global business services." },
       {
         service: "Finance Processes & Operations",
+        description: "Improvement and ongoing execution of core finance processes, including record-to-report, procure-to-pay, order-to-cash, and close management and optimization.",
         exampleMaterials: [
           { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
         ],
       },
-      { service: "Financial Planning & Analysis" },
-      { service: "Finance Technology" },
-      { service: "Finance AI" },
-      { service: "Change Management" },
-      { service: "Program & Portfolio Management" },
+      { service: "Financial Planning & Analysis", description: "Design, improvement, and ongoing operation of financial planning and analysis, including budgeting and forecasting, management reporting, and financial analysis and business partnering." },
+      { service: "Finance Technology", description: "Advisory on finance platforms, including ERP strategy, selection, and modernization roadmaps, EPM advisory, finance platform selection, and finance automation design." },
+      { service: "Finance AI", description: "AI-specific strategy and solution design for finance, including use case prioritization, intelligent close, AI-enabled FP&A and finance operations, and agentic finance operating models." },
+      { service: "Change Management", description: "Change management for finance programs, including finance change strategy, change impact assessment, stakeholder communications, and finance learning and adoption." },
+      { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for finance initiatives, including finance project managers, finance PMO, program leadership, portfolio management, and benefits tracking." },
     ],
   },
   // Supply Chain & Operations
@@ -291,22 +292,22 @@ const gtmMaterials: GTMRow[] = [
         sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
         maturityModelUrl: "https://docs.google.com/document/d/1eKjYH3O-7GL3NGNFGS9NgcaOGtC0Pz6nvuZ8ZOv0ItA/edit",
         maturityDiagnosticUrl: "/diagnostics/supply-chain",
-        description: "Building resilient, transparent, cost-efficient supply chain and procurement ecosystems through modernized logistics and sourcing.",
+        description: "Defines supply chain direction and structure, including supply chain strategy, network design and optimization, supply chain operating model, and resilience strategy.",
       },
       {
         service: "Supply Chain Planning",
         docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing",
         battlecardUrl: "https://docs.google.com/presentation/d/1M-v3lAGlMFJlW75tHKN-caTJdexpIKxZSy8q_NoR_Jk/edit",
         maturityModelUrl: "https://docs.google.com/document/d/1UKmZO7LoyNZJQv2yMRlrfZ4voWIR-Qb2koDEnsou2l0/edit",
-        description: "Providing strategies and solutions to optimize inventory levels, reduce carrying costs, and improve inventory accuracy.",
+        description: "Design and ongoing operation of supply chain planning, including demand, supply, and inventory planning, integrated business planning, and planning performance monitoring.",
       },
-      { service: "Procurement" },
-      { service: "Manufacturing & Operations" },
-      { service: "Logistics & Fulfillment" },
-      { service: "Supply Chain & Operations Technology" },
-      { service: "Supply Chain & Operations AI" },
-      { service: "Change Management" },
-      { service: "Program & Portfolio Management" },
+      { service: "Procurement", description: "Strategy and execution of sourcing and supplier management, including procurement strategy, strategic sourcing, category management, supplier relationship management, and procurement operating model." },
+      { service: "Manufacturing & Operations", description: "Improvement of plant and service operations performance, including manufacturing excellence, lean and operational excellence, service operations design, and quality and productivity improvement." },
+      { service: "Logistics & Fulfillment", description: "Design and optimization of how goods reach customers, including warehouse operations, transportation strategy, distribution design, fulfillment optimization, and last-mile operations." },
+      { service: "Supply Chain & Operations Technology", description: "Advisory on supply chain and operations platforms, including planning platform strategy, warehouse and transportation platform selection, operations systems roadmaps, and process automation design." },
+      { service: "Supply Chain & Operations AI", description: "AI-specific strategy and solution design for supply chain and operations, including AI use cases, AI-enabled demand planning and procurement, inventory optimization, and predictive operations." },
+      { service: "Change Management", description: "Change management for supply chain and operations programs, including site readiness and impact assessment, frontline adoption, and supplier and partner change enablement." },
+      { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for supply chain and operations initiatives, including supply chain PMO, network program leadership, operations portfolio management, and benefits tracking." },
     ],
   },
   // Customer & Growth
@@ -329,7 +330,7 @@ const gtmMaterials: GTMRow[] = [
         exampleMaterials: [
           { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
         ],
-        description: "Aligning corporate direction and executing targeted growth — market penetration, new market entry, product development, or diversification.",
+        description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion.",
         subRows: [
           {
             service: "Go-to-Market",
@@ -357,13 +358,13 @@ const gtmMaterials: GTMRow[] = [
         docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link",
         battlecardUrl: "https://docs.google.com/presentation/d/1318piklJqw05nvPrGhIKWF31hZvzGZMS1VPSS9Q_wKE/edit",
         maturityModelUrl: "https://docs.google.com/document/d/1fXDAZA5Wh0iPQksDPdtLe07SXSbz5khvvU32Wk45axI/edit",
-        description: "Improving customer interactions and satisfaction across all touchpoints to enhance brand loyalty and drive business growth.",
+        description: "Design and improvement of the end-to-end customer experience, including CX strategy, customer journey design, voice of customer, experience measurement, and loyalty experience design.",
       },
-      { service: "Customer Service & Success" },
-      { service: "Customer & Growth Technology" },
-      { service: "Customer & Growth AI" },
-      { service: "Change Management" },
-      { service: "Program & Portfolio Management" },
+      { service: "Customer Service & Success", description: "Design and ongoing delivery of customer service and success, including service strategy, contact center operating model, service and success operations, and retention and renewal management." },
+      { service: "Customer & Growth Technology", description: "Advisory on commercial platforms, including CRM strategy and selection, marketing platform strategy, customer service platform advisory, and commercial systems roadmaps." },
+      { service: "Customer & Growth AI", description: "AI-specific strategy and solution design for commercial functions, including commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service." },
+      { service: "Change Management", description: "Change management for commercial programs, including commercial change strategy, sales and marketing readiness, stakeholder communications, and commercial adoption and enablement." },
+      { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for commercial initiatives, including customer transformation PMO, commercial program leadership, growth portfolio management, and benefits tracking." },
     ],
   },
   // People & Organization
@@ -384,17 +385,17 @@ const gtmMaterials: GTMRow[] = [
         exampleMaterials: [
           { label: "Owens Corning Culture", url: "https://docs.google.com/presentation/d/1guXlLNwMI1KfyJiFQBshjb6xF2pqkDMvWI4Osl9nUUU/edit" },
         ],
-        description: "Evolves talent strategy, organizational structure, and culture to meet future business needs.",
+        description: "Aligns people and the HR function to business priorities, including people strategy, strategic people planning, future of work strategy, HR function strategy, and organization effectiveness assessment.",
       },
-      { service: "Organization Design" },
+      { service: "Organization Design", description: "HR-led design of organization structures, including roles and decision rights, job architecture, HR operating model, and organization effectiveness design." },
       {
         service: "Talent & Leadership",
-        description: "Building the leadership behaviors, talent capabilities, and operating rhythms that sustain change long after transformation ends.",
+        description: "Strategies and programs to attract, develop, and retain talent, including talent strategy, leadership and executive development, succession planning, and culture and leadership alignment.",
       },
-      { service: "Learning & Capability Development" },
-      { service: "HR Operations & Services" },
-      { service: "HR Technology" },
-      { service: "HR AI" },
+      { service: "Learning & Capability Development", description: "Design, improvement, and ongoing delivery of learning programs, including learning strategy, capability assessment, reskilling strategy, AI readiness and literacy, and learning operating model." },
+      { service: "HR Operations & Services", description: "Design, improvement, and ongoing delivery of HR services, including HR service delivery design, employee lifecycle administration, HR shared services, and HR process improvement." },
+      { service: "HR Technology", description: "Advisory on HR platforms, including HRIS strategy and selection, talent platform advisory, HR systems roadmaps, and people analytics design." },
+      { service: "HR AI", description: "AI-specific strategy and solution design for HR, including HR AI strategy, use case prioritization, AI-enabled talent and learning processes, and HR AI adoption roadmaps." },
       {
         service: "Change Management",
         docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link",
@@ -403,9 +404,9 @@ const gtmMaterials: GTMRow[] = [
         exampleMaterials: [
           { label: "PGE Contact Ctr", url: "https://docs.google.com/presentation/d/1ZaMGDXy8YbBrhiRgPBGt__RMbG8OgaLIQAUZzdJKdek/edit" },
         ],
-        description: "Supporting organizations in managing change initiatives to ensure smooth transitions and successful adoption of new processes.",
+        description: "Change management for people and organization programs, including change strategy, organization change readiness, culture and behavior adoption, and stakeholder communications.",
       },
-      { service: "Program & Portfolio Management" },
+      { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for HR and people initiatives, including people transformation PMO, organization program leadership, HR portfolio management, and benefits tracking." },
     ],
   },
   // Risk & Compliance
@@ -416,20 +417,21 @@ const gtmMaterials: GTMRow[] = [
     service: "Risk & Compliance",
     keyBuyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
     subRows: [
-      { service: "Enterprise Risk Management" },
-      { service: "Third-Party Risk Management" },
+      { service: "Enterprise Risk Management", description: "Design and operation of enterprise risk management, including risk strategy and framework, risk appetite, risk operating model, enterprise risk assessments, risk registers, and monitoring and reporting." },
+      { service: "Third-Party Risk Management", description: "Management of supplier and third-party risk from design through ongoing operation, including frameworks, due diligence, onboarding and risk tiering, ongoing monitoring, remediation, and reporting." },
       {
         service: "Operational Risk & Resilience",
         docUrl: "https://docs.google.com/presentation/d/1cafzmkz671k9stPLWUZSmuL34SRm1MsKErE0t4tBieg/edit?usp=sharing",
         battlecardUrl: "https://docs.google.com/presentation/d/1caiz6eH2ZaHU5I75fZGAjD4PWr-I115tudm5OthHFhU/edit",
-        description: "Helping organizations identify, assess, and mitigate risks to comply with regulations, protect assets, enhance reputation, ensure business continuity, and drive efficiency.",
+        description: "Assessment and strengthening of operational resilience, including operational risk assessments, business continuity, scenario exercises, incident readiness, and resilience monitoring.",
       },
-      { service: "Governance & Controls" },
-      { service: "Compliance & Regulatory" },
-      { service: "Internal Audit" },
-      { service: "Risk Technology" },
+      { service: "Governance & Controls", description: "Design, testing, and modernization of governance and internal controls, including governance frameworks, SOX controls advisory, controls testing and monitoring, and remediation tracking." },
+      { service: "Compliance & Regulatory", description: "Design and operation of compliance programs, including compliance operating model, regulatory change management, policy frameworks, compliance monitoring and testing, financial crime compliance, and remediation." },
+      { service: "Internal Audit", description: "Strategy, transformation, and execution of internal audit, including audit operating model, planning and methodology, audit execution, continuous auditing, and issue follow-up." },
+      { service: "Risk Technology", description: "Advisory on risk and compliance platforms, including GRC platform strategy and selection, controls technology roadmaps, third-party risk platform advisory, and risk analytics design." },
       {
         service: "Risk AI",
+        description: "AI governance and AI-specific solution design for risk, including AI risk and controls frameworks, AI use cases for risk, intelligent controls design, and AI-enabled compliance and audit.",
         subRows: [
           {
             service: "Responsible AI",
@@ -444,8 +446,8 @@ const gtmMaterials: GTMRow[] = [
           },
         ],
       },
-      { service: "Change Management" },
-      { service: "Program & Portfolio Management" },
+      { service: "Change Management", description: "Change management for risk and compliance programs, including change strategy, risk culture and adoption, policy change enablement, and controls training and adoption." },
+      { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for risk and compliance initiatives, including regulatory program PMO, risk program leadership, risk portfolio management, and remediation governance." },
     ],
   },
 ];
