@@ -895,7 +895,7 @@ export default function MCServices() {
                         <tr key={row.service} className="border-b border-border/50">
                           <td className="py-2 pr-4 text-sm">
                             {row.isHub ? (
-                              <span className="flex items-center gap-1.5 font-bold" style={{ color: hubColor }}>
+                              <span className="flex items-center gap-1.5 text-lg font-bold" style={{ color: hubColor }}>
                                 {row.subRows?.length ? (
                                   <button
                                     type="button"
@@ -908,7 +908,7 @@ export default function MCServices() {
                                 ) : (
                                   <span className="w-5 shrink-0" />
                                 )}
-                                <Network className="w-3.5 h-3.5 shrink-0" />
+                                <Network className="w-4 h-4 shrink-0" />
                                 {row.service}
                                 {row.note && (
                                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">
