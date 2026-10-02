@@ -276,7 +276,7 @@ export default function HubFinder() {
         <span className="whitespace-nowrap">and am hearing</span>
 
         <Select value={selectedL3Id} onValueChange={handleSignalChange}>
-          <SelectTrigger className="h-9 w-auto min-w-[300px] text-sm">
+          <SelectTrigger className="h-9 w-auto min-w-[300px] max-w-[420px] text-sm">
             <SelectValue placeholder="select a challenge or issue..." />
           </SelectTrigger>
           <SelectContent className="max-w-[500px]">
