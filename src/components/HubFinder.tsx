@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, FileText, LayoutGrid, Loader2, Wand2, HelpCircle, MessageSquare } from "lucide-react";
+import { Wand2, Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,9 +12,9 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -22,803 +22,194 @@ import { supabase } from "@/integrations/supabase/client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type HubId = "growth" | "business" | "finance" | "perf" | "supply" | "workforce";
-type Practice = "Strategy" | "Finance" | "Operations" | "People";
+type PracticeId = "strategy" | "finance" | "supplychain" | "customer" | "people" | "risk";
 
-interface Hub {
-  id: HubId;
-  name: string;
-  practice: Practice;
-  rationale: string;
-  docUrl: string;
-  sellersSheetUrl: string;
-  diagnosticUrl: string;
-}
-
-interface Signal {
+interface L3Offering {
   id: string;
-  tag: string;
-  shortLabel: string;
-  quote: string;
-  hub: HubId;
-}
-
-interface BuyerGroup {
-  group: string;
-  options: string[];
-}
-
-interface ServiceModule {
   name: string;
   challenge: string;
-  objective: string;
-  duration: string;
-  outcomes: string[];
+  description: string;
 }
 
-interface AdjacentService {
+interface Practice {
+  id: PracticeId;
   name: string;
-  type: "universal" | "secondary";
-  docUrl?: string;
+  color: string;
+  bg: string;
+  buyers: string[];
+  l3s: L3Offering[];
 }
 
-interface HubQuestion {
-  question: string;
-  insight?: string;
-  detail?: string;
-}
+// ── Practice definitions — buyers match the Service Offerings cards; L3s and
+// their descriptions match the taxonomy catalog; challenge is a one-line signal
+// a seller might hear that points to that L3. ────────────────────────────────
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const PRACTICE_COLORS: Record<Practice, string> = {
-  Strategy:   "bg-primary/10 text-primary",
-  Finance:    "bg-accent text-accent-foreground",
-  Operations: "bg-destructive/10 text-destructive",
-  People:     "bg-muted text-muted-foreground",
-};
-
-// ── Hub definitions ───────────────────────────────────────────────────────────
-
-const hubs: Record<HubId, Hub> = {
-  growth: {
-    id: "growth",
-    name: "Strategy & Growth Consulting",
-    practice: "Strategy",
-    rationale: "Connect with our Strategy & Growth Consulting practice to develop a structured expansion roadmap, align your marketing and sales teams, and unlock new market opportunities.",
-    docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
-    sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
-    diagnosticUrl: "/diagnostics/growth-strategy",
+const PRACTICES: Practice[] = [
+  {
+    id: "strategy",
+    name: "Strategy & Transformation",
+    color: "#2B44D4",
+    bg: "#EEF2FF",
+    buyers: ["CEO", "Chief Strategy Officer", "Chief Transformation Officer", "business unit presidents"],
+    l3s: [
+      { id: "st-corp", name: "Corporate Strategy", challenge: "We don't have a documented strategy for where or how we compete — growth and portfolio decisions are made ad hoc.", description: "Enterprise-level strategy that defines where and how the company competes, including strategic planning, business portfolio choices, market entry, and enterprise growth strategy." },
+      { id: "st-digital", name: "Enterprise Digital & Technology", challenge: "We're increasing tech spend but have no enterprise strategy tying those investments to corporate strategy.", description: "Enterprise-level advisory on how digital and technology investments enable corporate strategy, including enterprise technology strategy, digital roadmaps, and investment prioritization; technical delivery coordinated with Technology Services." },
+      { id: "st-ai", name: "Enterprise AI", challenge: "Multiple functions are experimenting with AI independently — there's no enterprise-level AI ambition or roadmap.", description: "Enterprise-level AI business strategy spanning multiple functions, including AI ambition, enterprise use case prioritization, and AI adoption roadmaps; technical build coordinated with AI Services." },
+      { id: "st-opmodel", name: "Operating Model", challenge: "Our business units operate with unclear decision rights, duplicated shared services, and no coherent target operating model.", description: "Design of the enterprise target operating model across business units and functions, including decision rights, shared services strategy, and global business services design." },
+      { id: "st-ma", name: "M&A & Divestitures", challenge: "We're pursuing or just closed a deal and need support across diligence, integration, or carve-out.", description: "Transaction support across the deal lifecycle, including commercial and operational due diligence, integration strategy, post-merger integration, Day One readiness, and carve-outs and separations." },
+      { id: "st-perf", name: "Performance Improvement", challenge: "Costs keep creeping up and margins are compressing, with no structured cost or productivity program underway.", description: "Enterprise-wide cost and productivity improvement, including cost transformation, productivity assessments, operating margin improvement, and value creation roadmaps." },
+      { id: "st-transform", name: "Transformation Management", challenge: "We've launched a major transformation with no transformation office, governance, or benefits framework to run it.", description: "Design of the enterprise transformation architecture, including transformation assessments, roadmaps, transformation office and governance design, and benefits frameworks." },
+      { id: "st-change", name: "Change Management", challenge: "Leadership approved a cross-functional transformation, but there's no change strategy to bring the organization along.", description: "Change management for enterprise, cross-functional transformations, including change strategy, change readiness assessments, stakeholder alignment, and communications and adoption." },
+      { id: "st-pmo", name: "Program & Portfolio Management", challenge: "We're running several enterprise programs with no PMO, portfolio prioritization, or benefits tracking.", description: "Delivery and governance of enterprise programs, including enterprise PMO, program leadership, portfolio prioritization, Integration Management Offices, and benefits tracking." },
+    ],
   },
-  business: {
-    id: "business",
-    name: "Business Transformation and Risk Advisory",
-    practice: "Strategy",
-    rationale: "Connect with our Business Transformation and Risk Advisory practice to build a clear transformation vision, prioritize high-impact initiatives, and drive measurable results enterprise-wide.",
-    docUrl: "https://docs.google.com/presentation/d/1Dk3zvl6pwuoew2Y2yi8X3k8gR8owBN5SeK-vNh3Vmf4/edit?usp=drive_link",
-    sellersSheetUrl: "https://docs.google.com/document/d/1kKYqaVQqdZNEbw1q5HxsS-dX3Ce0a-4xdai6QpxnAS8/edit?usp=sharing",
-    diagnosticUrl: "/diagnostics/business-transformation",
-  },
-  finance: {
+  {
     id: "finance",
-    name: "Finance Transformation & CFO Advisory",
-    practice: "Finance",
-    rationale: "Connect with our Finance Transformation & CFO Advisory practice to modernize financial operations, eliminate manual bottlenecks, and elevate finance into a true strategic partner.",
-    docUrl: "https://docs.google.com/presentation/d/1_incQcSAXJG5faq7hOjorbbjG4IoANs7VQTMg6tZdVk/edit?usp=drive_link",
-    sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
-    diagnosticUrl: "/diagnostics/finance-transformation",
-  },
-  perf: {
-    id: "perf",
-    name: "Operations & Performance Improvement",
-    practice: "Operations",
-    rationale: "Connect with our Operations & Performance Improvement practice to diagnose operational drag, eliminate value leakage, and deliver sustainable efficiency and EBITDA gains.",
-    docUrl: "https://docs.google.com/presentation/d/1bKjSw5MgD5mzLbK-lMtIGoKXOwj09QH7fXRfOB9MLvY/edit?usp=drive_link",
-    sellersSheetUrl: "https://docs.google.com/document/d/1lah0V9ttO_KdMhXPDT2k-6-FaGrPRT9TrYATtVteLI0/edit?usp=sharing",
-    diagnosticUrl: "/diagnostics/performance-improvement",
-  },
-  supply: {
-    id: "supply",
-    name: "Supply Chain and Procurement Consulting",
-    practice: "Operations",
-    rationale: "Connect with our Supply Chain and Procurement Consulting practice to build resilience, integrate digital capabilities, and optimize end-to-end logistics and procurement performance.",
-    docUrl: "https://docs.google.com/presentation/d/1dn-i3M0XlWLs9t0F3PxIJeaNPIHBV5bluSgaasbaBFY/edit?usp=sharing",
-    sellersSheetUrl: "https://docs.google.com/document/d/1JLsclhpbRlMiyiEEXGDxHK86azS9ittyOi6GCk-zwPQ/edit?usp=sharing",
-    diagnosticUrl: "/diagnostics/supply-chain",
-  },
-  workforce: {
-    id: "workforce",
-    name: "Adaptive Organization",
-    practice: "People",
-    rationale: "Connect with our Adaptive Organization practice to align talent strategy, close skill gaps, and prepare your organization for the human-AI era.",
-    docUrl: "https://docs.google.com/presentation/d/11xmJIF7nBPrY596wA3wXRqbmvHXv60q5qwRG4hLUuDo/edit?usp=sharing",
-    sellersSheetUrl: "https://docs.google.com/document/d/1GjjF_7PxsKckocTSL9rRuVXQaHhpONNyzQAeaxHgspk/edit?usp=sharing",
-    diagnosticUrl: "/diagnostics/workforce-transformation",
-  },
-};
-
-// ── Adjacent services per hub (sourced from ConstellationDiagram edges) ───────
-// Overview deck URLs from gtmMaterials in MCServices.tsx.
-// Services with no dedicated overview deck appear name-only (no docUrl).
-
-const HUB_ADJACENTS: Record<HubId, { universals: AdjacentService[]; secondaries: AdjacentService[] }> = {
-  growth: {
-    universals: [
-      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
-      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
-      // AI Consulting is not connected to Strategy & Growth Consulting in the services web
-    ],
-    secondaries: [
-      { name: "Product Strategy",            type: "secondary", docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing" },
-      { name: "Go-to-Market Consulting",     type: "secondary", docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing" },
-      { name: "Customer Experience",         type: "secondary", docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link" },
-      { name: "M&A Consulting",              type: "secondary", docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link" },
-      { name: "Product Strategy Consulting", type: "secondary" }, // no dedicated overview deck
-    ],
-  },
-  business: {
-    universals: [
-      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
-      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
-      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
-    ],
-    secondaries: [
-      { name: "Customer Experience", type: "secondary", docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link" },
-    ],
-  },
-  finance: {
-    universals: [
-      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
-      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
-      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
-    ],
-    secondaries: [
-      { name: "M&A Advisory Services",       type: "secondary", docUrl: "https://docs.google.com/presentation/d/1kDU_9sQZ-wupu53099fIEgRrLSpNyco4uYcuuGBRNFc/edit?usp=drive_link" },
-      { name: "Corporate Finance Consulting", type: "secondary" }, // no dedicated overview deck
-    ],
-  },
-  perf: {
-    universals: [
-      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
-      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
-      // Risk & Compliance is not connected to Operations & Performance Improvement in the services web
-    ],
-    secondaries: [],
-  },
-  supply: {
-    universals: [
-      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
-      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
-      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
-    ],
-    secondaries: [
-      { name: "Inventory Management",    type: "secondary", docUrl: "https://docs.google.com/presentation/d/1i-FA39jVjQbCvMZJ-w4gT6A3AN1pEkqrsrNAzW92z_w/edit?usp=sharing" },
-      { name: "Sustainability Consulting",type: "secondary" }, // no dedicated overview deck
-    ],
-  },
-  workforce: {
-    universals: [
-      { name: "Change Management", type: "universal", docUrl: "https://docs.google.com/presentation/d/11uGqDTdhR8q7SJqBMUxxmNPescZB5WHQz2ys75kQ2Zs/edit?usp=drive_link" },
-      { name: "Digital Strategy",  type: "universal", docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing" },
-      { name: "AI Consulting",     type: "universal", docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing" },
-      { name: "Risk & Compliance", type: "universal", docUrl: "https://docs.google.com/presentation/d/1AYj1Verb0kqX2K_BzlNa_C26gPIVPlUMiUI7dHvO7nc/edit?usp=drive_link" },
-    ],
-    secondaries: [
-      { name: "Organizational Design", type: "secondary" }, // no dedicated overview deck
-      { name: "Talent Management",     type: "secondary" }, // no dedicated overview deck
-    ],
-  },
-};
-
-// ── Hook & Open-Ended Questions per hub (sourced from seller sheets) ──────────
-
-const HUB_QUESTIONS: Record<HubId, { hook: HubQuestion[]; openEnded: HubQuestion[] }> = {
-  growth: {
-    hook: [
-      { question: "Do you have a formally documented growth strategy with SMART objectives that is aligned and socialized across your entire organization?", insight: "Strategic Fragmentation", detail: "A \"no\" indicates growth efforts are likely ad-hoc and reactive, leading to wasted resources and inconsistent performance." },
-      { question: "Is your organization currently using AI-powered predictive analytics to anticipate market shifts and customer behavior before they happen?", insight: "Intelligence Gap", detail: "Relying on backward-looking reporting means you are always reacting to the past rather than proactively shaping your future growth." },
-      { question: "Are your marketing and sales teams operating as a unified force with shared data sources and integrated processes?", insight: "Execution Friction", detail: "Disconnected departments create operational bottlenecks that severely hinder scaling and erode acquisition ROI." },
-      { question: "Does your current operating model allow you to pivot rapidly and respond dynamically to market changes without significant internal resistance?", insight: "Agility Weakness", detail: "In a disrupted market, standing still is equivalent to falling behind. Internal inertia is a primary obstacle to sustainable growth." },
-    ],
-    openEnded: [
-      { question: "What are the three biggest internal or external obstacles currently preventing you from reaching your expansion targets?", insight: "Roadblock Discovery" },
-      { question: "How has your competitive landscape shifted in the last 12 months, and what data are you using to decide how to pivot your product offerings?", insight: "Competitive Agility" },
-      { question: "If you had to enter a new market today, what specific data insights are you currently missing that would make that decision 'low-risk'?", insight: "Intelligence Readiness" },
-      { question: "If your customer demand doubled overnight, where would your infrastructure fail first—in your technology, your sales processes, or your talent pool?", insight: "Scaling Stress-Test" },
-    ],
-  },
-  business: {
-    hook: [
-      { question: "Do you have a board-approved transformation roadmap that explicitly links your strategic goals to specific P&L levers and KPI improvements?", insight: "Strategic Disconnect", detail: "Without this link, the transformation is likely a series of \"random acts of change\" that won't produce breakthrough financial results." },
-      { question: "Does your organization have a compelling 'Change Narrative' that has secured genuine buy-in from employees at all levels?", insight: "Cultural Resistance", detail: "Transformations fail when personnel don't understand the \"what's in it for me,\" leading to passive or active resistance." },
-      { question: "Is your transformation governed by a PMO that has the authority to resolve execution roadblocks and decommission initiatives that aren't delivering?", insight: "Execution Risk", detail: "Lack of rigorous tracking and governance leads to mediocre results and wasted effort on projects that don't move the needle." },
-      { question: "Do your transformation leaders have 'skin in the game'—meaning they are directly accountable for the KPIs the transformation is meant to improve?", insight: "Lack of Accountability", detail: "When leaders are too high-level and not responsible for results, the pace of delivery inevitably slows down." },
-    ],
-    openEnded: [
-      { question: "If your business continues on its current trajectory for the next 24 months without a major change, where will you be relative to your top two competitors?", insight: "The Trajectory Question" },
-      { question: "When your transformation initiatives stall, is it typically due to a lack of technical capability, cultural resistance, or a failure in the governance process?", insight: "The Bottleneck Question" },
-      { question: "How are you currently balancing the need to 'run the business' with the intensive talent requirements needed to 'transform the business'?", insight: "The Resource Question" },
-    ],
-  },
-  finance: {
-    hook: [
-      { question: "Can your finance team currently close the books and deliver comprehensive reports within 5 business days?", insight: "Efficiency Gap", detail: "A \"no\" points to manual workflows and legacy bottlenecks that prevent the organization from making agile, timely decisions." },
-      { question: "Do you have a unified financial data ecosystem that seamlessly integrates your ERP, CRM, and HRIS for a single source of truth?", insight: "Intelligence Gap", detail: "Disconnected systems lead to high error rates and prevent the use of predictive analytics for scenario planning." },
-      { question: "Is your finance function currently perceived by other departments as a strategic partner that actively drives business growth?", insight: "Value Gap", detail: "If finance is viewed only as a cost center, the client is missing the Strategic Shift required to remain competitive in a dynamic market." },
-      { question: "Are you confident your current finance processes could scale to support a 20-30% growth rate next year without a significant increase in headcount?", insight: "Scalability Risk", detail: "A \"no\" suggests the client is hitting a ceiling where manual effort will eventually break under the pressure of business expansion." },
-    ],
-    openEnded: [
-      { question: "How has the role of your finance department evolved over the last two years, and where do you feel it is still falling short of being a true strategic partner?", insight: "Strategic Role" },
-      { question: "If you could automate one manual financial process today to free up your team for high-value analysis, which one would it be and why?", insight: "Process Pain" },
-      { question: "When the CEO asks for a real-time update on cash flow or unit economics, how much manual 'massaging' of data is required before you can give an answer?", insight: "Data Visibility" },
-      { question: "As you look at your growth goals for the next 18 months, what is the biggest 'hidden' risk in your current financial infrastructure that could stall that progress?", insight: "Growth Readiness" },
-    ],
-  },
-  perf: {
-    hook: [
-      { question: "Do you have a clear, data-driven map of your end-to-end operational processes that identifies exactly where your biggest bottlenecks and costs are located?", insight: "Visibility Gap", detail: "A \"no\" means the client is likely firefighting symptoms rather than solving root causes, leading to recurring inefficiencies." },
-      { question: "Are your current technology investments delivering measurable, double-digit improvements in productivity or cost-to-serve?", insight: "ROI Disconnect", detail: "If technology isn't moving the needle, they likely have Tech Debt or a misalignment between their tools and their actual business processes." },
-      { question: "Does your organization have a formal, continuous improvement culture where teams are empowered to identify and eliminate waste in real-time?", insight: "Cultural Stagnation", detail: "A \"no\" suggests that even if processes are fixed once, they will eventually decay back into inefficiency without cultural buy-in." },
-      { question: "Is your organizational structure optimized for speed, or do you find that decision-making is often stalled by excessive layers of hierarchy and manual hand-offs?", insight: "Structural Drag", detail: "Excessive layers create hidden costs, indicating a need for organizational restructuring to restore agility and reduce overhead." },
-    ],
-    openEnded: [
-      { question: "If you could eliminate the single most frustrating manual process your team deals with every day, what would that save you in terms of time and employee morale?", insight: "The Inefficiency Tax" },
-      { question: "How much of your current IT budget is spent maintaining legacy 'fixes' versus building the tools that will actually drive your future growth?", insight: "Tech Alignment" },
-      { question: "If your business volume grew by 20% next month, would your current operations scale seamlessly, or would your overhead costs grow even faster than your revenue?", insight: "The Scalability Stress Test" },
-      { question: "How do you currently track the 'cost-to-serve' for your products or customers, and where do you feel that data is currently incomplete or misleading?", insight: "The Accountability Question" },
-    ],
-  },
-  supply: {
-    hook: [
-      { question: "Are you fully confident that your supply chain is resilient enough to absorb market disruptions and adjust performance under sudden external pressures?", insight: "Extreme Vulnerability", detail: "73% of supply chains will face disruption this year, yet only 22% are prepared to adapt. A \"no\" indicates the client is running on unmitigated macro risk that threatens business continuity." },
-      { question: "Does your leadership team possess real-time, end-to-end shipment visibility across your entire global logistics network without system fragmentation?", insight: "Blinded Execution", detail: "Fragmented data across multiple systems isolates operations and forces teams into reactive firefighting rather than predictive issue resolution." },
-      { question: "Are your current investments in AI, IoT, or supply chain automation delivering a proven, measurable lift in throughput or drop in inventory carry costs?", insight: "Value Disconnect", detail: "Tech adoption should not be an expensive buzzword. A \"no\" implies an execution gap where custom engineering is needed to convert software tools into concrete dollar savings." },
-      { question: "Have you successfully integrated public decarbonization and ESG metrics directly into your live logistics routing and supplier scorecard logic?", insight: "Regulatory & Brand Exposure", detail: "The market is punishing legacy logistics. A \"no\" signals high compliance exposure and a fundamental gap in future-proofing the brand's global ecosystem." },
-    ],
-    openEnded: [
-      { question: "Where are the primary bottlenecks currently impacting your operational throughput, order cycle speed, and overall lead times?", insight: "Fulfillment Barriers" },
-      { question: "How much of your current logistics and vendor management data is completely locked inside siloed legacy architectures, and how is that fragmentation slowing down daily executive decision-making?", insight: "Silo Impact" },
-      { question: "If a major geopolitical event or sudden regional shutdown hits your tier-one supplier network tomorrow, what manual workarounds or automated safety buffers kick in to preserve inventory availability?", insight: "Resilience Reality" },
-      { question: "When you evaluate your last major technology investment—whether a warehouse or transport management system—where did it fall short in terms of driving down operational overhead or improving delivery tracking?", insight: "Investment Performance" },
-    ],
-  },
-  workforce: {
-    hook: [
-      { question: "Do you have a formally documented skills-first workforce strategy that explicitly aligns your talent composition with your 3–5 year business goals?", insight: "Strategic Fragmentation", detail: "A \"no\" indicates talent decisions are likely ad-hoc or headcount-driven, leading to critical skill gaps as job requirements shift rapidly." },
-      { question: "Have you mapped your core business processes to identify specific workflows that are eligible for replacement or enhancement by Agentic AI?", insight: "Operational Inefficiency", detail: "Missing this step means the client is forgoing potential 80% efficiency gains realized by AI-augmented workforces." },
-      { question: "Is your current organizational structure flexible enough to dynamically allocate talent to projects based on real-time skills rather than rigid job titles?", insight: "Structural Rigidity", detail: "Fixed roles are obsolete in the new operating model; rigid hierarchies hinder agility and slow market response times." },
-      { question: "Does your leadership team have the formal training and 'AI-fluency' required to lead a dispersed, hybrid, and human-AI augmented workforce?", insight: "Leadership Fragility", detail: "74% of employees will leave roles lacking development; leadership is the core operating system for integrating technology and culture." },
-    ],
-    openEnded: [
-      { question: "Given that 85% of jobs in 2030 haven't been invented yet, which of your current core roles are most at risk of becoming obsolete due to rapid technological change?", insight: "The 2030 Question" },
-      { question: "If you introduced a broad AI-augmentation plan today, where would you encounter the most significant cultural inertia or pushback within your organization?", insight: "Cultural Resistance" },
-      { question: "If your customer demand doubled overnight, where would your workforce infrastructure fail first—in your rigid job roles, your leadership's digital fluency, or your manual processes?", insight: "The Scaling Stress Test" },
-      { question: "How are you currently measuring the impact of your workforce development programs on your long-term operational agility and market competitiveness?", insight: "ROI Alignment" },
-    ],
-  },
-};
-
-const HUB_ORDER: HubId[] = ["growth", "business", "finance", "perf", "supply", "workforce"];
-
-// Hub priority order keyed by every buyer option — most relevant hub first
-const BUYER_HUB_PRIORITY: Record<string, HubId[]> = {
-  // Buying Center
-  "Finance":                                   ["finance", "perf", "business", "supply", "growth", "workforce"],
-  "Operations":                                ["perf", "supply", "business", "finance", "workforce", "growth"],
-  "Supply Chain & Logistics":                  ["supply", "perf", "business", "finance", "growth", "workforce"],
-  "Marketing & Sales":                         ["growth", "business", "perf", "workforce", "finance", "supply"],
-  "Human Resources":                           ["workforce", "business", "perf", "growth", "finance", "supply"],
-  "IT & Technology":                           ["perf", "business", "finance", "supply", "workforce", "growth"],
-  "Strategy & Corporate Development":          ["business", "growth", "finance", "perf", "supply", "workforce"],
-  "Growth & Innovation":                       ["growth", "business", "perf", "supply", "workforce", "finance"],
-  // C-Suite
-  "CEO / President":                           ["business", "growth", "perf", "finance", "supply", "workforce"],
-  "Chief Operating Officer (COO)":             ["perf", "business", "supply", "finance", "workforce", "growth"],
-  "Chief Financial Officer (CFO)":             ["finance", "perf", "business", "supply", "growth", "workforce"],
-  "Chief Marketing Officer (CMO)":             ["growth", "business", "perf", "workforce", "finance", "supply"],
-  "Chief Growth Officer (CGO)":                ["growth", "business", "perf", "finance", "supply", "workforce"],
-  "Chief Strategy Officer (CSO)":              ["growth", "business", "perf", "finance", "supply", "workforce"],
-  "Chief Sales Officer / Head of Sales":       ["growth", "business", "perf", "workforce", "finance", "supply"],
-  "Chief Information Officer (CIO)":           ["perf", "business", "finance", "supply", "workforce", "growth"],
-  "Chief Technology Officer (CTO)":            ["perf", "supply", "business", "finance", "workforce", "growth"],
-  "Chief Digital Officer (CDO)":               ["business", "perf", "supply", "finance", "growth", "workforce"],
-  "Chief Human Resources Officer (CHRO)":      ["workforce", "business", "perf", "growth", "finance", "supply"],
-  "Chief Transformation Officer":              ["business", "perf", "workforce", "finance", "supply", "growth"],
-  "Chief Sustainability Officer":              ["supply", "business", "perf", "workforce", "finance", "growth"],
-  // Key Leaders
-  "Finance Director":                          ["finance", "perf", "business", "supply", "growth", "workforce"],
-  "VP / Director of Supply Chain":             ["supply", "perf", "business", "finance", "growth", "workforce"],
-  "VP / Director of Learning & Development":   ["workforce", "business", "perf", "growth", "finance", "supply"],
-  "Head of Operations":                        ["perf", "supply", "business", "finance", "workforce", "growth"],
-  "Head of IT":                                ["perf", "business", "finance", "supply", "workforce", "growth"],
-  "Head of HR":                                ["workforce", "business", "perf", "growth", "finance", "supply"],
-  "Business Unit Leader / Division Head":      ["business", "perf", "growth", "workforce", "finance", "supply"],
-  "Head of Product Development / Innovation":  ["growth", "business", "perf", "workforce", "finance", "supply"],
-  "Operational Manager":                       ["perf", "supply", "business", "workforce", "finance", "growth"],
-  "Board Member / Director":                   ["business", "finance", "growth", "perf", "supply", "workforce"],
-};
-
-// ── Buying signals (sourced from each hub's seller sheet) ─────────────────────
-
-const signals: Signal[] = [
-  // Strategy & Growth Consulting
-  { id: "gs1", tag: "Stagnant Revenue",           hub: "growth",
-    shortLabel: "Revenue has flatlined — no new growth streams",
-    quote: "Our revenue has flatlined, and we are struggling to identify new source streams beyond our core business." },
-  { id: "gs2", tag: "Market Disruption",          hub: "growth",
-    shortLabel: "A competitor is eroding our market share",
-    quote: "A new, more agile competitor is eroding our market share, and our traditional strategies aren't working anymore." },
-  { id: "gs3", tag: "Marketing-Sales Disconnect", hub: "growth",
-    shortLabel: "Marketing and sales teams are completely out of sync",
-    quote: "Our marketing and sales teams are completely out of sync, and it's killing our customer acquisition efficiency." },
-  { id: "gs4", tag: "Strategy Vacuum",            hub: "growth",
-    shortLabel: "Ambitious growth goals but no documented roadmap",
-    quote: "We have ambitious growth goals but no formally documented roadmap or data-driven plan to achieve them." },
-  { id: "gs5", tag: "Expansion Barriers",         hub: "growth",
-    shortLabel: "Want to expand but lack expertise to navigate new markets",
-    quote: "We want to enter a new market or launch a new product line, but we don't have the internal expertise to navigate the competitive or regulatory barriers." },
-
-  // Business Transformation and Risk Advisory
-  { id: "bt1", tag: "Declining Performance",      hub: "business",
-    shortLabel: "Revenue falling, margins shrinking, losing customers",
-    quote: "Our revenue is falling, profit margins are shrinking, or we are losing customers faster than we can acquire them." },
-  { id: "bt2", tag: "Business Model Pressure",    hub: "business",
-    shortLabel: "Regulations or competitors forcing a business model rethink",
-    quote: "New regulations or aggressive moves by competitors are forcing us to rethink our entire business model." },
-  { id: "bt3", tag: "Integration Failing",        hub: "business",
-    shortLabel: "Post-merger integration is failing to hit growth targets",
-    quote: "We've finished the merger, but the integration is failing, and we aren't hitting our projected growth targets." },
-  { id: "bt4", tag: "Digital Lag",                hub: "business",
-    shortLabel: "Systems are outdated — digital engagement behind the market",
-    quote: "Our systems are outdated, and our customer engagement via digital channels is significantly behind the market." },
-  { id: "bt5", tag: "Projects Not Moving Needle", hub: "business",
-    shortLabel: "Dozens of projects underway but none are moving the needle",
-    quote: "We have 50 projects going on, but none of them are actually 'moving the needle' or delivering results." },
-
-  // Finance Transformation & CFO Advisory
-  { id: "ft1", tag: "Manual Chaos",               hub: "finance",
-    shortLabel: "Team spending most of their time on manual data entry",
-    quote: "Our team spends 80% of their time on manual data entry and reconciliation instead of analysis." },
-  { id: "ft2", tag: "Slow Close Cycle",           hub: "finance",
-    shortLabel: "Takes 10+ business days to close the books",
-    quote: "It takes us more than 10 business days to close the books, so our data is already old by the time leadership sees it." },
-  { id: "ft3", tag: "Data Silos",                 hub: "finance",
-    shortLabel: "Multiple conflicting data versions across ERP, CRM, HR",
-    quote: "We have three different versions of 'the truth' because our ERP, CRM, and HR systems don't talk to each other." },
-  { id: "ft4", tag: "Cost Center Perception",     hub: "finance",
-    shortLabel: "Finance seen as a cost center, not a strategic partner",
-    quote: "Finance is seen as a back-office cost center rather than a strategic partner that helps us grow." },
-  { id: "ft5", tag: "Scalability Ceiling",        hub: "finance",
-    shortLabel: "Finance too rigid and manual to support growth or acquisition",
-    quote: "We want to expand or acquire, but our current finance processes are too rigid and manual to handle the increased volume." },
-
-  // Operations & Performance Improvement
-  { id: "pi1", tag: "Margin Erosion",             hub: "perf",
-    shortLabel: "Revenue growing but profit margins keep shrinking",
-    quote: "Our revenue is growing, but our profit margins are shrinking. We need to find and cut the waste." },
-  { id: "pi2", tag: "Customer Dissatisfaction",   hub: "perf",
-    shortLabel: "Spike in customer complaints about service delays or errors",
-    quote: "We are seeing a spike in negative feedback regarding delays and errors in our service delivery." },
-  { id: "pi3", tag: "Operational Bottlenecks",    hub: "perf",
-    shortLabel: "Processes that took days now take weeks — teams overwhelmed",
-    quote: "Everything feels like a struggle. Processes that used to take days now take weeks, and our teams are overwhelmed." },
-  { id: "pi4", tag: "Technology Debt",            hub: "perf",
-    shortLabel: "Outdated systems are actively blocking team productivity",
-    quote: "Our systems are so outdated that they're actually preventing our people from being productive." },
-  { id: "pi5", tag: "Poor Asset ROI",             hub: "perf",
-    shortLabel: "Tech and headcount investments not delivering expected ROI",
-    quote: "We have significant investments in tech and headcount, but we aren't seeing the ROI we expected." },
-  { id: "pi6", tag: "High Turnover",              hub: "perf",
-    shortLabel: "Top talent leaving due to constant firefighting and inefficiency",
-    quote: "Our best people are leaving because they are frustrated by the constant 'firefighting' and inefficient manual work." },
-
-  // Supply Chain
-  { id: "sc1", tag: "Disruption Pain",             hub: "supply",
-    shortLabel: "Hit by supplier delays, shipping cost spikes, or stockouts",
-    quote: "We have been hit hard by recent supplier delays, shipping cost spikes, or unexpected inventory shortages and stockouts." },
-  { id: "sc2", tag: "Digital Integration Blocked", hub: "supply",
-    shortLabel: "Investing in AI/IoT but legacy systems are too siloed",
-    quote: "We are heavily investing in technology like AI, IoT, or advanced automation tools, but our legacy systems are too siloed to integrate them properly." },
-  { id: "sc3", tag: "ESG / Decarbonization Gap",   hub: "supply",
-    shortLabel: "ESG commitments made but logistics network is falling behind",
-    quote: "Our board has made public ESG commitments or decarbonization mandates, but our logistics and supplier network are falling way behind." },
-  { id: "sc4", tag: "Efficiency Focus",            hub: "supply",
-    shortLabel: "Looking to cut logistics costs and reduce customer lead times",
-    quote: "We are actively looking for ways to eliminate process waste, squeeze out logistics costs, or aggressively reduce customer lead times." },
-  { id: "sc5", tag: "Competitive Pressure",        hub: "supply",
-    shortLabel: "Losing ground to more agile supply chain competitors",
-    quote: "We are steadily losing ground to more agile rivals who adapt their supply chain networks to disruption almost instantly." },
-
-  // Adaptive Organization
-  { id: "wt1", tag: "Talent Scarcity / Skill Gaps", hub: "workforce",
-    shortLabel: "Can't find specialized talent — skills becoming obsolete",
-    quote: "We can't find specialized talent, and 56% of our core skills will be obsolete in five years." },
-  { id: "wt2", tag: "High Performer Turnover",       hub: "workforce",
-    shortLabel: "High performers leaving — no clear growth path or flexibility",
-    quote: "Our high performers are leaving because they don't see a clear growth path or flexibility in their roles." },
-  { id: "wt3", tag: "Inflexible Structures",          hub: "workforce",
-    shortLabel: "Rigid job roles slowing us down — can't pivot to market changes",
-    quote: "Our rigid job roles are slowing us down; we can't pivot fast enough to meet market changes." },
-  { id: "wt4", tag: "Cultural Inertia",               hub: "workforce",
-    shortLabel: "Employee pushback on hybrid work or AI integration",
-    quote: "There is significant employee pushback or low engagement regarding our transition to hybrid work or AI integration." },
-  { id: "wt5", tag: "Manual Inefficiency",             hub: "workforce",
-    shortLabel: "Team bogged down by manual work that should be automated",
-    quote: "Our team is bogged down by manual processes that should be automated, but we don't know where to start." },
-];
-
-// ── Section 7 service modules (Strategic Sprints) from each seller sheet ─────
-// Adaptive Organization has no Section 7 sprints table — button hidden for that hub.
-
-const HUB_MODULES: Partial<Record<HubId, ServiceModule[]>> = {
-  growth: [
-    {
-      name: "Growth Diagnostic & Market Pulse",
-      challenge: "Market Volatility / Competitive Pressure",
-      objective: "A comprehensive analysis of the current state and market conditions to identify core challenges and 'low-hanging fruit' growth opportunities.",
-      duration: "2–4 weeks",
-      outcomes: [
-        "Current State Assessment: report on core competencies and market position",
-        "Market & Competitor Insights: detailed look at industry trends and competitor strategies",
-        "Growth Opportunity Document: prioritized list of potential expansion areas and identified challenges",
-      ],
-    },
-    {
-      name: "The Strategy & Growth Consulting Blueprint",
-      challenge: "Resource Constraints / Lack of a Plan",
-      objective: "Formulating a tailored, data-driven strategy that defines exactly how to expand, whether through market penetration, product development, or diversification.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "Tailored Strategic Plan: actionable roadmap aligned with long-term goals",
-        "Resource & Financial Plan: model for capital and human resource allocation",
-        "Risk Mitigation Roadmap: identification of bottlenecks and a plan to navigate them",
-      ],
-    },
-    {
-      name: "Execution Enablement & Sales Alignment",
-      challenge: "Internal Resistance / Siloed Teams",
-      objective: "Ensuring the strategy doesn't just sit on a shelf by aligning marketing and sales teams and building internal capabilities.",
-      duration: "8–12 weeks",
-      outcomes: [
-        "Marketing & Sales Optimization: unified processes to drive lead intent and profitability",
-        "Operational Efficiency Report: new workflows and technology adoption strategies",
-        "Internal Capability Program: knowledge transfer and training to sustain the strategy",
-      ],
-    },
-    {
-      name: "Performance & Optimization Audit",
-      challenge: "Stagnant Results / Need for ROI",
-      objective: "Continuous tracking of growth initiatives to ensure sustained momentum and data-driven adjustments.",
-      duration: "Monthly or Quarterly Retainer",
-      outcomes: [
-        "KPI Dashboard & Reporting: real-time visibility into growth objective progress",
-        "Optimization Recommendations: data-driven pivots based on market feedback",
-        "Revenue Maximization Report: analysis of increased profitability and ROI",
-      ],
-    },
-  ],
-  business: [
-    {
-      name: "Transformation Vision & Ambition Sprint",
-      challenge: "Our business model is outdated and we don't have a plan for AI",
-      objective: "A strategic review of the business's current baseline to define a bold future 'ideal state' and a compelling narrative that secures organizational buy-in.",
-      duration: "2–4 weeks",
-      outcomes: [
-        "Current State Diagnostic Map: fact-based overview of internal pain points and market position",
-        "Transformation Vision Statement: compelling case for change to inspire the organization",
-        "Strategic Value Driver Framework: defined metrics (efficiency, growth) rooting the effort",
-      ],
-    },
-    {
-      name: "Initiative Prioritization & Impact Assessment",
-      challenge: "We have 50 projects going on, but none of them are moving the needle",
-      objective: "Brainstorming, quantifying, and ranking transformation opportunities based on their ability to deliver against strategic pillars and financial goals.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "Prioritized Initiative Heat Map: visual ranking of projects based on ROI and feasibility",
-        "Impact Assessment Report: estimated net financial gains (P&L levers) and KPI improvements",
-        "Initial Risk Profile: identification of early delivery risks and baseline mitigation plans",
-      ],
-    },
-    {
-      name: "Transformation Roadmap & Resourcing Blueprint",
-      challenge: "We know what we want to do, but we haven't budgeted the people to do it",
-      objective: "Translating prioritized initiatives into a logical, time-phased sequence while formalizing the budget and personnel needed for execution.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "Integrated Transformation Roadmap: phased timeline with clear milestones and dependencies",
-        "Resourcing & Budget Plan: detailed breakdown of internal and Toptal talent required",
-        "Stakeholder Commitment Charter: formal alignment from senior leadership on the plan",
-      ],
-    },
-    {
-      name: "Results Orchestration & PMO Governance",
-      challenge: "Our transformations always fail because of internal resistance and lack of tracking",
-      objective: "Establishing the rigorous Project Management Office (PMO) and governance required to manage delivery, track impact, and resolve roadblocks in real-time.",
-      duration: "Monthly or Quarterly Retainer",
-      outcomes: [
-        "Governance Framework & PMO Charter: documentation of escalation processes and intervention levels",
-        "Real-time Performance Dashboard: visual tracking of initiative progress and value realization",
-        "Quarterly Results Review: summary of achieved gains and adapted roadmap milestones",
-      ],
-    },
-  ],
-  finance: [
-    {
-      name: "Finance Diagnostic & Digital Maturity Audit",
-      challenge: "Our reporting is manual and full of errors",
-      objective: "A deep-dive evaluation of the existing ERP/EPM landscape and core financial cycles (R2R, P2P) to identify bottlenecks and data integrity gaps.",
-      duration: "3–4 weeks",
-      outcomes: [
-        "Finance Diagnostic Heat Map: prioritized list of opportunities and risks",
-        "Performance Benchmark Report: functional costs and cycle times vs. industry leaders",
-        "Future Vision & Value Drivers: a defined strategic North Star for the finance function",
-      ],
-    },
-    {
-      name: "Finance Transformation & CFO Advisory Blueprint & ROI Roadmap",
-      challenge: "We need to modernize, but don't know where to start",
-      objective: "Designing the Target Operating Model (TOM) and technology architecture while building a rigorous financial case for change.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "Finance Strategic Plan (Blueprint): recommended policies and service delivery models",
-        "Technology Integration Plan: solution architecture for Cloud ERP, BI, or RPA",
-        "Quantified Financial Business Case: expected ROI and cost-savings model",
-      ],
-    },
-    {
-      name: "Operational Enablement & System Integration",
-      challenge: "We bought a new ERP but our team can't use it effectively",
-      objective: "Executing the re-engineering of financial workflows and deploying recommended technology stacks (Hyperion, SAP, Power BI, etc.).",
-      duration: "12–20 weeks",
-      outcomes: [
-        "Live Tech Solutions: deployed and integrated ERP/EPM tools in the production environment",
-        "Standard Operating Procedures: documented new workflows for R2R, P2P, and O2C",
-        "Change Management & Training Records: proof of workforce readiness and internal capability",
-      ],
-    },
-    {
-      name: "Performance Excellence & Scalability Retainer",
-      challenge: "We've modernized, but want to leverage AI for predictive forecasting",
-      objective: "Establishing continuous improvement frameworks and sustainability scorecards to ensure the transformation delivers long-term, scalable value.",
-      duration: "Monthly or Quarterly Retainer",
-      outcomes: [
-        "Sustainability Scorecard: tool to track long-term effectiveness of finance changes",
-        "Continuous Improvement Framework: cadences for ongoing optimization using AI/ML",
-        "Knowledge Transfer Playbooks: best practice guides for full internal ownership",
-      ],
-    },
-  ],
-  perf: [
-    {
-      name: "High-Performance Baseline & Gap Analysis",
-      challenge: "Our teams are busy, but we aren't seeing the results in the bottom line",
-      objective: "A holistic audit across all seven building blocks to identify root causes of friction, structural redundancies, and technical debt.",
-      duration: "3–4 weeks",
-      outcomes: [
-        "Current State Process Maps: identification of delays, inefficiencies, and manual workarounds",
-        "Technology & Data Audit: assessment of system reliability, integration, and technical debt",
-        "Opportunity Mapping Report: prioritized list of high-ROI improvement areas",
-      ],
-    },
-    {
-      name: "The Operational Excellence Blueprint",
-      challenge: "We have dozens of improvement ideas but don't know where to start",
-      objective: "Architecting a future-state model that defines performance targets, optimized cross-functional workflows, and technical requirements.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "Strategic Roadmap: sequenced project plan prioritized by business value and ease of implementation",
-        "Target Operating Model (TOM) Design: new blueprints for organizational structure",
-        "Technology Selection Matrix: framework for choosing tools to automate tasks and improve visibility",
-      ],
-    },
-    {
-      name: "Silo-Breaking & Efficiency Integration",
-      challenge: "Our departments don't talk to each other, and everything takes too long",
-      objective: "Executing prioritized project plans and tech upgrades while delivering role-specific training to improve interaction among divisions.",
-      duration: "8–16 weeks",
-      outcomes: [
-        "Implemented Performance Frameworks: standardized reporting cycles for project ROI and cash flow",
-        "Cross-Functional Collaboration Tools: deployment of standardized meeting and interaction protocols",
-        "Capability Building Program: role-specific training and leadership coaching certifications",
-      ],
-    },
-    {
-      name: "Continuous Optimization & Value Retainer",
-      challenge: "We've made improvements before, but they never seem to stick",
-      objective: "Establishing rigorous monitoring systems and 'improvement loops' to ensure operational gains are maintained and scaled.",
-      duration: "Monthly or Quarterly Retainer",
-      outcomes: [
-        "Real-Time Performance Dashboards: visibility into progress vs. goals for immediate course correction",
-        "Asset Utilization Audits: ongoing evaluation of products, markets, and projects for high-ROI areas",
-        "Long-Term Talent Pipeline Tracking: monitoring of career progression and workforce transformation",
-      ],
-    },
-  ],
-  supply: [
-    {
-      name: "Supply Chain Baseline & Network Gap Analysis",
-      challenge: "We hit massive tracking blind spots and supplier delays, but don't know where our network is leaking money",
-      objective: "A holistic audit across core pillars utilizing SCOR-based value stream mapping to evaluate legacy visibility gaps, inventory policy health, and supplier footprint risks.",
-      duration: "3–4 weeks",
-      outcomes: [
-        "Current State Network Diagnostic Map: visualization of hidden delays, lead-time slips, and data siloing",
-        "Vendor & Supplier Risk Heat Map: dependency assessment tracking macro exposure and vulnerabilities",
-        "Prioritization Matrix Report: ranked opportunity backlog pairing issues by impact and feasibility",
-      ],
-    },
-    {
-      name: "The Resilient Supply Chain Blueprint",
-      challenge: "We want to digitize and optimize our logistics, but our systems are too siloed",
-      objective: "Architecting a future-state network model, localized inventory segmentation rules, and optimized cross-functional routing parameters to build agility.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "Phased Optimization Roadmap: sequenced action blueprint with timelines and technical interdependencies",
-        "Quantified Financial Business Case: definitive cost models detailing overhead compression and ROI",
-        "Technology Stack Recommendations: architectural blueprint outlining pipeline tools to replace manual workarounds",
-      ],
-    },
-    {
-      name: "Logistics & Analytics Optimization Integration",
-      challenge: "Our warehouses and transport processes run on manual workflows, and customer lead times are slipping",
-      objective: "Executing prioritized project plans, data integrations, and automated parameters across warehouse and tracking systems while running pilot implementations.",
-      duration: "8–16 weeks",
-      outcomes: [
-        "Implemented Operational Adjustments: streamlined order processing, warehouse, and logistics configurations",
-        "Real-Time Analytics Dashboards: fully deployed visibility portals unifying inventory and tracking metrics",
-        "Automated Workforce Playbooks: clear scheduling rules and process maps to improve cross-functional speed",
-      ],
-    },
-    {
-      name: "Sustainable Supply Chain & Continuous Optimization Retainer",
-      challenge: "We achieve quick savings from individual fixes, but our network quickly decays when new disruptions hit",
-      objective: "Establishing robust monitoring frameworks, continuous improvement loops, and sustainability metrics to protect long-term efficiency.",
-      duration: "Monthly or Quarterly Retainer",
-      outcomes: [
-        "Self-Sustaining Operations Blueprint: institutionalized monitoring rules protecting structural resilience",
-        "Standardized Sustainability Scorecards: multi-tier ESG compliance trackers integrated with live routing",
-        "Continuous Knowledge-Transfer Repositories: upgradable playbooks ensuring independent lifecycle governance",
-      ],
-    },
-  ],
-  workforce: [
-    {
-      name: "The Workforce Capability Baseline & AI Readiness Sprint",
-      challenge: "Our workers are swamped, but we don't actually know which tasks can be automated with AI.",
-      objective: "A deep-dive audit of the current talent landscape paired with an automation diagnostic to pinpoint where AI can immediately replace or augment workflows.",
-      duration: "3–4 weeks",
-      outcomes: [
-        "Current State Capability Matrix: A fact-based blueprint tracking current internal skills and specific capability gaps.",
-        "AI Integration & Automation Heatmap: A visual matrix identifying high-impact areas for AI agent deployment or human task augmentation.",
-        "Workforce Vision Statement: A formalized plan aligning executive leadership on target transformation goals and AI ambitions.",
-      ],
-    },
-    {
-      name: "The Human-AI Target Operating Model (TOM) & Skill Architecture",
-      challenge: "We bought an enterprise AI platform, but our old departmental silos are preventing us from using it.",
-      objective: "Redesigning organizational structures away from traditional, siloed job roles and toward an agile operating model built on fluid skill ecosystems.",
-      duration: "4–6 weeks",
-      outcomes: [
-        "AI-Integrated Operating Model Blueprint: A structural plan defining exactly how human workers and autonomous AI agents interact and collaborate.",
-        "Upskilling & Recruitment Framework: A precise strategy to bridge technical and cognitive skill gaps through internal training and strategic talent acquisition.",
-        "Prioritized Initiative Roadmap: A phased timeline mapping out training, operational change milestones, and clear ownership.",
-      ],
-    },
-    {
-      name: "High-Impact Adaptive Organization Pilot",
-      challenge: "We want to change our workflow model, but our legacy culture is heavily resisting it.",
-      objective: "Launching and running targeted, cross-functional experiments in specific business units to test new human-AI workflows and minimize execution risks before scaling enterprise-wide.",
-      duration: "8–12 weeks",
-      outcomes: [
-        "Pilot Performance Dashboard: Real-time visibility into productivity metrics, employee adaptation rates, and workflow bottlenecks.",
-        "Refined Implementation Playbook: An optimized operational manual built from direct pilot feedback and field testing.",
-        "Stakeholder Validation Report: Quantified business case results used to justify broader enterprise deployment.",
-      ],
-    },
-    {
-      name: "Continuous Learning & Scalable Talent Retainer",
-      challenge: "We need to rapidly inject specialized technical or strategic skills into our team, but we can't afford to hire full-time headcount.",
-      objective: "Implementing a permanent framework for enterprise-wide upskilling while integrating elastic on-demand talent networks to keep the workforce highly responsive to market updates.",
-      duration: "Monthly or Quarterly Retainer",
-      outcomes: [
-        "Scalable Talent Supply Chain: A structured model blending core internal employees with an on-demand network of elite Toptal subject matter experts.",
-        "Continuous Learning Architecture: A permanent infrastructure for ongoing corporate upskilling and leadership alignment cadences.",
-        "Transformation Impact Report: Longitudinal evaluation measuring long-term organizational agility, cost optimization, and net innovation capacity.",
-      ],
-    },
-  ],
-};
-
-// ── Buyer groups (from seller sheet buyer definitions) ────────────────────────
-
-const buyerGroups: BuyerGroup[] = [
-  {
-    group: "Buying Center",
-    options: [
-      "Finance",
-      "Operations",
-      "Supply Chain & Logistics",
-      "Marketing & Sales",
-      "Human Resources",
-      "IT & Technology",
-      "Strategy & Corporate Development",
-      "Growth & Innovation",
+    name: "Finance",
+    color: "#0CA678",
+    bg: "#ECFDF5",
+    buyers: ["CFO", "Chief Accounting Officer", "Controller"],
+    l3s: [
+      { id: "fi-strategy", name: "Finance Strategy", challenge: "The CFO has no documented vision or roadmap for where the finance function needs to go.", description: "Defines the direction of the finance function, including CFO strategy assessments, finance vision and priorities, finance transformation roadmaps, and value cases." },
+      { id: "fi-opmodel", name: "Finance Operating Model", challenge: "Our finance org structure, shared services, and GBS setup haven't been rethought in years.", description: "Design of how the finance function is organized and delivered, including the finance target operating model, organization design, shared services, and global business services." },
+      { id: "fi-processes", name: "Finance Processes & Operations", challenge: "Our record-to-report, procure-to-pay, or order-to-cash processes are manual and the close takes too long.", description: "Improvement and ongoing execution of core finance processes, including record-to-report, procure-to-pay, order-to-cash, and close management and optimization." },
+      { id: "fi-fpa", name: "Financial Planning & Analysis", challenge: "Budgeting, forecasting, and reporting take weeks and still don't give the business what it needs.", description: "Design, improvement, and ongoing operation of financial planning and analysis, including budgeting and forecasting, management reporting, and financial analysis and business partnering." },
+      { id: "fi-tech", name: "Finance Technology", challenge: "We're evaluating (or stuck on) an ERP/EPM and need strategy and selection help, not just an implementer.", description: "Advisory on finance platforms, including ERP strategy, selection, and modernization roadmaps, EPM advisory, finance platform selection, and finance automation design." },
+      { id: "fi-ai", name: "Finance AI", challenge: "Finance wants to use AI but has no prioritized use cases or plan for an AI-enabled close or FP&A process.", description: "AI-specific strategy and solution design for finance, including use case prioritization, intelligent close, AI-enabled FP&A and finance operations, and agentic finance operating models." },
+      { id: "fi-change", name: "Change Management", challenge: "We're rolling out a finance transformation with no plan for change impact or adoption on the finance team.", description: "Change management for finance programs, including finance change strategy, change impact assessment, stakeholder communications, and finance learning and adoption." },
+      { id: "fi-pmo", name: "Program & Portfolio Management", challenge: "Multiple finance initiatives are running with no dedicated PMO or portfolio view.", description: "Project, program, and portfolio management for finance initiatives, including finance project managers, finance PMO, program leadership, portfolio management, and benefits tracking." },
     ],
   },
   {
-    group: "C-Suite",
-    options: [
-      "CEO / President",
-      "Chief Operating Officer (COO)",
-      "Chief Financial Officer (CFO)",
-      "Chief Marketing Officer (CMO)",
-      "Chief Growth Officer (CGO)",
-      "Chief Strategy Officer (CSO)",
-      "Chief Sales Officer / Head of Sales",
-      "Chief Information Officer (CIO)",
-      "Chief Technology Officer (CTO)",
-      "Chief Digital Officer (CDO)",
-      "Chief Human Resources Officer (CHRO)",
-      "Chief Transformation Officer",
-      "Chief Sustainability Officer",
+    id: "supplychain",
+    name: "Supply Chain & Operations",
+    color: "#E86B4A",
+    bg: "#FFF7ED",
+    buyers: ["COO", "Chief Supply Chain Officer", "Chief Procurement Officer"],
+    l3s: [
+      { id: "sc-strategy", name: "Supply Chain Strategy", challenge: "We haven't reassessed our network design or resilience strategy in years, and it shows under pressure.", description: "Defines supply chain direction and structure, including supply chain strategy, network design and optimization, supply chain operating model, and resilience strategy." },
+      { id: "sc-planning", name: "Supply Chain Planning", challenge: "Demand, supply, and inventory planning are disconnected and our S&OP process isn't delivering reliable numbers.", description: "Design and ongoing operation of supply chain planning, including demand, supply, and inventory planning, integrated business planning, and planning performance monitoring." },
+      { id: "sc-procurement", name: "Procurement", challenge: "Procurement is transactional, not strategic — we have no real sourcing or category management approach.", description: "Strategy and execution of sourcing and supplier management, including procurement strategy, strategic sourcing, category management, supplier relationship management, and procurement operating model." },
+      { id: "sc-mfg", name: "Manufacturing & Operations", challenge: "Plant or service operations performance has plateaued with no structured excellence program.", description: "Improvement of plant and service operations performance, including manufacturing excellence, lean and operational excellence, service operations design, and quality and productivity improvement." },
+      { id: "sc-logistics", name: "Logistics & Fulfillment", challenge: "Warehouse, transportation, and last-mile costs are rising and delivery performance is falling behind.", description: "Design and optimization of how goods reach customers, including warehouse operations, transportation strategy, distribution design, fulfillment optimization, and last-mile operations." },
+      { id: "sc-tech", name: "Supply Chain & Operations Technology", challenge: "We're evaluating planning or warehouse systems and need a platform strategy, not just a vendor bake-off.", description: "Advisory on supply chain and operations platforms, including planning platform strategy, warehouse and transportation platform selection, operations systems roadmaps, and process automation design." },
+      { id: "sc-ai", name: "Supply Chain & Operations AI", challenge: "We want to use AI for demand planning, inventory, or procurement but don't know where to start.", description: "AI-specific strategy and solution design for supply chain and operations, including AI use cases, AI-enabled demand planning and procurement, inventory optimization, and predictive operations." },
+      { id: "sc-change", name: "Change Management", challenge: "We're changing how a site or supplier network operates with no plan for frontline or partner adoption.", description: "Change management for supply chain and operations programs, including site readiness and impact assessment, frontline adoption, and supplier and partner change enablement." },
+      { id: "sc-pmo", name: "Program & Portfolio Management", challenge: "Several supply chain initiatives are in flight with no PMO or network-level program leadership.", description: "Project, program, and portfolio management for supply chain and operations initiatives, including supply chain PMO, network program leadership, operations portfolio management, and benefits tracking." },
     ],
   },
   {
-    group: "Key Leaders",
-    options: [
-      "Finance Director",
-      "VP / Director of Supply Chain",
-      "VP / Director of Learning & Development",
-      "Head of Operations",
-      "Head of IT",
-      "Head of HR",
-      "Business Unit Leader / Division Head",
-      "Head of Product Development / Innovation",
-      "Operational Manager",
-      "Board Member / Director",
+    id: "customer",
+    name: "Customer & Growth",
+    color: "#D6336C",
+    bg: "#FDF2F8",
+    buyers: ["Chief Revenue Officer", "CMO", "Chief Customer Officer"],
+    l3s: [
+      { id: "cg-growth", name: "Growth Strategy", challenge: "We have ambitious revenue targets but no documented go-to-market, pricing, or expansion strategy to hit them.", description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion." },
+      { id: "cg-cx", name: "Customer Experience", challenge: "Satisfaction or loyalty scores are slipping and we have no clear view of the end-to-end journey.", description: "Design and improvement of the end-to-end customer experience, including CX strategy, customer journey design, voice of customer, experience measurement, and loyalty experience design." },
+      { id: "cg-service", name: "Customer Service & Success", challenge: "Our contact center or customer success operation is strained and retention numbers are starting to show it.", description: "Design and ongoing delivery of customer service and success, including service strategy, contact center operating model, service and success operations, and retention and renewal management." },
+      { id: "cg-tech", name: "Customer & Growth Technology", challenge: "We're reevaluating our CRM or marketing platform and need a systems roadmap, not just a new tool.", description: "Advisory on commercial platforms, including CRM strategy and selection, marketing platform strategy, customer service platform advisory, and commercial systems roadmaps." },
+      { id: "cg-ai", name: "Customer & Growth AI", challenge: "Sales and marketing want to use AI for personalization or lead scoring but have no prioritized use cases.", description: "AI-specific strategy and solution design for commercial functions, including commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service." },
+      { id: "cg-change", name: "Change Management", challenge: "We're rolling out a new commercial model and sales/marketing readiness hasn't been planned for.", description: "Change management for commercial programs, including commercial change strategy, sales and marketing readiness, stakeholder communications, and commercial adoption and enablement." },
+      { id: "cg-pmo", name: "Program & Portfolio Management", challenge: "Multiple commercial transformation initiatives are running with no PMO or portfolio view.", description: "Project, program, and portfolio management for commercial initiatives, including customer transformation PMO, commercial program leadership, growth portfolio management, and benefits tracking." },
+    ],
+  },
+  {
+    id: "people",
+    name: "People & Organization",
+    color: "#5C6BC0",
+    bg: "#EDE9FE",
+    buyers: ["CHRO", "Chief People Officer"],
+    l3s: [
+      { id: "po-strategy", name: "Organization Strategy", challenge: "Our people strategy isn't clearly tied to the business plan, and we have no future-of-work point of view.", description: "Aligns people and the HR function to business priorities, including people strategy, strategic people planning, future of work strategy, HR function strategy, and organization effectiveness assessment." },
+      { id: "po-design", name: "Organization Design", challenge: "Roles and reporting lines grew organically and no longer reflect how the business actually runs.", description: "HR-led design of organization structures, including roles and decision rights, job architecture, HR operating model, and organization effectiveness design." },
+      { id: "po-talent", name: "Talent & Leadership", challenge: "We have no leadership pipeline or succession plan, and attrition in key roles would really hurt us.", description: "Strategies and programs to attract, develop, and retain talent, including talent strategy, leadership and executive development, succession planning, and culture and leadership alignment." },
+      { id: "po-learning", name: "Learning & Capability Development", challenge: "Our learning programs aren't preparing people for the skills — especially AI — the business will need next.", description: "Design, improvement, and ongoing delivery of learning programs, including learning strategy, capability assessment, reskilling strategy, AI readiness and literacy, and learning operating model." },
+      { id: "po-hrops", name: "HR Operations & Services", challenge: "HR service delivery is inconsistent and the team spends too much time on transactional work.", description: "Design, improvement, and ongoing delivery of HR services, including HR service delivery design, employee lifecycle administration, HR shared services, and HR process improvement." },
+      { id: "po-tech", name: "HR Technology", challenge: "We're assessing a new HRIS or talent platform and need a systems roadmap, not just a vendor comparison.", description: "Advisory on HR platforms, including HRIS strategy and selection, talent platform advisory, HR systems roadmaps, and people analytics design." },
+      { id: "po-ai", name: "HR AI", challenge: "HR wants to apply AI to talent or learning processes but has no strategy or prioritized use cases.", description: "AI-specific strategy and solution design for HR, including HR AI strategy, use case prioritization, AI-enabled talent and learning processes, and HR AI adoption roadmaps." },
+      { id: "po-change", name: "Change Management", challenge: "We're rolling out an org change with no plan for culture, behavior, or stakeholder communication.", description: "Change management for people and organization programs, including change strategy, organization change readiness, culture and behavior adoption, and stakeholder communications." },
+      { id: "po-pmo", name: "Program & Portfolio Management", challenge: "Multiple people/HR initiatives are in flight with no dedicated PMO or portfolio view.", description: "Project, program, and portfolio management for HR and people initiatives, including people transformation PMO, organization program leadership, HR portfolio management, and benefits tracking." },
+    ],
+  },
+  {
+    id: "risk",
+    name: "Risk & Compliance",
+    color: "#9C2B2B",
+    bg: "#FEF2F2",
+    buyers: ["Chief Risk Officer", "Chief Compliance Officer", "Chief Audit Executive"],
+    l3s: [
+      { id: "rc-erm", name: "Enterprise Risk Management", challenge: "We have no documented risk appetite or enterprise risk framework — reporting is inconsistent at best.", description: "Design and operation of enterprise risk management, including risk strategy and framework, risk appetite, risk operating model, enterprise risk assessments, risk registers, and monitoring and reporting." },
+      { id: "rc-tprm", name: "Third-Party Risk Management", challenge: "Our vendor risk program stops at onboarding — there's no ongoing monitoring or reassessment.", description: "Management of supplier and third-party risk from design through ongoing operation, including frameworks, due diligence, onboarding and risk tiering, ongoing monitoring, remediation, and reporting." },
+      { id: "rc-resilience", name: "Operational Risk & Resilience", challenge: "We've never stress-tested our business continuity plans and aren't confident we'd handle a real disruption.", description: "Assessment and strengthening of operational resilience, including operational risk assessments, business continuity, scenario exercises, incident readiness, and resilience monitoring." },
+      { id: "rc-governance", name: "Governance & Controls", challenge: "Our internal controls are outdated or manual, and SOX/controls testing is becoming a real burden.", description: "Design, testing, and modernization of governance and internal controls, including governance frameworks, SOX controls advisory, controls testing and monitoring, and remediation tracking." },
+      { id: "rc-compliance", name: "Compliance & Regulatory", challenge: "Regulatory change is outpacing our compliance program, and monitoring/testing hasn't kept up.", description: "Design and operation of compliance programs, including compliance operating model, regulatory change management, policy frameworks, compliance monitoring and testing, financial crime compliance, and remediation." },
+      { id: "rc-audit", name: "Internal Audit", challenge: "Our internal audit function is still fully point-in-time — there's no continuous auditing capability.", description: "Strategy, transformation, and execution of internal audit, including audit operating model, planning and methodology, audit execution, continuous auditing, and issue follow-up." },
+      { id: "rc-tech", name: "Risk Technology", challenge: "We're evaluating a GRC platform and need strategy and selection help, not just an implementation partner.", description: "Advisory on risk and compliance platforms, including GRC platform strategy and selection, controls technology roadmaps, third-party risk platform advisory, and risk analytics design." },
+      { id: "rc-ai", name: "Risk AI", challenge: "We're deploying AI and agentic systems with no clear AI risk and controls framework in place.", description: "AI governance and AI-specific solution design for risk, including AI risk and controls frameworks, AI use cases for risk, intelligent controls design, and AI-enabled compliance and audit." },
+      { id: "rc-change", name: "Change Management", challenge: "We're rolling out new risk or compliance policies with no plan for culture or adoption.", description: "Change management for risk and compliance programs, including change strategy, risk culture and adoption, policy change enablement, and controls training and adoption." },
+      { id: "rc-pmo", name: "Program & Portfolio Management", challenge: "Several risk/compliance remediation programs are running with no PMO or portfolio governance.", description: "Project, program, and portfolio management for risk and compliance initiatives, including regulatory program PMO, risk program leadership, risk portfolio management, and remediation governance." },
     ],
   },
 ];
+
+const PRACTICE_ORDER: PracticeId[] = PRACTICES.map((p) => p.id);
+const PRACTICE_BY_ID: Record<PracticeId, Practice> = Object.fromEntries(PRACTICES.map((p) => [p.id, p])) as Record<PracticeId, Practice>;
+
+// Which practice a given buyer title belongs to (for reordering the challenge list)
+const BUYER_TO_PRACTICE: Record<string, PracticeId> = Object.fromEntries(
+  PRACTICES.flatMap((p) => p.buyers.map((b) => [b, p.id]))
+);
+
+const BUYER_GROUPS = PRACTICES.map((p) => ({ group: p.name, options: p.buyers }));
+
+// Flat signal corpus for the AI free-text matcher — generic shape the edge
+// function expects (id | tag | shortLabel | quote | hub).
+const signals = PRACTICES.flatMap((p) =>
+  p.l3s.map((l3) => ({
+    id: l3.id,
+    tag: l3.name,
+    shortLabel: l3.challenge,
+    quote: l3.challenge,
+    hub: p.id,
+  }))
+);
+
+function selectCls(isEmpty: boolean): string {
+  return [
+    "h-9 rounded-md border border-input bg-background px-3 text-sm",
+    "ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+    "cursor-pointer appearance-none pr-8",
+    isEmpty ? "text-muted-foreground" : "text-foreground",
+  ].join(" ");
+}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function HubFinder() {
   const [selectedBuyer, setSelectedBuyer] = useState<string>("");
-  const [selectedSignalId, setSelectedSignalId] = useState<string>("");
-  const [isModulesOpen, setIsModulesOpen] = useState(false);
-  const [freeFormText, setFreeFormText]         = useState<string>("");
-  const [isMatching, setIsMatching]             = useState(false);
-  const [matchError, setMatchError]             = useState<string | null>(null);
+  const [selectedL3Id, setSelectedL3Id] = useState<string>("");
+  const [freeFormText, setFreeFormText] = useState<string>("");
+  const [isMatching, setIsMatching] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
   const [matchExplanation, setMatchExplanation] = useState<string | null>(null);
-  const [isFreeFormOpen, setIsFreeFormOpen]         = useState(false);
-  const [isHookQuestionsOpen, setIsHookQuestionsOpen] = useState(false);
-  const [isOpenEndedOpen, setIsOpenEndedOpen]         = useState(false);
+  const [isFreeFormOpen, setIsFreeFormOpen] = useState(false);
 
-  const selectedSignal = signals.find((s) => s.id === selectedSignalId);
-  const hub = selectedSignal ? hubs[selectedSignal.hub] : null;
+  const selectedPractice = PRACTICES.find((p) => p.l3s.some((l3) => l3.id === selectedL3Id)) ?? null;
+  const selectedL3 = selectedPractice?.l3s.find((l3) => l3.id === selectedL3Id) ?? null;
 
-  // Reorder hub groups in the challenge dropdown based on the selected buyer
-  const orderedHubIds: HubId[] =
-    selectedBuyer && BUYER_HUB_PRIORITY[selectedBuyer]
-      ? BUYER_HUB_PRIORITY[selectedBuyer]
-      : HUB_ORDER;
+  // Reorder practice groups in the challenge dropdown based on the selected buyer
+  const orderedPracticeIds: PracticeId[] =
+    selectedBuyer && BUYER_TO_PRACTICE[selectedBuyer]
+      ? [BUYER_TO_PRACTICE[selectedBuyer], ...PRACTICE_ORDER.filter((id) => id !== BUYER_TO_PRACTICE[selectedBuyer])]
+      : PRACTICE_ORDER;
 
-  // Changing buyer clears any stale challenge selection and closes the modal
   const handleBuyerChange = (value: string) => {
     setSelectedBuyer(value);
-    setSelectedSignalId("");
-    setIsModulesOpen(false);
   };
 
-  // Changing signal closes the modal so stale module content doesn't persist
-  // Also clears any AI match state so explanations don't linger on manual picks
   const handleSignalChange = (value: string) => {
-    setSelectedSignalId(value);
-    setIsModulesOpen(false);
+    setSelectedL3Id(value);
     setMatchExplanation(null);
     setMatchError(null);
   };
@@ -834,13 +225,12 @@ export default function HubFinder() {
         body: {
           userText: freeFormText.trim(),
           buyerRole: selectedBuyer || undefined,
-          signals: signals.map(({ id, tag, shortLabel, quote, hub }) => ({ id, tag, shortLabel, quote, hub })),
+          signals,
         },
       });
       if (error || data?.error) throw new Error(error?.message || data?.error || "Matching failed");
-      setSelectedSignalId(data.signalId);
+      setSelectedL3Id(data.signalId);
       setMatchExplanation(data.reason);
-      setIsModulesOpen(false);
       setIsFreeFormOpen(false);
     } catch (e: unknown) {
       setMatchError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
@@ -858,7 +248,7 @@ export default function HubFinder() {
         Find Your Starting Point
       </h2>
       <p className="mb-5 text-sm text-muted-foreground">
-        Select who you're talking to and what challenge you're hearing — the tool will identify the best-fit hub service offering to lead your conversation with the client.
+        Select who you're talking to and what challenge you're hearing — the tool will identify the best-fit service offering to lead your conversation with the client.
       </p>
 
       {/* Sentence + dropdowns */}
@@ -870,7 +260,7 @@ export default function HubFinder() {
             <SelectValue placeholder="select buyer or title..." />
           </SelectTrigger>
           <SelectContent>
-            {buyerGroups.map((g) => (
+            {BUYER_GROUPS.map((g) => (
               <SelectGroup key={g.group}>
                 <SelectLabel>{g.group}</SelectLabel>
                 {g.options.map((o) => (
@@ -885,20 +275,19 @@ export default function HubFinder() {
 
         <span className="whitespace-nowrap">and am hearing</span>
 
-        <Select value={selectedSignalId} onValueChange={handleSignalChange}>
+        <Select value={selectedL3Id} onValueChange={handleSignalChange}>
           <SelectTrigger className="h-9 w-auto min-w-[300px] text-sm">
             <SelectValue placeholder="select a challenge or issue..." />
           </SelectTrigger>
           <SelectContent className="max-w-[500px]">
-            {orderedHubIds.map((hubId) => {
-              const h = hubs[hubId];
-              const hubSignals = signals.filter((s) => s.hub === hubId);
+            {orderedPracticeIds.map((practiceId) => {
+              const p = PRACTICE_BY_ID[practiceId];
               return (
-                <SelectGroup key={hubId}>
-                  <SelectLabel>{h.name}</SelectLabel>
-                  {hubSignals.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.shortLabel}
+                <SelectGroup key={practiceId}>
+                  <SelectLabel>{p.name}</SelectLabel>
+                  {p.l3s.map((l3) => (
+                    <SelectItem key={l3.id} value={l3.id}>
+                      {l3.challenge}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -919,16 +308,17 @@ export default function HubFinder() {
         </button>
       </div>
 
-      {/* Result card — shown as soon as a signal is selected */}
-      {selectedSignal && hub ? (
+      {/* Result card — shown as soon as a challenge is selected */}
+      {selectedL3 && selectedPractice ? (
         <div className="mt-5 rounded-lg border border-border bg-card p-5 space-y-3 fade-in">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${PRACTICE_COLORS[hub.practice]}`}
+              className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+              style={{ backgroundColor: selectedPractice.bg, color: selectedPractice.color }}
             >
-              {hub.practice}
+              {selectedPractice.name}
             </span>
-            <h3 className="text-base font-bold text-card-foreground">{hub.name}</h3>
+            <h3 className="text-base font-bold" style={{ color: selectedPractice.color }}>{selectedL3.name}</h3>
             {selectedBuyer && (
               <span className="ml-auto text-xs text-muted-foreground">
                 Talking with: {selectedBuyer}
@@ -938,10 +328,7 @@ export default function HubFinder() {
 
           <div className="border-l-4 border-primary/40 pl-4">
             <p className="text-sm italic text-muted-foreground">
-              "{selectedSignal.quote}"
-            </p>
-            <p className="mt-1 text-xs font-semibold text-primary">
-              {selectedSignal.tag}
+              "{selectedL3.challenge}"
             </p>
           </div>
 
@@ -952,204 +339,12 @@ export default function HubFinder() {
             </p>
           )}
 
-          <p className="text-sm text-muted-foreground">{hub.rationale}</p>
-
-          <div className="flex flex-wrap gap-4 pt-1">
-            <a
-              href={hub.sellersSheetUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Seller's Sheet
-            </a>
-            <a
-              href={hub.docUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Overview Deck
-            </a>
-{HUB_MODULES[hub.id] && (
-              <button
-                onClick={() => setIsModulesOpen(true)}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Service Modules
-              </button>
-            )}
-            <button
-              onClick={() => setIsHookQuestionsOpen(true)}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <HelpCircle className="h-3.5 w-3.5" />
-              Hook Questions
-            </button>
-            <button
-              onClick={() => setIsOpenEndedOpen(true)}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              Open-Ended Questions
-            </button>
-          </div>
-
-          {/* Adjacent services from the services web */}
-          {(HUB_ADJACENTS[hub.id].universals.length > 0 || HUB_ADJACENTS[hub.id].secondaries.length > 0) && (
-            <div className="border-t border-border pt-3 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Adjacent Services</p>
-              {HUB_ADJACENTS[hub.id].universals.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground mr-0.5">Universal Connectors:</span>
-                  {HUB_ADJACENTS[hub.id].universals.map((svc) =>
-                    svc.docUrl ? (
-                      <a
-                        key={svc.name}
-                        href={svc.docUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10 transition-colors"
-                      >
-                        {svc.name}
-                        <ExternalLink className="h-2.5 w-2.5" />
-                      </a>
-                    ) : (
-                      <span
-                        key={svc.name}
-                        className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
-                      >
-                        {svc.name}
-                      </span>
-                    )
-                  )}
-                </div>
-              )}
-              {HUB_ADJACENTS[hub.id].secondaries.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground mr-0.5">Secondary Services:</span>
-                  {HUB_ADJACENTS[hub.id].secondaries.map((svc) =>
-                    svc.docUrl ? (
-                      <a
-                        key={svc.name}
-                        href={svc.docUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-foreground/70 hover:text-foreground hover:bg-muted transition-colors"
-                      >
-                        {svc.name}
-                        <ExternalLink className="h-2.5 w-2.5" />
-                      </a>
-                    ) : (
-                      <span
-                        key={svc.name}
-                        className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground"
-                      >
-                        {svc.name}
-                      </span>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
+          <p className="text-sm text-muted-foreground">{selectedL3.description}</p>
         </div>
       ) : (
         <p className="mt-4 text-xs italic text-muted-foreground/60">
-          Select a challenge above to see the recommended hub service and quick-access materials.
+          Select a challenge above to see the recommended service offering.
         </p>
-      )}
-
-      {hub && HUB_MODULES[hub.id] && (
-        <Dialog open={isModulesOpen} onOpenChange={setIsModulesOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{hub.name} — Service Modules</DialogTitle>
-              <DialogDescription>
-                How to get started: four strategic sprints from initial diagnostic to ongoing optimization
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 sm:grid-cols-2 mt-2">
-              {HUB_MODULES[hub.id]!.map((mod) => (
-                <div key={mod.name} className="rounded-lg border border-border bg-card p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-sm font-semibold text-foreground leading-snug">{mod.name}</h4>
-                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap">
-                      {mod.duration}
-                    </span>
-                  </div>
-                  <p className="text-xs italic text-muted-foreground">"{mod.challenge}"</p>
-                  <p className="text-xs text-foreground/80 leading-relaxed">{mod.objective}</p>
-                  <ul className="space-y-1">
-                    {mod.outcomes.map((o) => (
-                      <li key={o} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/40" />
-                        {o}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Hook Questions modal */}
-      {hub && (
-        <Dialog open={isHookQuestionsOpen} onOpenChange={setIsHookQuestionsOpen}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{hub.name} — Hook Questions</DialogTitle>
-              <DialogDescription>
-                Diagnostic yes/no questions that surface pain and create urgency. A "no" answer opens the door to a deeper conversation.
-              </DialogDescription>
-            </DialogHeader>
-            <ol className="mt-3 space-y-4">
-              {HUB_QUESTIONS[hub.id].hook.map((q, i) => (
-                <li key={i} className="space-y-1">
-                  <p className="text-sm font-medium text-foreground leading-snug">
-                    {i + 1}. "{q.question}"
-                  </p>
-                  {q.insight && (
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-semibold text-primary/80">{q.insight}:</span>{" "}
-                      {q.detail}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Open-Ended Questions modal */}
-      {hub && (
-        <Dialog open={isOpenEndedOpen} onOpenChange={setIsOpenEndedOpen}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{hub.name} — Open-Ended Questions</DialogTitle>
-              <DialogDescription>
-                Use these to deepen the conversation, uncover the full scope of the challenge, and qualify the opportunity.
-              </DialogDescription>
-            </DialogHeader>
-            <ol className="mt-3 space-y-3">
-              {HUB_QUESTIONS[hub.id].openEnded.map((q, i) => (
-                <li key={i} className="space-y-0.5">
-                  {q.insight && (
-                    <p className="text-xs font-semibold uppercase tracking-wide text-primary/70">{q.insight}</p>
-                  )}
-                  <p className="text-sm text-foreground leading-snug">"{q.question}"</p>
-                </li>
-              ))}
-            </ol>
-          </DialogContent>
-        </Dialog>
       )}
 
       {/* Free-form AI matcher modal */}
@@ -1161,7 +356,7 @@ export default function HubFinder() {
               Describe the Challenge
             </DialogTitle>
             <DialogDescription>
-              Describe what you're hearing from the client in your own words — the AI will match it to the closest buying signal and identify the best-fit hub offering.
+              Describe what you're hearing from the client in your own words — the AI will match it to the closest offering.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-1">
