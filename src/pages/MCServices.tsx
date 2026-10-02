@@ -866,7 +866,7 @@ export default function MCServices() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="pb-2 pr-4 text-left font-semibold text-foreground align-middle">Service</th>
+                  <th className="pb-2 pr-4 text-left font-semibold text-foreground align-middle">Practices & Service Offerings</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Overview Deck</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">First Call Deck</th>
                   <th className="pb-2 px-3 text-center font-semibold text-foreground align-middle">Battlecard</th>
