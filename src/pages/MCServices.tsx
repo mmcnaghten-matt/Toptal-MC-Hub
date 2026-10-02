@@ -203,8 +203,6 @@ const gtmMaterials: GTMRow[] = [
         ],
         description: "Guiding organizations through comprehensive change initiatives to improve performance, competitiveness, and adaptability.",
       },
-      { service: "Change Management" },
-      { service: "Program & Portfolio Management" },
       {
         service: "Enterprise AI",
         docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
@@ -241,6 +239,8 @@ const gtmMaterials: GTMRow[] = [
         maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
         description: "Guiding organizations in leveraging digital technologies to enhance business performance, customer engagement, and operational efficiency.",
       },
+      { service: "Change Management" },
+      { service: "Program & Portfolio Management" },
     ],
   },
   // Finance
@@ -259,13 +259,15 @@ const gtmMaterials: GTMRow[] = [
         sellersSheetUrl: "https://docs.google.com/document/d/1fa7xf7L0V7417A8xEOfXLxhEF3sSchhRQMKhDtGpdsk/edit?usp=sharing",
         maturityModelUrl: "https://docs.google.com/document/d/1G1GKXB2YBHC18SLUbK8HT8p88Y5VIOhpz3LAOLxJ33s/edit",
         maturityDiagnosticUrl: "/diagnostics/finance-transformation",
-        exampleMaterials: [
-          { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
-        ],
         description: "Transforming finance from a cost center into a proactive, value-creating strategic partner.",
       },
       { service: "Finance Operating Model" },
-      { service: "Finance Processes & Operations" },
+      {
+        service: "Finance Processes & Operations",
+        exampleMaterials: [
+          { label: "HaddadBrands Financial Close Automation", url: "https://docs.google.com/presentation/d/1mTpWUqDsXYUugoHvFCzJ2kXyOvoAiNGW2fjsP-8MAFY/edit?usp=sharing" },
+        ],
+      },
       { service: "Financial Planning & Analysis" },
       { service: "Finance Technology" },
       { service: "Finance AI" },
@@ -371,7 +373,6 @@ const gtmMaterials: GTMRow[] = [
     practice: "People & Organization",
     service: "People & Organization",
     keyBuyers: "CHRO; Chief People Officer",
-    note: "Revision coming soon",
     subRows: [
       {
         service: "Organization Strategy",
@@ -881,11 +882,13 @@ export default function MCServices() {
                     .sort((a, b) => (a.seq ?? -1) - (b.seq ?? -1));
                   if (rows.length === 0) return [];
                   return [
-                    <tr key={`hdr-${practice}`} className="bg-muted">
-                      <td colSpan={7} className="py-2 px-3 text-xs font-bold uppercase tracking-wider text-foreground">
-                        {practice}
-                      </td>
-                    </tr>,
+                    practice !== PRACTICE_ORDER[0] ? (
+                      <tr key={`hdr-${practice}`}>
+                        <td colSpan={7} className="pt-3 pb-1">
+                          <div className="border-t border-border" />
+                        </td>
+                      </tr>
+                    ) : null,
                     ...rows.flatMap((row) => {
                       const hubColor = HUB_OFFERING_COLORS[practice].text;
                       return [
