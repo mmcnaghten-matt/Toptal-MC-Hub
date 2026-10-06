@@ -13,13 +13,6 @@ const sections = [
     path: "/services",
   },
   {
-    id: "way-of-working",
-    title: "Management Consulting Way of Working",
-    description: "Our consistent four-phase consulting approach, AI accelerators, maturity diagnostic models, and delivery standards.",
-    icon: Workflow,
-    path: "/way-of-working",
-  },
-  {
     id: "industry-insights",
     title: "Industry Insights",
     description: "Sub-industry challenges, initiatives, and needs mapped to MC service offerings with signals and sales narratives.",
@@ -32,6 +25,13 @@ const sections = [
     description: "AI-powered company research generating executive summaries, competitive landscape analysis, strategic frameworks, and MC opportunity mapping.",
     icon: Building2,
     path: "/client-insights",
+  },
+  {
+    id: "way-of-working",
+    title: "Management Consulting Way of Working",
+    description: "Our consistent four-phase consulting approach, AI accelerators, maturity diagnostic models, and delivery standards.",
+    icon: Workflow,
+    path: "/way-of-working",
   },
 ];
 
