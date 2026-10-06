@@ -8,7 +8,7 @@ const sections = [
   {
     id: "services",
     title: "Management Consulting Services",
-    description: "Explore Toptal's full portfolio of MC service offerings across Strategy, Finance, Operations, and People — plus GTM materials and sales assets.",
+    description: "Explore Toptal's six Management Consulting practices and their service offerings, plus go-to-market materials and sales assets.",
     icon: Briefcase,
     path: "/services",
   },
@@ -29,7 +29,7 @@ const sections = [
   {
     id: "way-of-working",
     title: "Management Consulting Way of Working",
-    description: "Our consistent four-phase consulting approach, AI accelerators, maturity diagnostic models, and delivery standards.",
+    description: "Our consistent four-phase consulting approach, delivery standards, the Management Consulting Scope of Services, and maturity diagnostic models.",
     icon: Workflow,
     path: "/way-of-working",
   },
