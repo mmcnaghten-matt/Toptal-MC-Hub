@@ -820,7 +820,7 @@ export default function MCServices() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {mcDomains.map((domain) => (
               <div key={domain.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
-                <h3 className="mb-1 text-base font-bold" style={{ color: domain.color }}>{domain.name}</h3>
+                <h3 className="mb-1 text-xl font-bold" style={{ color: domain.color }}>{domain.name}</h3>
                 <p className="mb-2 min-h-8 text-xs text-muted-foreground">
                   <span className="font-semibold">Key buyers: </span>{domain.buyers}
                 </p>
