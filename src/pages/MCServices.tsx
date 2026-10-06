@@ -636,7 +636,7 @@ const mcDomains: MCDomain[] = [
     name: "Strategy & Transformation",
     buyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
     description: "Help executive leadership define enterprise strategy, prioritize transformation investments, design operating models, and coordinate cross-functional value creation.",
-    l3s: ["Corporate Strategy", "Operating Model", "M&A & Divestitures", "Performance Improvement", "Transformation Management", "Change Management", "Program & Portfolio Management"],
+    l3s: ["Corporate Strategy", "Operating Model", "M&A & Divestitures", "Performance Improvement", "Transformation Management", "Enterprise AI", "Enterprise Digital & Technology", "Change Management", "Program & Portfolio Management"],
     color: "#2B44D4",
     bg: "#EEF2FF",
   },
