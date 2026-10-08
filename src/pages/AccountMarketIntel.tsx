@@ -36,6 +36,41 @@ const Markdown = ({ children, ...props }: React.ComponentProps<typeof ReactMarkd
   <ReactMarkdown {...props}>{toStr(children)}</ReactMarkdown>
 );
 
+// MC taxonomy practice colors (match the Services page cards). serviceOffering arrives as "L2 > L3".
+const L2_COLORS: Record<string, { text: string; bg: string }> = {
+  "Strategy & Transformation": { text: "#2B44D4", bg: "#EEF2FF" },
+  "Finance": { text: "#0CA678", bg: "#ECFDF5" },
+  "Supply Chain & Operations": { text: "#E86B4A", bg: "#FFF7ED" },
+  "Customer & Growth": { text: "#D6336C", bg: "#FDF2F8" },
+  "People & Organization": { text: "#5C6BC0", bg: "#EDE9FE" },
+  "Risk & Compliance": { text: "#9C2B2B", bg: "#FEF2F2" },
+};
+
+function OfferingPill({ value }: { value: string }) {
+  const [l2, l3] = value.split(" > ");
+  const colors = l3 ? L2_COLORS[l2] : undefined;
+  if (!colors) {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+        {value}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex flex-col items-start gap-1">
+      <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.text }}>
+        {l2}
+      </span>
+      <span
+        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+        style={{ backgroundColor: colors.bg, color: colors.text }}
+      >
+        {l3}
+      </span>
+    </span>
+  );
+}
+
 function WinLossColumns({ raw }: { raw: string }) {
   try {
     const parsed = JSON.parse(raw);
@@ -937,9 +972,7 @@ export default function AccountMarketIntel() {
                               <td className="py-4 px-4 text-sm font-bold text-foreground">{opp.initiative}</td>
                               <td className="py-4 px-4 text-sm text-foreground">{opp.need}</td>
                               <td className="py-4 px-4">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                                  {opp.serviceOffering}
-                                </span>
+                                <OfferingPill value={opp.serviceOffering} />
                               </td>
                               <td className="py-4 px-4 text-sm text-muted-foreground italic">"{opp.rationale}"</td>
                             </tr>
