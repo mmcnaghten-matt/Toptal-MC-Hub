@@ -76,13 +76,14 @@ export interface ResearchResult {
   sources: { title: string; url: string }[];
 }
 
-export async function performResearch(companyName: string, deepResearch: boolean = true): Promise<ResearchResult> {
+export async function performResearch(companyName: string): Promise<ResearchResult> {
   if (!supabase) {
     throw new Error("Backend not configured. This feature requires a published deployment with Lovable Cloud enabled.");
   }
 
   const { data, error } = await supabase.functions.invoke("gemini-research", {
-    body: { companyName, deepResearch },
+    // Fast mode (Flash models): the Pro pipeline can exceed the 150s Supabase Free-plan limit.
+    body: { companyName, deepResearch: false },
   });
 
   if (error) {
