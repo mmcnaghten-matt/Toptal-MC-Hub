@@ -139,6 +139,7 @@ export default function AccountMarketIntel() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deepResearch, setDeepResearch] = useState(true);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("executive");
@@ -221,7 +222,7 @@ export default function AccountMarketIntel() {
       setError(null);
       setResult(null);
       try {
-        const data = await performResearch(query);
+        const data = await performResearch(query, deepResearch);
         setResult(data);
         setActiveSection("executive");
       } catch (err) {
@@ -230,7 +231,7 @@ export default function AccountMarketIntel() {
         setLoading(false);
       }
     },
-    [query]
+    [query, deepResearch]
   );
 
   const scrollToSection = (id: string) => {
@@ -330,6 +331,32 @@ export default function AccountMarketIntel() {
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Analyze Now"}
               </button>
+            </div>
+
+            <div className="mt-4 flex items-center justify-center gap-6">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div
+                  onClick={() => setDeepResearch(!deepResearch)}
+                  className={cn(
+                    "w-10 h-5 rounded-full transition-colors relative",
+                    deepResearch ? "bg-accent" : "bg-primary-foreground/20"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "absolute top-1 w-3 h-3 bg-primary-foreground rounded-full transition-all",
+                      deepResearch ? "left-6" : "left-1"
+                    )}
+                  />
+                </div>
+                <span className="text-sm font-medium text-primary-foreground/80 group-hover:text-primary-foreground transition-colors">
+                  Deep Research Mode
+                </span>
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-accent/20 border border-accent/30 text-[10px] font-bold text-accent-foreground uppercase tracking-wider">
+                  <Zap className="w-3 h-3" />
+                  Recommended
+                </div>
+              </label>
             </div>
           </motion.form>
         </div>

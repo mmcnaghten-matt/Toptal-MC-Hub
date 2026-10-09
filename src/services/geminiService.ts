@@ -76,13 +76,29 @@ export interface ResearchResult {
   sources: { title: string; url: string }[];
 }
 
-export async function performResearch(companyName: string): Promise<ResearchResult> {
+// Cloud Run service (no 150s limit). When unset, fall back to the Supabase edge function.
+const RESEARCH_URL = (import.meta.env.VITE_RESEARCH_URL as string | undefined)?.replace(/\/$/, "");
+
+export async function performResearch(companyName: string, deepResearch: boolean = true): Promise<ResearchResult> {
+  if (RESEARCH_URL) {
+    const res = await fetch(RESEARCH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ companyName, deepResearch }),
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok || body?.error) {
+      throw new Error(body?.error || `Research request failed (HTTP ${res.status})`);
+    }
+    return body as ResearchResult;
+  }
+
   if (!supabase) {
     throw new Error("Backend not configured. This feature requires a published deployment with Lovable Cloud enabled.");
   }
 
+  // Supabase Free plan caps requests at 150s, which the Pro-model pipeline can exceed: always use fast mode here.
   const { data, error } = await supabase.functions.invoke("gemini-research", {
-    // Fast mode (Flash models): the Pro pipeline can exceed the 150s Supabase Free-plan limit.
     body: { companyName, deepResearch: false },
   });
 
