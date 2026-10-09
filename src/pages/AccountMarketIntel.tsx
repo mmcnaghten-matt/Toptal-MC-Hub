@@ -619,15 +619,15 @@ export default function AccountMarketIntel() {
                     <div className="prose prose-neutral max-w-none text-foreground">
                       <Markdown>{result.marketOverview.definition}</Markdown>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {[
                         { label: "TAM", value: result.marketOverview.metrics.tam, desc: "Total Addressable Market" },
                         { label: "SAM", value: result.marketOverview.metrics.sam, desc: "Serviceable Addressable Market" },
                         { label: "SOM", value: result.marketOverview.metrics.som, desc: "Serviceable Obtainable Market" },
                       ].map((item, i) => (
-                        <div key={i} className="text-center p-6 border border-border rounded-lg">
+                        <div key={i} className="text-center p-4 border border-border rounded-lg">
                           <div className="text-xs font-bold text-muted-foreground uppercase mb-1">{item.label}</div>
-                          <div className="text-xl font-bold text-foreground mb-1">{item.value}</div>
+                          <div className="text-sm font-semibold text-foreground mb-1 leading-snug">{item.value}</div>
                           <div className="text-[10px] text-muted-foreground">{item.desc}</div>
                         </div>
                       ))}
@@ -875,7 +875,7 @@ export default function AccountMarketIntel() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="p-6 bg-secondary/30 rounded-lg border border-border">
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Market Sentiment</h4>
-                        <div className="text-3xl font-bold text-foreground mb-2">{result.customerInsights.sentiment}</div>
+                        <div className="text-base font-semibold text-foreground mb-2 leading-snug">{result.customerInsights.sentiment}</div>
                         <p className="text-sm text-muted-foreground">Aggregated from reviews, social media, and industry reports.</p>
                       </div>
                       <div className="p-6 bg-primary/5 rounded-lg border border-primary/10">
