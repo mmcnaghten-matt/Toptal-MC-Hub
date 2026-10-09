@@ -1,5 +1,7 @@
 // Market Intelligence Report — Supabase Edge Function (Deno)
 //
+// Runs as three chained requests (step: "research" -> "facts" -> "analysis") so each stays under the 150s limit.
+//
 // Pipeline (every factual statement must trace back to a Google Search result):
 //   0. Resolve the company (grounded)        → stops early if the entity is ambiguous / not found
 //   1. Research, 6 topics in parallel (grounded, plain text)
@@ -916,10 +918,285 @@ function sectionCoverage(f: Facts, a: Analysis, mc: Opportunity[]) {
   return { sections, populated, coverage: Math.round((populated / Object.keys(sections).length) * 100) / 100 };
 }
 
+// ---------- Pipeline steps ----------
+// The report is built in three chained requests (research -> facts -> analysis) so each one stays under
+// Supabase's 150s request limit. The page passes the `state` returned by one step into the next.
+type State = {
+  companyName: string;
+  entity: Entity;
+  sources: Source[];
+  evidence: Evidence[];
+  queries: string[];
+  searchSuggestions: string[];
+  warnings: string[];
+  timings: Record<string, number>;
+  researchModel: string;
+  // set by the facts step
+  facts?: Facts;
+  factsOk?: boolean;
+  dropped?: Ctx["dropped"];
+  verifier?: string;
+  sourcedClaims?: number;
+};
+type StepResult = { ok: true; state: State } | { ok: false; status: number; body: Any };
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const makeCtx = (evidence: Evidence[], dropped: Ctx["dropped"] = []): Ctx => ({
+  byId: new Map(evidence.map((e) => [e.id, e])),
+  evidence,
+  dropped,
+  sourced: [],
+});
+
+// Structured (no tools, evidence-only) call. Prefers Pro when asked, falls back to Flash if Pro fails or times out.
+// `reserve` is the time left for the work after this call.
+async function structured(
+  apiKey: string, clock: ReturnType<typeof makeClock>, warnings: string[],
+  label: string, prompt: string, schema: Any, preferPro: boolean, temperature: number, reserve: number,
+) {
+  const usePro = preferPro && clock.remaining() > 60_000;
+  try {
+    const r = await callGemini(apiKey, {
+      model: usePro ? PRO_MODEL : FLASH_MODEL, prompt, schema, temperature, attempts: 1,
+      timeoutMs: usePro ? clock.timeout(70_000, reserve + 35_000) : clock.timeout(60_000, reserve),
+    });
+    const parsed = safeJson(r.text);
+    if (parsed) return parsed;
+    throw new Error("invalid JSON");
+  } catch (e) {
+    if (!usePro || clock.remaining() < 25_000) throw e;
+    console.error(`${label}: ${PRO_MODEL} failed (${(e as Error).message}); retrying with ${FLASH_MODEL}`);
+    warnings.push(`${label}: fell back to ${FLASH_MODEL} (${(e as Error).message}).`);
+    const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, temperature, attempts: 1, timeoutMs: clock.timeout(50_000, reserve) });
+    const parsed = safeJson(r.text);
+    if (!parsed) throw new Error("invalid JSON");
+    return parsed;
+  }
+}
+
+// Step 1: resolve the company, run the grounded research, build the evidence ledger.
+async function stepResearch(
+  apiKey: string, p: { companyName: string; companyWebsite?: string; deepResearch: boolean }, clock: ReturnType<typeof makeClock>,
+): Promise<StepResult> {
+  const today = todayStr();
+  const warnings: string[] = [];
+  const timings: Record<string, number> = {};
+  const tick = (label: string, t0: number) => (timings[label] = Date.now() - t0);
+
+  let t0 = Date.now();
+  const ent = await resolveEntity(apiKey, p.companyName, p.companyWebsite, today, clock.timeout(30_000, 100_000));
+  tick("entity", t0);
+  if (ent.error) return { ok: false, status: 422, body: { error: ent.error, entity: ent.entity } };
+  const entity = ent.entity;
+  if (!p.companyWebsite && !/^(none|unknown)?$/i.test(entity.otherEntities.trim())) {
+    warnings.push(`Other organisations share this name (${entity.otherEntities}). Confirm the website ${entity.website} is the right company.`);
+  }
+
+  t0 = Date.now();
+  const researchModel = p.deepResearch ? PRO_MODEL : FLASH_MODEL;
+  const researchTimeout = clock.timeout(p.deepResearch ? 90_000 : 60_000, 30_000);
+  const settled = await Promise.allSettled(
+    TOPICS.map((tp) =>
+      callGemini(apiKey, { model: researchModel, prompt: researchPrompt(tp.ask, entity, today), grounded: true, timeoutMs: researchTimeout, attempts: 2 })
+    ),
+  );
+  tick("research", t0);
+  const results: { topic: string; r: GeminiResult }[] = [{ topic: "profile", r: ent.result }];
+  settled.forEach((s, i) => {
+    if (s.status === "fulfilled") results.push({ topic: TOPICS[i].key, r: s.value });
+    else warnings.push(`Research on "${TOPICS[i].label}" failed (${(s.reason as Error)?.message ?? s.reason}); related sections may be empty.`);
+  });
+
+  t0 = Date.now();
+  const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
+  const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 20_000)));
+  const ledger = buildLedger(results, urlMap);
+  tick("ledger", t0);
+  if (!ledger.evidence.length) {
+    return { ok: false, status: 422, body: { error: "Search returned no citable evidence for this company, so no report was produced.", entity, warnings } };
+  }
+  if (ledger.evidence.length < MIN_EVIDENCE_WARN) {
+    warnings.push(`Only ${ledger.evidence.length} citable facts were found; expect most sections to be empty.`);
+  }
+  return {
+    ok: true,
+    state: {
+      companyName: p.companyName, entity, sources: ledger.sources, evidence: ledger.evidence, queries: ledger.queries,
+      searchSuggestions: ledger.searchSuggestions, warnings, timings, researchModel,
+    },
+  };
+}
+
+// Step 2: extract the facts from the ledger, validate them, and have the verifier check each one.
+async function stepFacts(apiKey: string, state: State, clock: ReturnType<typeof makeClock>): Promise<StepResult> {
+  const warnings = [...state.warnings];
+  const timings = { ...state.timings };
+  const ctx = makeCtx(state.evidence);
+
+  let t0 = Date.now();
+  let rawFacts: Any = null;
+  try {
+    rawFacts = await structured(apiKey, clock, warnings, "Fact extraction", factsPrompt(state.entity, state.evidence, todayStr()), FACTS_SCHEMA, false, 0.1, 50_000);
+  } catch (e) {
+    warnings.push(`Fact extraction failed (${(e as Error)?.message ?? e}); its sections show "${NOT_GENERATED}"`);
+  }
+  timings.facts = Date.now() - t0;
+  const factsValidated = validateFacts(rawFacts, ctx);
+
+  t0 = Date.now();
+  const left = clock.remaining();
+  let verifier: string;
+  try {
+    verifier = left > 15_000 ? await verifyClaims(apiKey, ctx, Math.min(40_000, left - 6_000)) : "skipped (time budget)";
+  } catch (e) {
+    verifier = `failed (${(e as Error)?.message})`;
+  }
+  timings.verify = Date.now() - t0;
+  if (!verifier.startsWith("checked") && verifier !== "no sourced claims") {
+    warnings.push(`Verifier ${verifier}; sourced claims are marked "unchecked".`);
+  }
+
+  return {
+    ok: true,
+    state: {
+      ...state, warnings, timings, facts: pruneFacts(factsValidated), factsOk: !!rawFacts, dropped: ctx.dropped, verifier,
+      sourcedClaims: ctx.sourced.filter((s) => s.claim.status === "sourced").length,
+    },
+  };
+}
+
+// Step 3: analysis + recommendations + MC opportunities, then assemble the final report.
+async function stepAnalysis(apiKey: string, state: State, deepResearch: boolean, clock: ReturnType<typeof makeClock>) {
+  const facts = state.facts!;
+  const warnings = [...state.warnings];
+  const timings = { ...state.timings };
+  const ctx = makeCtx(state.evidence, [...(state.dropped ?? [])]);
+  const today = todayStr();
+
+  let t0 = Date.now();
+  const [coreRes, recsRes] = await Promise.allSettled([
+    structured(apiKey, clock, warnings, "Analysis", analysisPrompt(state.entity, state.evidence, today, "core"), CORE_SCHEMA, deepResearch, 0.3, 20_000),
+    structured(apiKey, clock, warnings, "Recommendations", analysisPrompt(state.entity, state.evidence, today, "recs"), RECS_SCHEMA, deepResearch, 0.3, 20_000),
+  ]);
+  timings.analysis = Date.now() - t0;
+  const value = (r: PromiseSettledResult<Any>, label: string) => {
+    if (r.status === "fulfilled") return r.value;
+    warnings.push(`${label} failed (${(r.reason as Error)?.message ?? r.reason}); its sections show "${NOT_GENERATED}"`);
+    return null;
+  };
+  const rawCore = value(coreRes, "Analysis");
+  const rawRecs = value(recsRes, "Recommendations");
+  const rawAnalysis = { ...(rawCore ?? {}), recommendations: rawRecs?.recommendations, mcOpportunities: rawRecs?.mcOpportunities };
+  const placeholders: Placeholders = {
+    facts: state.factsOk ? NF : NOT_GENERATED,
+    core: rawCore ? NF : NOT_GENERATED,
+    recs: rawRecs ? NF : NOT_GENERATED,
+  };
+
+  const analysis = validateAnalysis(rawAnalysis, ctx);
+  t0 = Date.now();
+  const left = clock.remaining();
+  let mc: Opportunity[] = [];
+  try {
+    mc = await normalizeOpportunities(apiKey, analysis.mcOpportunities, Math.min(15_000, Math.max(3_000, left - 6_000)));
+  } catch (e) {
+    console.error("MC normalisation failed:", e);
+  }
+  timings.mc = Date.now() - t0;
+
+  const cov = sectionCoverage(facts, analysis, mc);
+  const sourcedClaims = state.sourcedClaims ?? 0;
+  console.log(JSON.stringify({ company: state.entity.name, timings, evidence: state.evidence.length, sourcedClaims, dropped: ctx.dropped.length }));
+
+  return {
+    companyName: state.companyName,
+    entity: state.entity,
+    ...toLegacy(facts, analysis, mc, ctx, placeholders),
+    sources: state.sources,
+    evidence: state.evidence,
+    claims: { facts, analysis: { ...analysis, mcOpportunities: mc } },
+    quality: {
+      steps: { facts: !!state.factsOk, analysis: !!rawCore, recommendations: !!rawRecs },
+      evidenceByTopic: Object.fromEntries(TOPICS.map((tp) => [tp.key, state.evidence.filter((e) => e.topic === tp.key).length])),
+      coverage: cov.coverage,
+      sectionsPopulated: cov.populated,
+      sections: cov.sections,
+      evidenceCount: state.evidence.length,
+      sourceCount: state.sources.length,
+      sourcedClaims,
+      droppedCount: ctx.dropped.length,
+      dropped: ctx.dropped,
+      verifier: state.verifier ?? "not run",
+      warnings,
+      searchQueries: state.queries,
+      models: { research: state.researchModel, facts: FLASH_MODEL, analysis: deepResearch ? `${PRO_MODEL} (falls back to ${FLASH_MODEL})` : FLASH_MODEL },
+      timingsMs: timings,
+    },
+    searchSuggestions: state.searchSuggestions,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+// The page sends the state back to us, so treat it as untrusted input and rebuild it field by field.
+function readState(raw: Any): State | null {
+  if (!raw || typeof raw !== "object" || !raw.entity || typeof raw.entity.name !== "string") return null;
+  const evidence: Evidence[] = list(raw.evidence).slice(0, MAX_EVIDENCE).flatMap((e) =>
+    typeof e?.text === "string" && Number.isInteger(e?.id)
+      ? [{ id: e.id, topic: String(e.topic ?? ""), text: e.text.slice(0, 2000), sourceIds: list(e.sourceIds).filter((n) => Number.isInteger(n)) }]
+      : []
+  );
+  if (!evidence.length) return null;
+  const s = (v: unknown) => String(v ?? "UNKNOWN").slice(0, 500);
+  const en = raw.entity;
+  return {
+    ...raw,
+    companyName: String(raw.companyName ?? en.name).slice(0, 200),
+    entity: {
+      name: s(en.name), website: s(en.website), headquarters: s(en.headquarters), description: s(en.description),
+      ownership: s(en.ownership), confidence: s(en.confidence), otherEntities: s(en.otherEntities),
+    },
+    evidence,
+    sources: list(raw.sources),
+    queries: list(raw.queries),
+    searchSuggestions: list(raw.searchSuggestions),
+    warnings: list(raw.warnings).map(String),
+    timings: raw.timings && typeof raw.timings === "object" ? raw.timings : {},
+    researchModel: String(raw.researchModel ?? FLASH_MODEL),
+  };
+}
+
+// Only signed-in Toptal accounts may run research. The page sends the user's Supabase session token;
+// we ask Supabase Auth who it belongs to. Set REQUIRE_SIGN_IN=false to switch the check off.
+async function authorize(req: Request): Promise<Response | null> {
+  if (Deno.env.get("REQUIRE_SIGN_IN") === "false") return null;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const apikey = req.headers.get("apikey") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const auth = req.headers.get("authorization") ?? "";
+  if (!supabaseUrl || !/^bearer\s+\S+/i.test(auth)) {
+    return json({ error: "Please sign in with your Toptal Google account to run research." }, 401);
+  }
+  try {
+    const res = await fetch(`${supabaseUrl}/auth/v1/user`, { headers: { apikey, Authorization: auth }, signal: AbortSignal.timeout(8000) });
+    if (!res.ok) {
+      await res.body?.cancel();
+      return json({ error: "Your sign-in has expired. Sign out, sign back in, and try again." }, 401);
+    }
+    const email = String((await res.json())?.email ?? "").toLowerCase();
+    const domains = (Deno.env.get("ALLOWED_EMAIL_DOMAINS") ?? "toptal.com").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean);
+    if (!domains.some((d) => email.endsWith("@" + d))) return json({ error: "Client Insights research is limited to Toptal accounts." }, 403);
+    return null;
+  } catch {
+    return json({ error: "Could not verify your sign-in. Try again in a moment." }, 503);
+  }
+}
+
 // ---------- Handler ----------
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Use POST" }, 405);
+
+  const denied = await authorize(req);
+  if (denied) return denied;
 
   const apiKey = Deno.env.get("GEMINI_API_KEY");
   if (!apiKey) return json({ error: "GEMINI_API_KEY is not configured" }, 500);
@@ -930,156 +1207,39 @@ Deno.serve(async (req) => {
   } catch {
     return json({ error: "Request body must be JSON" }, 400);
   }
-  const companyName = typeof body?.companyName === "string" ? body.companyName.trim() : "";
-  const companyWebsite = typeof body?.companyWebsite === "string" && body.companyWebsite.trim() ? body.companyWebsite.trim() : undefined;
+  const step = body?.step;
   const deepResearch = body?.deepResearch !== false;
-  if (!companyName || companyName.length > 200) return json({ error: "companyName is required (max 200 characters)" }, 400);
-
   const clock = makeClock(TIME_BUDGET_MS);
-  const today = new Date().toISOString().slice(0, 10);
-  const warnings: string[] = [];
-  const timings: Record<string, number> = {};
-  const tick = (label: string, t0: number) => (timings[label] = Date.now() - t0);
 
   try {
-    // 0. Entity
-    let t0 = Date.now();
-    const ent = await resolveEntity(apiKey, companyName, companyWebsite, today, clock.timeout(30_000, 100_000));
-    tick("entity", t0);
-    if (ent.error) return json({ error: ent.error, entity: ent.entity }, 422);
-    const entity = ent.entity;
-    if (!companyWebsite && !/^(none|unknown)?$/i.test(entity.otherEntities.trim())) {
-      warnings.push(`Other organisations share this name (${entity.otherEntities}). Confirm the website ${entity.website} is the right company.`);
-    }
-
-    // 1. Research (parallel, grounded)
-    t0 = Date.now();
-    const researchModel = deepResearch ? PRO_MODEL : FLASH_MODEL;
-    const researchTimeout = clock.timeout(deepResearch ? 60_000 : 45_000, 70_000);
-    const settled = await Promise.allSettled(
-      TOPICS.map((tp) =>
-        callGemini(apiKey, { model: researchModel, prompt: researchPrompt(tp.ask, entity, today), grounded: true, timeoutMs: researchTimeout, attempts: 2 })
-      ),
-    );
-    tick("research", t0);
-    const results: { topic: string; r: GeminiResult }[] = [{ topic: "profile", r: ent.result }];
-    settled.forEach((s, i) => {
-      if (s.status === "fulfilled") results.push({ topic: TOPICS[i].key, r: s.value });
-      else warnings.push(`Research on "${TOPICS[i].label}" failed (${(s.reason as Error)?.message ?? s.reason}); related sections may be empty.`);
-    });
-
-    // 2. Evidence ledger
-    t0 = Date.now();
-    const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
-    const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 50_000)));
-    const ledger = buildLedger(results, urlMap);
-    tick("ledger", t0);
-    if (!ledger.evidence.length) {
-      return json({ error: "Search returned no citable evidence for this company, so no report was produced.", entity, warnings }, 422);
-    }
-    if (ledger.evidence.length < MIN_EVIDENCE_WARN) {
-      warnings.push(`Only ${ledger.evidence.length} citable facts were found; expect most sections to be empty.`);
-    }
-    const ctx: Ctx = { byId: new Map(ledger.evidence.map((e) => [e.id, e])), evidence: ledger.evidence, dropped: [], sourced: [] };
-
-    // 3. Structure (no tools; evidence-only). Three calls in parallel; each falls back to Flash if the
-    //    preferred model fails or times out, so one slow call can't blank out whole sections.
-    t0 = Date.now();
-    const structured = async (label: string, prompt: string, schema: Any, preferPro: boolean, temperature: number) => {
-      const usePro = preferPro && clock.remaining() > 60_000;
-      try {
-        const r = await callGemini(apiKey, {
-          model: usePro ? PRO_MODEL : FLASH_MODEL, prompt, schema, temperature, attempts: 1,
-          timeoutMs: usePro ? clock.timeout(40_000, 35_000) : clock.timeout(45_000, 18_000),
-        });
-        const parsed = safeJson(r.text);
-        if (parsed) return parsed;
-        throw new Error("invalid JSON");
-      } catch (e) {
-        if (!usePro || clock.remaining() < 25_000) throw e;
-        console.error(`${label}: ${PRO_MODEL} failed (${(e as Error).message}); retrying with ${FLASH_MODEL}`);
-        warnings.push(`${label}: fell back to ${FLASH_MODEL} (${(e as Error).message}).`);
-        const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, temperature, attempts: 1, timeoutMs: clock.timeout(40_000, 18_000) });
-        const parsed = safeJson(r.text);
-        if (!parsed) throw new Error("invalid JSON");
-        return parsed;
+    if (step === "facts" || step === "analysis") {
+      const state = readState(body?.state);
+      if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
+      if (step === "facts") {
+        const r = await stepFacts(apiKey, state, clock);
+        return r.ok ? json({ state: r.state }) : json(r.body, r.status);
       }
-    };
-    const [factsRes, coreRes, recsRes] = await Promise.allSettled([
-      structured("Fact extraction", factsPrompt(entity, ledger.evidence, today), FACTS_SCHEMA, false, 0.1),
-      structured("Analysis", analysisPrompt(entity, ledger.evidence, today, "core"), CORE_SCHEMA, deepResearch, 0.3),
-      structured("Recommendations", analysisPrompt(entity, ledger.evidence, today, "recs"), RECS_SCHEMA, deepResearch, 0.3),
-    ]);
-    tick("structure", t0);
-    const value = (r: PromiseSettledResult<Any>, label: string) => {
-      if (r.status === "fulfilled") return r.value;
-      warnings.push(`${label} failed (${(r.reason as Error)?.message ?? r.reason}); its sections show "${NOT_GENERATED}"`);
-      return null;
-    };
-    const rawFacts = value(factsRes, "Fact extraction");
-    const rawCore = value(coreRes, "Analysis");
-    const rawRecs = value(recsRes, "Recommendations");
-    const rawAnalysis = { ...(rawCore ?? {}), recommendations: rawRecs?.recommendations, mcOpportunities: rawRecs?.mcOpportunities };
-    const placeholders: Placeholders = {
-      facts: rawFacts ? NF : NOT_GENERATED,
-      core: rawCore ? NF : NOT_GENERATED,
-      recs: rawRecs ? NF : NOT_GENERATED,
-    };
-
-    // 4. Deterministic validation
-    const factsValidated = validateFacts(rawFacts, ctx);
-    const analysis = validateAnalysis(rawAnalysis, ctx);
-
-    // 5. Verifier + MC normalisation (parallel)
-    t0 = Date.now();
-    const left = clock.remaining();
-    const [verifyRes, mcRes] = await Promise.allSettled([
-      left > 15_000
-        ? verifyClaims(apiKey, ctx, Math.min(30_000, left - 6_000))
-        : Promise.resolve("skipped (time budget)"),
-      normalizeOpportunities(apiKey, analysis.mcOpportunities, Math.min(15_000, Math.max(3_000, left - 6_000))),
-    ]);
-    tick("verify", t0);
-    const verifier = verifyRes.status === "fulfilled" ? verifyRes.value : `failed (${(verifyRes.reason as Error)?.message})`;
-    if (!verifier.startsWith("checked") && verifier !== "no sourced claims") {
-      warnings.push(`Verifier ${verifier}; sourced claims are marked "unchecked".`);
+      if (!state.facts) return json({ error: "Facts step has not run. Start the report again." }, 400);
+      return json(await stepAnalysis(apiKey, state, deepResearch, clock));
     }
-    const mc = mcRes.status === "fulfilled" ? mcRes.value : [];
 
-    const facts = pruneFacts(factsValidated);
-    const cov = sectionCoverage(facts, analysis, mc);
-    const sourcedClaims = ctx.sourced.filter((s) => s.claim.status === "sourced").length;
-    console.log(JSON.stringify({ company: entity.name, timings, evidence: ledger.evidence.length, sourcedClaims, dropped: ctx.dropped.length }));
+    const companyName = typeof body?.companyName === "string" ? body.companyName.trim() : "";
+    const companyWebsite = typeof body?.companyWebsite === "string" && body.companyWebsite.trim() ? body.companyWebsite.trim() : undefined;
+    if (!companyName || companyName.length > 200) return json({ error: "companyName is required (max 200 characters)" }, 400);
 
-    return json({
-      companyName,
-      entity,
-      ...toLegacy(facts, analysis, mc, ctx, placeholders),
-      sources: ledger.sources,
-      evidence: ledger.evidence,
-      claims: { facts, analysis: { ...analysis, mcOpportunities: mc } },
-      quality: {
-        steps: { facts: !!rawFacts, analysis: !!rawCore, recommendations: !!rawRecs },
-        evidenceByTopic: Object.fromEntries(TOPICS.map((tp) => [tp.key, ledger.evidence.filter((e) => e.topic === tp.key).length])),
-        coverage: cov.coverage,
-        sectionsPopulated: cov.populated,
-        sections: cov.sections,
-        evidenceCount: ledger.evidence.length,
-        sourceCount: ledger.sources.length,
-        sourcedClaims,
-        droppedCount: ctx.dropped.length,
-        dropped: ctx.dropped,
-        verifier,
-        warnings,
-        searchQueries: ledger.queries,
-        models: { research: researchModel, facts: FLASH_MODEL, analysis: deepResearch ? `${PRO_MODEL} (falls back to ${FLASH_MODEL})` : FLASH_MODEL },
-        timingsMs: timings,
-      },
-      searchSuggestions: ledger.searchSuggestions,
-      generatedAt: new Date().toISOString(),
-    });
+    if (step === "research") {
+      const r = await stepResearch(apiKey, { companyName, companyWebsite, deepResearch }, clock);
+      return r.ok ? json({ state: r.state }) : json(r.body, r.status);
+    }
+
+    // No step: run everything in one request (older page versions). Fast mode only, to stay under 150s.
+    const r1 = await stepResearch(apiKey, { companyName, companyWebsite, deepResearch: false }, clock);
+    if (!r1.ok) return json(r1.body, r1.status);
+    const r2 = await stepFacts(apiKey, r1.state, clock);
+    if (!r2.ok) return json(r2.body, r2.status);
+    return json(await stepAnalysis(apiKey, r2.state, false, clock));
   } catch (e) {
-    console.error("Report pipeline error:", e, { timings });
-    return json({ error: e instanceof Error ? e.message : "Unknown error", warnings }, 502);
+    console.error("Report pipeline error:", e);
+    return json({ error: e instanceof Error ? e.message : "Unknown error" }, 502);
   }
 });

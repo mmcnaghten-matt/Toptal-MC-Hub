@@ -14,9 +14,6 @@ ARG VITE_SUPABASE_PUBLISHABLE_KEY
 ENV VITE_SUPABASE_URL="https://upivmjklhgpmvhpqnjml.supabase.co"
 ENV  VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_2n7ztvmIj6vG-lnOjPUpgw_0EntQmni"
 
-# Cloud Run research service URL (Client Insights). Empty = fall back to the Supabase edge function.
-ENV VITE_RESEARCH_URL=""
-
 COPY . .
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build

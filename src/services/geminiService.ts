@@ -76,42 +76,41 @@ export interface ResearchResult {
   sources: { title: string; url: string }[];
 }
 
-// Cloud Run service (no 150s limit). When unset, fall back to the Supabase edge function.
-const RESEARCH_URL = (import.meta.env.VITE_RESEARCH_URL as string | undefined)?.replace(/\/$/, "");
+export const RESEARCH_STAGES = ["Researching sources", "Extracting and verifying facts", "Writing analysis"] as const;
 
-export async function performResearch(companyName: string, deepResearch: boolean = true): Promise<ResearchResult> {
-  if (RESEARCH_URL) {
-    const res = await fetch(RESEARCH_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ companyName, deepResearch }),
-    });
-    const body = await res.json().catch(() => null);
-    if (!res.ok || body?.error) {
-      throw new Error(body?.error || `Research request failed (HTTP ${res.status})`);
-    }
-    return body as ResearchResult;
-  }
-
+// The report is built in three chained calls so each stays under Supabase's 150s request limit.
+// Each step returns `state`, which the next step needs.
+async function callStep(body: Record<string, unknown>) {
   if (!supabase) {
     throw new Error("Backend not configured. This feature requires a published deployment with Lovable Cloud enabled.");
   }
-
-  // Supabase Free plan caps requests at 150s, which the Pro-model pipeline can exceed: always use fast mode here.
-  const { data, error } = await supabase.functions.invoke("gemini-research", {
-    body: { companyName, deepResearch: false },
-  });
-
-  if (error) {
+  for (let attempt = 0; ; attempt++) {
+    const { data, error } = await supabase.functions.invoke("gemini-research", { body });
+    if (!error) {
+      if (data?.error) throw new Error(data.error);
+      return data;
+    }
     // functions.invoke hides the response body on non-2xx; the function puts a readable message in it.
-    const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
-    throw new Error(body?.error || error.message || "Failed to perform research");
+    const res = (error as { context?: Response }).context;
+    const status = res?.status;
+    const retryable = attempt === 0 && (!status || status === 502 || status === 503);
+    if (!retryable) {
+      const detail = await res?.json?.().catch(() => null);
+      throw new Error(detail?.error || error.message || "Failed to perform research");
+    }
   }
+}
 
-  if (data?.error) {
-    throw new Error(data.error);
-  }
-
-  return data as ResearchResult;
+export async function performResearch(
+  companyName: string,
+  deepResearch: boolean = true,
+  onStage?: (stage: number) => void,
+): Promise<ResearchResult> {
+  onStage?.(0);
+  const research = await callStep({ step: "research", companyName, deepResearch });
+  onStage?.(1);
+  const facts = await callStep({ step: "facts", state: research.state });
+  onStage?.(2);
+  return (await callStep({ step: "analysis", state: facts.state, deepResearch })) as ResearchResult;
 }
 // Testing pipeline automation fix

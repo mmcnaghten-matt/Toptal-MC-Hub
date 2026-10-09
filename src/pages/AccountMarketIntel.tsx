@@ -119,7 +119,7 @@ import {
 } from "recharts";
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
-import { performResearch, type ResearchResult } from "@/services/geminiService";
+import { performResearch, RESEARCH_STAGES, type ResearchResult } from "@/services/geminiService";
 import ToptalLogo from "@/components/ToptalLogo";
 import { cn } from "@/lib/utils";
 
@@ -139,6 +139,7 @@ export default function AccountMarketIntel() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [stage, setStage] = useState(0);
   const [deepResearch, setDeepResearch] = useState(true);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -222,7 +223,7 @@ export default function AccountMarketIntel() {
       setError(null);
       setResult(null);
       try {
-        const data = await performResearch(query, deepResearch);
+        const data = await performResearch(query, deepResearch, setStage);
         setResult(data);
         setActiveSection("executive");
       } catch (err) {
@@ -407,7 +408,7 @@ export default function AccountMarketIntel() {
                 Generating Comprehensive Intelligence Report...
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                Scanning global markets, news, and strategic frameworks
+                Step {stage + 1} of {RESEARCH_STAGES.length}: {RESEARCH_STAGES[stage]}
               </p>
             </motion.div>
           )}
