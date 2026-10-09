@@ -982,6 +982,37 @@ export default function AccountMarketIntel() {
                     </div>
                   </div>
                 </section>
+
+                {/* Sources — numbered to match the [n] citations in the report text */}
+                {result.sources.length > 0 && (
+                  <section className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+                    <div className="px-8 py-6 border-b border-border bg-secondary/50">
+                      <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                        <CheckCircle2 className="w-5 h-5 text-primary" />
+                        Sources
+                      </h3>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Numbers match the [n] citations in the report. Statements without a citation are analysis built on the cited facts.
+                      </p>
+                    </div>
+                    <ol className="p-8 space-y-2">
+                      {result.sources.map((src, i) => (
+                        <li key={i} className="flex gap-3 text-sm">
+                          <span className="w-8 shrink-0 text-right font-medium text-muted-foreground">[{i + 1}]</span>
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="min-w-0 truncate text-primary hover:underline"
+                            title={src.url}
+                          >
+                            {src.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
               </div>
             </motion.div>
           )}

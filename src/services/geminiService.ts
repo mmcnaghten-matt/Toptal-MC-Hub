@@ -86,7 +86,9 @@ export async function performResearch(companyName: string, deepResearch: boolean
   });
 
   if (error) {
-    throw new Error(error.message || "Failed to perform research");
+    // functions.invoke hides the response body on non-2xx; the function puts a readable message in it.
+    const body = await (error as { context?: Response }).context?.json?.().catch(() => null);
+    throw new Error(body?.error || error.message || "Failed to perform research");
   }
 
   if (data?.error) {
