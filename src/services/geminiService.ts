@@ -18,6 +18,7 @@ export interface ResearchResult {
     tldr: string;
     keyTrends: string[];
     competitivePositioning: string;
+    positioningRationale?: string;
     bigOpportunity: string;
   };
   businessPerformance: {

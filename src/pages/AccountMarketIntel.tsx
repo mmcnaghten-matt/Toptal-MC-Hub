@@ -72,7 +72,7 @@ function WinLossColumns({ raw }: { raw: string }) {
       return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <h5 className="text-xs font-bold uppercase tracking-widest text-green-700 mb-3">Wins</h5>
+            <h5 className="text-xs font-bold uppercase tracking-widest text-green-700 mb-3">What customers praise</h5>
             <ul className="space-y-2">
               {wins.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -83,7 +83,7 @@ function WinLossColumns({ raw }: { raw: string }) {
             </ul>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <h5 className="text-xs font-bold uppercase tracking-widest text-red-700 mb-3">Losses</h5>
+            <h5 className="text-xs font-bold uppercase tracking-widest text-red-700 mb-3">What customers criticize</h5>
             <ul className="space-y-2">
               {losses.map((l, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -115,7 +115,7 @@ const SECTIONS = [
   { id: "landscape", label: "Competitive Landscape", icon: Users },
   { id: "deepdive", label: "Competitor Deep Dives", icon: Layers },
   { id: "strategic", label: "Strategic Frameworks", icon: ShieldAlert },
-  { id: "customer", label: "Customer Insights", icon: UserCheck },
+  { id: "customer", label: "Customer Review Themes", icon: UserCheck },
   { id: "recommendations", label: "Recommendations", icon: Lightbulb },
   { id: "mc", label: "MC Opportunities", icon: Target },
 ];
@@ -155,6 +155,8 @@ export default function AccountMarketIntel() {
           cacheBust: true,
           backgroundColor: "#ffffff",
           pixelRatio: PIXEL_RATIO,
+          // Keep UI controls (the Export button and its "Exporting..." state) out of the PDF
+          filter: (node) => !(node instanceof HTMLElement && node.hasAttribute("data-pdf-hide")),
         });
         const img = new Image();
         await new Promise((resolve) => {
@@ -543,16 +545,13 @@ export default function AccountMarketIntel() {
                   className="bg-card p-8 rounded-lg shadow-sm border border-border flex flex-col md:flex-row md:items-center justify-between gap-6"
                 >
                   <div>
-                    <div className="flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider mb-2">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Intelligence Report Verified
-                    </div>
                     <h2 className="text-3xl font-bold text-foreground tracking-tight">
                       {result.companyName}
                     </h2>
                   </div>
                   <div className="flex gap-3">
                     <button
+                      data-pdf-hide
                       onClick={handleExportPDF}
                       disabled={isExporting}
                       className="px-4 py-2 border border-border rounded-md text-sm font-bold hover:bg-secondary transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -599,7 +598,11 @@ export default function AccountMarketIntel() {
                         <span className="text-xl font-bold text-foreground">
                           {result.executiveSummary.competitivePositioning}
                         </span>
-                        <p className="text-xs text-muted-foreground mt-1">Based on current market share and innovation trajectory.</p>
+                        {!isEmptyText(result.executiveSummary.positioningRationale) && (
+                          <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                            <Rich>{result.executiveSummary.positioningRationale}</Rich>
+                          </p>
+                        )}
                       </div>
                       <div className="p-5 bg-primary text-primary-foreground rounded-lg shadow-lg md:col-span-2">
                         <h4 className="text-xs font-bold text-primary-foreground/70 uppercase tracking-widest mb-3">The Big Opportunity</h4>
@@ -959,17 +962,17 @@ export default function AccountMarketIntel() {
                   <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <UserCheck className="w-5 h-5 text-primary" />
-                      7. Customer & Win-Loss Insights
+                      7. Customer Review Themes
                     </h3>
                   </div>
                   <div className="p-8 space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="p-6 bg-secondary/30 rounded-lg border border-border">
-                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Market Sentiment</h4>
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Review Sentiment</h4>
                         <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-p:font-semibold prose-p:leading-snug prose-ul:my-2 prose-li:my-0.5 mb-2">
                           <Markdown>{result.customerInsights.sentiment}</Markdown>
                         </div>
-                        <p className="text-sm text-muted-foreground">Aggregated from reviews, social media, and industry reports.</p>
+                        <p className="text-sm text-muted-foreground">Based on published customer reviews and testimonials.</p>
                       </div>
                       <div className="p-6 bg-primary/5 rounded-lg border border-primary/10">
                         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4">Unmet Customer Needs</h4>
@@ -979,8 +982,12 @@ export default function AccountMarketIntel() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <h4 className="text-sm font-bold text-foreground">Win/Loss Reasons</h4>
+                      <h4 className="text-sm font-bold text-foreground">What Customers Praise and Criticize</h4>
                       <WinLossColumns raw={toStr(result.customerInsights.winLossReasons)} />
+                    </div>
+                    <div className="rounded-lg border border-dashed border-border bg-secondary/20 p-4 text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Win/loss analysis: requires primary research.</span>{" "}
+                      These themes come from published reviews and complaints. They do not show why deals were won or lost; that needs CRM data or customer interviews.
                     </div>
                   </div>
                 </section>
