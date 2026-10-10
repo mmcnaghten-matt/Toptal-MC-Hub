@@ -10,6 +10,8 @@ export interface MarketRow {
   value: string;
   publisher: string;
   cite: string;
+  /** Research firms disagree: `value` is a range and `publisher` lists each estimate. */
+  varies?: boolean;
 }
 
 export interface ResearchResult {
@@ -74,6 +76,8 @@ export interface ResearchResult {
     };
   };
   customerInsights: {
+    /** Is the evidence two-sided? Praise and complaints are researched separately. */
+    evidenceBalance?: "balanced" | "praise_only" | "complaints_only" | "none" | "unknown";
     sentiment: string;
     winLossReasons: string;
     unmetNeeds: string;
@@ -98,6 +102,10 @@ export interface ResearchResult {
     dropped?: { path: string; reason: string; text: string }[];
     evidenceByTopic?: Record<string, number>;
     competitors?: { name: string; kind: string; evidenceCount: number; fieldsFound: number }[];
+    /** Every candidate competitor and what the classification pass decided. */
+    competitorFilter?: { name: string; classification: string; kept: boolean; reason: string }[];
+    /** Sources kept in the report that deserve a second look (look-alike domains, peer lists, seller pages). */
+    sourceFlags?: { title: string; url: string; flags: string[] }[];
     sectionsOk?: Record<string, boolean>;
     verifier?: string;
   };

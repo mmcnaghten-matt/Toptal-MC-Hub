@@ -35,8 +35,12 @@ const SCANS: { topic: string; chip: string; label: string }[] = [
   { topic: "strategy_3", chip: "strategy", label: "Strategy" },
   { topic: "market", chip: "market", label: "Market" },
   { topic: "competitors", chip: "competitors", label: "Competitors" },
-  { topic: "customer", chip: "customers", label: "Customers" },
+  { topic: "customer_praise", chip: "customers", label: "Customer praise" },
+  { topic: "customer_complaints", chip: "customers", label: "Customer complaints" },
 ];
+
+/** One market scan per current reporting segment (at most this many). */
+const MAX_SEGMENT_SCANS = 4;
 
 const CHIPS: { id: string; label: string }[] = [
   { id: "company", label: "Company" },
@@ -122,9 +126,13 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
   warnings.push(...(entityRes.warnings ?? []));
 
   // ---- 2. scans ----
-  const scan = async (chip: string, topic: string, label: string, name?: string): Promise<any | null> => {
+  const scan = async (chip: string, topic: string, label: string, name?: string, segment?: string): Promise<any | null> => {
     begin(chip);
-    const body: Record<string, unknown> = name ? { step: "scan", topic: "competitor", name, entity } : { step: "scan", topic, entity };
+    const body: Record<string, unknown> = name
+      ? { step: "scan", topic: "competitor", name, entity }
+      : segment
+      ? { step: "scan", topic: "market_segment", segment, entity }
+      : { step: "scan", topic, entity };
     let slice: any = null;
     let retried = false;
     try {
@@ -137,7 +145,7 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
         if (r2.data?.slice && segmentsOf(r2.data.slice) >= segmentsOf(slice)) slice = r2.data.slice;
       }
     } catch (e) {
-      slice = { topic: name ? `competitor:${name}` : topic, status: "failed", ms: 0, error: errMsg(e), meta: null };
+      slice = { topic: name ? `competitor:${name}` : segment ? `market:${segment}` : topic, status: "failed", ms: 0, error: errMsg(e), meta: null };
     }
     const failed = !slice || slice.status === "failed" || segmentsOf(slice) === 0;
     scanLog.push({ topic: slice?.topic ?? topic, status: slice?.status ?? "failed", ms: slice?.ms ?? 0, segments: segmentsOf(slice), retried });
@@ -147,10 +155,16 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
   };
 
   const profileSlice = entityRes.slice?.meta ? entityRes.slice : null;
-  const scanned = await Promise.all(SCANS.map((s) => scan(s.chip, s.topic, s.label)));
+  const segmentSlice = entityRes.segmentSlice?.meta ? entityRes.segmentSlice : null;
+  const segments: { name: string }[] = (entity.segments ?? []).slice(0, MAX_SEGMENT_SCANS);
+  const scanned = await Promise.all([
+    ...SCANS.map((s) => scan(s.chip, s.topic, s.label)),
+    // Market size is researched per current segment, so a business the company has sold is not mistaken for a market it is in.
+    ...segments.map((g) => scan("market", "market_segment", `Market: ${g.name}`, undefined, g.name)),
+  ]);
 
   // ---- 3. ledger (fatal: no evidence, no report) ----
-  const ledger1 = await attempt({ step: "ledger", entity, companyName, slices: [profileSlice, ...scanned].filter(Boolean) });
+  const ledger1 = await attempt({ step: "ledger", entity, companyName, slices: [profileSlice, segmentSlice, ...scanned].filter(Boolean) });
   const state1 = ledger1.data.state;
 
   // ---- 4. fact sections ----
@@ -176,15 +190,18 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
   ];
 
   // ---- 5. competitors: identify -> one scan each -> extend ledger -> facts ----
+  let competitorFilter: any[] = [];
   const branchA = (async () => {
     begin("competitors");
     let state2 = state1;
     try {
       const idn = (await attempt({ step: "identify", state: state1 })).data;
       const competitors: { name: string; kind: string }[] = idn.competitors ?? [];
+      competitorFilter = idn.filter ?? [];
+      if (idn.warnings?.length) warnings.push(...idn.warnings);
       const compSlices = await Promise.all(competitors.map((c) => scan("competitors", "competitor", c.name, c.name)));
       const slices = [...(idn.slices ?? []), ...compSlices].filter((x) => x?.meta);
-      const withCompetitors = { ...state1, competitors };
+      const withCompetitors = { ...state1, competitors, validatedCompetitors: idn.validated ?? competitors };
       state2 = slices.length
         ? (await attempt({ step: "ledger", state: withCompetitors, slices })).data.state
         : withCompetitors;
@@ -220,7 +237,7 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
   begin("report");
   try {
     const r = await attempt({
-      step: "report", state: state2, parts, raw: { core, frameworks, recs }, deepResearch, clientWarnings: warnings, scanLog,
+      step: "report", state: state2, parts, raw: { core, frameworks, recs }, deepResearch, clientWarnings: warnings, scanLog, competitorFilter,
     });
     end("report", { retried: r.retried });
     return r.data;

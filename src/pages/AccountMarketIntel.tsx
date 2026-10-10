@@ -73,6 +73,7 @@ function WinLossColumns({ raw }: { raw: string }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="rounded-lg border border-green-200 bg-green-50 p-4">
             <h5 className="text-xs font-bold uppercase tracking-widest text-green-700 mb-3">What customers praise</h5>
+            {wins.length === 0 && <p className="text-sm text-muted-foreground">No independent praise was found in published sources.</p>}
             <ul className="space-y-2">
               {wins.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -84,6 +85,7 @@ function WinLossColumns({ raw }: { raw: string }) {
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50 p-4">
             <h5 className="text-xs font-bold uppercase tracking-widest text-red-700 mb-3">What customers criticize</h5>
+            {losses.length === 0 && <p className="text-sm text-muted-foreground">No independent complaint evidence was found in published sources.</p>}
             <ul className="space-y-2">
               {losses.map((l, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -724,13 +726,18 @@ export default function AccountMarketIntel() {
                                       <td className="py-2 pr-4 font-medium text-foreground">{r.segment}</td>
                                       <td className="py-2 pr-4 text-muted-foreground">{r.geography}</td>
                                       <td className="py-2 pr-4 text-muted-foreground tabular-nums">{r.year}</td>
-                                      <td className="py-2 pr-4 text-right text-base font-semibold text-foreground tabular-nums whitespace-nowrap">{r.value}</td>
+                                      <td className="py-2 pr-4 text-right text-base font-semibold text-foreground tabular-nums whitespace-nowrap">
+                                        {r.value}
+                                        {r.varies && <span className="mt-0.5 block text-[10px] font-bold uppercase tracking-widest text-amber-600">Estimates vary</span>}
+                                      </td>
                                       <td className="py-2 text-xs text-muted-foreground"><Rich>{`${r.publisher}${r.cite ? " " + r.cite : ""}`}</Rich></td>
                                     </tr>
                                   ))}
                                 </tbody>
                               </table>
-                              <p className="mt-2 text-[11px] text-muted-foreground">Latest published estimate per segment, largest first.</p>
+                              <p className="mt-2 text-[11px] text-muted-foreground">
+                                Latest published estimate per segment, largest first. Where research firms disagree, the range is shown.
+                              </p>
                             </div>
                           ) : (
                             <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-ul:my-0 prose-li:my-0.5">
@@ -986,6 +993,14 @@ export default function AccountMarketIntel() {
                     </div>
                     <div className="space-y-3">
                       <h4 className="text-sm font-bold text-foreground">What Customers Praise and Criticize</h4>
+                      {(result.customerInsights.evidenceBalance === "praise_only" || result.customerInsights.evidenceBalance === "complaints_only") && (
+                        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                          <span className="font-semibold">Evidence is one-sided.</span>{" "}
+                          {result.customerInsights.evidenceBalance === "praise_only"
+                            ? "Only praise was found in independent sources, and no complaint evidence. Do not read this as overall satisfaction."
+                            : "Only complaints were found in independent sources, and no praise. Do not read this as overall dissatisfaction."}
+                        </div>
+                      )}
                       <WinLossColumns raw={toStr(result.customerInsights.winLossReasons)} />
                     </div>
                     <div className="rounded-lg border border-dashed border-border bg-secondary/20 p-4 text-sm text-muted-foreground">
@@ -1133,7 +1148,7 @@ export default function AccountMarketIntel() {
                             const q = result.quality ?? {};
                             await navigator.clipboard.writeText(
                               JSON.stringify(
-                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
+                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, competitorFilter: q.competitorFilter, sourceFlags: q.sourceFlags, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
                                 null,
                                 2,
                               ),
@@ -1172,6 +1187,32 @@ export default function AccountMarketIntel() {
                               ))}
                             </tbody>
                           </table>
+                        </div>
+                      )}
+                      {result.quality.competitorFilter && result.quality.competitorFilter.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Competitor candidates</h5>
+                          <ul className="space-y-1 text-xs text-muted-foreground">
+                            {result.quality.competitorFilter.map((c, i) => (
+                              <li key={i}>
+                                <span className={cn("font-medium", c.kept ? "text-green-700" : "text-foreground")}>{c.name}</span>
+                                {" "}— {c.kept ? "kept as competitor" : `removed (${c.classification.replace(/_/g, " ")})`}
+                                {c.reason ? `: ${c.reason}` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {result.quality.sourceFlags && result.quality.sourceFlags.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Sources to double-check</h5>
+                          <ul className="space-y-1 text-xs text-muted-foreground">
+                            {result.quality.sourceFlags.map((f, i) => (
+                              <li key={i}>
+                                <span className="font-medium text-foreground">{f.title || f.url}</span> — {f.flags.map((x) => x.replace(/_/g, " ")).join(", ")}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                       {result.quality.sectionsOk && (
