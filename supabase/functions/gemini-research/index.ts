@@ -35,7 +35,7 @@ const TIME_BUDGET_MS = Number(Deno.env.get("REPORT_TIME_BUDGET_MS") ?? "140000")
 const MIN_EVIDENCE_WARN = 10;
 const MAX_EVIDENCE = 500;
 // Per research topic, so big companies don't fill the ledger with the first topics.
-const topicCap = (topic: string) => (topic === "market" ? 60 : topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
+const topicCap = (topic: string) => (topic === "market" ? 80 : topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
 const MAX_VERIFY = 120;
 const NF = "Not found in public sources.";
 const NOT_GENERATED = "Not generated: this analysis step failed or timed out. Try again.";
@@ -609,12 +609,28 @@ const HEDGE_CS = /\b(may|might|could)\b/; // case-sensitive so "May 2024" is not
 const numVal = (t: string) => String(Number(t.replace(/,/g, "")));
 const numTokens = (s: string) => (s.match(/\d+(?:[.,]\d+)*/g) ?? []).map(numVal);
 // Financial-looking figures only (used for analysis text, where ordinary numbers like "two" or "Q3" are fine)
-const FIN_NUM = /[$€£]\s?\d[\d,.]*|\d[\d,.]*\s?(?:%|percent|×|x\b|k\b|m\b|bn?\b|million|billion|thousand)/gi;
+const NUM = String.raw`\d[\d,]*(?:\.\d+)?`;
+const UNIT = String.raw`(?:trillion|billion|million|thousand|tn|bn|mn|[tbmk](?![a-z0-9]))`;
+const FIN_FIGURE = new RegExp(String.raw`[$€£]\s?${NUM}(?:\s?${UNIT})?|${NUM}\s?(?:%|percent|×|x(?![a-z0-9])|${UNIT})`, "gi");
+const UNIT_MULT: Record<string, number> = { t: 1e12, tn: 1e12, trillion: 1e12, b: 1e9, bn: 1e9, billion: 1e9, m: 1e6, mn: 1e6, million: 1e6, k: 1e3, thousand: 1e3 };
+// Numbers with their magnitude suffix applied: "$4.9 trillion" -> 4.9e12, "$4,900 billion" -> 4.9e12, "6.4%" -> 6.4.
+const magnitudes = (s: string): number[] =>
+  [...s.matchAll(new RegExp(String.raw`(${NUM})\s?(${UNIT})?`, "gi"))]
+    .map((m) => Number(m[1].replace(/,/g, "")) * (UNIT_MULT[(m[2] ?? "").toLowerCase()] ?? 1))
+    .filter((n) => Number.isFinite(n));
 
+// Strict (facts): every number must appear exactly in the cited evidence.
+// Lenient (analysis text, financialOnly): a financial figure may also be a rounding of a figure in the evidence
+// (within 5%, e.g. "$4.9 trillion" for "$4.86 trillion"), but never a figure the evidence does not contain.
 function figuresSupported(text: string, ev: Evidence[], financialOnly: boolean): boolean {
-  const hay = new Set(numTokens(ev.map((e) => e.text).join(" ")));
-  const needles = financialOnly ? (text.match(FIN_NUM) ?? []).flatMap(numTokens) : numTokens(text);
-  return needles.every((n) => hay.has(n));
+  const hayText = ev.map((e) => e.text).join(" ");
+  const hay = new Set(numTokens(hayText));
+  if (!financialOnly) return numTokens(text).every((n) => hay.has(n));
+  const hayValues = magnitudes(hayText);
+  return (text.match(FIN_FIGURE) ?? []).every((fig) =>
+    numTokens(fig).every((n) => hay.has(n)) ||
+    magnitudes(fig).every((v) => hayValues.some((h) => Math.abs(h - v) <= 0.05 * Math.max(h, v)))
+  );
 }
 
 const validEvidence = (ids: unknown, ctx: Ctx, topics?: string[]) =>
@@ -624,7 +640,7 @@ const validEvidence = (ids: unknown, ctx: Ctx, topics?: string[]) =>
 
 const notFound = (): Claim => ({ text: null, status: "not_found", evidenceIds: [] });
 
-function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[]): Claim {
+function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { allowHedge?: boolean }): Claim {
   if (c?.status !== "sourced") return notFound();
   const text = typeof c.text === "string" ? c.text.trim() : "";
   const ev = validEvidence(c.evidenceIds, ctx, topics);
@@ -632,7 +648,7 @@ function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[]): Claim {
     ? "empty text"
     : !ev.length
     ? topics ? `no valid ${topics.join("/")} evidence cited` : "no valid evidence cited"
-    : HEDGE_I.test(text) || HEDGE_CS.test(text)
+    : !opts?.allowHedge && (HEDGE_I.test(text) || HEDGE_CS.test(text))
     ? "hedged language in a factual field"
     : !figuresSupported(text, ev, false)
     ? "figure not present in cited evidence"
@@ -734,7 +750,8 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
         ctx.dropped.push({ path, reason: "unknown initiative category", text: name });
         return [];
       }
-      const description = checkClaim(s?.description, path, ctx);
+      // An announced initiative can itself be conditional ("expected to exceed $30B"), so hedging is allowed here.
+      const description = checkClaim(s?.description, path, ctx, undefined, { allowHedge: true });
       if (description.status !== "sourced") return [];
       const years = (description.text!.match(/\b20\d\d\b/g) ?? []).map(Number);
       if (years.length && Math.max(...years) < cutoffYear) {
