@@ -46,6 +46,8 @@ export interface IndustryResearchResult {
     sourceCount?: number;
     sourcesDroppedByType?: number;
     sourceTiers?: { primary: number; major: number; other: number };
+    /** Dated events (regulation, deals, programs) checked against the pages they cite, and what was removed. */
+    dateChecks?: { confirmed: number; unverified: number; dropped: { id: number; reason: string; text: string }[] };
     verifier?: string;
     repaired?: { path: string; before: string; after: string }[];
     topUps?: string[];
@@ -55,6 +57,7 @@ export interface IndustryResearchResult {
 const TOPICS = ["market", "regulation", "technology_ai", "workforce", "competition_ma", "buyers", "moves"];
 const CHIPS: { id: string; label: string }[] = [
   { id: "research", label: "Research" },
+  { id: "dates", label: "Checking dates" },
   { id: "overview", label: "Overview & challenges" },
   { id: "initiatives", label: "Initiatives" },
   { id: "needs", label: "Needs" },
@@ -150,7 +153,18 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
 
   // ---- 2. ledger (fatal: no evidence, nothing to write) ----
   const ledger = await attempt({ step: "ledger", slices, ...names });
-  const state = ledger.data.state;
+
+  // ---- 2b. date check: dated events are checked against the page they cite (never fatal) ----
+  let state = ledger.data.state;
+  begin("dates");
+  try {
+    const r = await attempt({ step: "verify_evidence", state });
+    state = r.data.state;
+    end("dates", { retried: r.retried });
+  } catch (e) {
+    warnings.push(`Date check could not run (${errMsg(e)}); dated events are not verified against the cited pages.`);
+    end("dates", { failed: true });
+  }
 
   // ---- 3. synthesis: overview+challenges and initiatives in parallel ----
   const synth = async (chip: string, body: Record<string, unknown>): Promise<any | null> => {

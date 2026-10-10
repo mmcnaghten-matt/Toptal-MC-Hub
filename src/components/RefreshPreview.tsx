@@ -101,6 +101,23 @@ export function RefreshPreview({ content, applying, onApply, onDiscard }: Props)
                 </tbody>
               </table>
             )}
+            {q.dateChecks && (
+              <div>
+                <p className="mb-1 font-bold uppercase tracking-widest text-muted-foreground">Date checks</p>
+                <p className="text-muted-foreground">
+                  {q.dateChecks.confirmed} dated events confirmed on the cited page · {q.dateChecks.unverified} could not be checked (kept) · {q.dateChecks.dropped.length} removed
+                </p>
+                {q.dateChecks.dropped.length > 0 && (
+                  <ul className="mt-1 space-y-1 text-muted-foreground">
+                    {q.dateChecks.dropped.slice(0, 30).map((d, i) => (
+                      <li key={i}>
+                        <span className="font-medium text-foreground">{d.reason}</span>: <span className="italic">{d.text.slice(0, 140)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             {q.topUps && q.topUps.length > 0 && (
               <p className="text-muted-foreground">Thin lists were topped up with a second pass: {q.topUps.join(" · ")}</p>
             )}
