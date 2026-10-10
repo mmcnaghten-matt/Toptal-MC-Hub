@@ -769,6 +769,8 @@ const RECS_SCHEMA = obj({
   mcOpportunities: ANALYSIS_SCHEMA.properties.mcOpportunities,
 });
 
+// The analysis never sees evidence from pages published more than 18 months ago: it cannot describe the company today.
+const currentEvidence = (ev: Evidence[]) => ev.filter((e) => !e.flags?.includes("stale"));
 const evidenceBlock = (ev: Evidence[]) =>
   ev.map((e) => `E${e.id} [${e.topic}|T${e.tier ?? 2}${e.flags?.includes("stale") ? "|OLD" : ""}] ${e.text}`).join("\n");
 
@@ -1606,24 +1608,32 @@ function dateVerdict(claim: { my: string[]; years: number[] }, pages: PageInfo[]
 
 // Expectations and targets whose period has already ended read as news but are stale.
 const FORECAST_RE = /\b(expected to|expects?|expected|projected|projects?|forecast(?:s|ed)?|guidance|anticipat\w+|outlook)\b/i;
-const NOT_FORECAST_RE = /(than expected|in line with (?:its |the )?(?:expectations|guidance)|\bbeat\b|exceeded|exceeding|surpass\w*)/i;
+// Not stale: results ("beat expectations"), events that already happened with a stale expectation attached, and relative
+// periods ("over the next year") that run from the statement's own date.
+const NOT_FORECAST_RE = /(than expected|in line with (?:its |the )?(?:expectations|guidance)|\bbeat\b|exceeded|exceeding|surpass\w*|\b(?:opened|completed|closed|acquired|launched|began|started|signed)\b|\bnext (?:year|quarter|\d+ months)\b|over the next|in the coming)/i;
 const TARGET_RE = /\b(target|goal|aim|commit\w*|pledge\w*|ambition)\b[^.]{0,80}\bby (?:the end of )?((?:19|20)\d\d)\b/i;
 const ACHIEVED_RE = /\b(achieved|met|reached|exceeded|delivered|completed)\b/i;
+/** End of every period a statement refers to: quarters, halves, months, and bare years (not those already part of one of those). */
 function periodEnds(text: string, curYear: number): Date[] {
   const ends: Date[] = [];
   const eom = (y: number, m: number) => new Date(Date.UTC(y, m, 0, 23, 59, 59));
-  for (const m of text.matchAll(/\bQ([1-4])\s*(?:of\s*)?((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), Number(m[1]) * 3));
   const ORD: Record<string, number> = { first: 1, second: 2, third: 3, fourth: 4 };
-  for (const m of text.matchAll(/\b(first|second|third|fourth) quarter(?: of)?\s*((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), ORD[m[1].toLowerCase()] * 3));
-  for (const m of text.matchAll(/\bH([12])\s*((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), Number(m[1]) * 6));
-  for (const m of text.matchAll(/\b(first|second) half(?: of)?\s*((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), m[1].toLowerCase() === "first" ? 6 : 12));
-  for (const ymv of monthYears(text)) ends.push(eom(Number(ymv.slice(0, 4)), Number(ymv.slice(5, 7))));
-  // A bare year ("in 2026") means the whole year, but only when no quarter, half or month is named ("Q2 2026" is not all of 2026).
-  if (!ends.length) {
-    for (const m of text.matchAll(/\b((?:19|20)\d\d)\b/g)) {
-      const y = Number(m[1]);
-      if (y >= curYear - 3 && y <= curYear + 3) ends.push(eom(y, 12));
-    }
+  let rest = text;
+  const take = (re: RegExp, end: (m: RegExpMatchArray) => Date | null) => {
+    rest = rest.replace(re, (...a) => {
+      const d = end(a as unknown as RegExpMatchArray);
+      if (d) ends.push(d);
+      return " ";
+    });
+  };
+  take(/\bQ([1-4])\s*(?:of\s*)?((?:19|20)\d\d)\b/gi, (m) => eom(Number(m[2]), Number(m[1]) * 3));
+  take(/\b(first|second|third|fourth)[\s-]quarter(?: of)?\s*((?:19|20)\d\d)\b/gi, (m) => eom(Number(m[2]), ORD[m[1].toLowerCase()] * 3));
+  take(/\bH([12])\s*((?:19|20)\d\d)\b/gi, (m) => eom(Number(m[2]), Number(m[1]) * 6));
+  take(/\b(first|second)[\s-]half(?: of)?\s*((?:19|20)\d\d)\b/gi, (m) => eom(Number(m[2]), m[1].toLowerCase() === "first" ? 6 : 12));
+  take(new RegExp(`\\b(?:\\d{1,2}(?:st|nd|rd|th)?\\s+)?${MONTH_RE}\\.?\\s+(?:\\d{1,2}(?:st|nd|rd|th)?,?\\s+)?((?:19|20)\\d\\d)\\b`, "gi"), (m) => eom(Number(m[2]), monthNo(m[1])));
+  for (const m of rest.matchAll(/\b((?:19|20)\d\d)\b/g)) {
+    const y = Number(m[1]);
+    if (y >= curYear - 3) ends.push(eom(y, 12));
   }
   return ends;
 }
@@ -1703,8 +1713,10 @@ async function v2VerifyEvidence(apiKey: string, body: Any, clock: ReturnType<typ
     else if (verdict === "not_shown") {
       if (best > 1) drop.set(e.id, "the cited page does not show this date");
       else log.unverified++;
-    } else if (best > 2) drop.set(e.id, "date could not be verified (page unreadable, source not primary or major press)");
-    else log.unverified++;
+    } else if (best > 2 && !e.sourceIds.some((id) => srcById.get(id)?.kinds?.includes("review"))) {
+      // Review and complaint sites (BBB, Trustpilot...) block bots but show their current listing, so they are kept.
+      drop.set(e.id, "date could not be verified (page unreadable, source not primary or major press)");
+    } else log.unverified++;
   }
 
   // 2. Statements that are stale by their own words, undated strategy items, evidence from old pages.
@@ -1740,11 +1752,25 @@ async function v2VerifyEvidence(apiKey: string, body: Any, clock: ReturnType<typ
   }
 
   const kept = state.evidence.filter((e) => !drop.has(e.id)).map((e) => ({ ...e, dateChecked: true }));
+  // A business listed as sold must still be backed by surviving evidence; otherwise every later prompt would repeat it.
+  let entity = state.entity;
+  if (entity.divested?.length) {
+    const live = kept.filter((e) => !e.flags?.includes("stale") && !e.flags?.includes("legal_marketing"));
+    const supported = (name: string) => {
+      const words = segmentWords(name);
+      return live.some((e) => e.topic !== "segments" && words.length > 0 && words.every((w) => segmentKey(e.text).includes(w)));
+    };
+    const keep = entity.divested.filter((d) => supported(d.name));
+    for (const d of entity.divested) {
+      if (!keep.includes(d)) log.dropped.push({ id: 0, reason: "business listed as sold has no verified supporting evidence", text: `${d.name}${d.date ? ` (${d.date})` : ""}` });
+    }
+    entity = { ...entity, divested: keep };
+  }
   for (const e of state.evidence) {
     if (drop.has(e.id) && log.dropped.length < 120) log.dropped.push({ id: e.id, reason: drop.get(e.id)!, text: e.text.slice(0, 240) });
   }
   return json({
-    state: { ...state, evidence: kept, sources: state.sources, dateChecks: log, warnings: [...state.warnings, ...warnings] },
+    state: { ...state, entity, evidence: kept, sources: state.sources, dateChecks: log, warnings: [...state.warnings, ...warnings] },
     summary: { checked: todo.length, dated: dated.length, dropped: drop.size, pagesRead: toRead.length },
   });
 }
@@ -2670,9 +2696,10 @@ async function v2FactsSection(apiKey: string, body: Any, clock: ReturnType<typeo
   if (!state || !SECTIONS.includes(section)) return json({ error: "Missing or invalid research state or section." }, 400);
   // Evidence that only peer-list or look-alike sites support cannot show who competes with whom.
   // Plaintiff-firm marketing can only support attributed customer-complaint statements, never facts about the business.
+  // Evidence from a page published more than 18 months ago is not used for events (strategy).
   const ev = state.evidence.filter((e) =>
     SECTION_TOPICS[section](e.topic) && (section !== "competitors" || usableForCompetitors(e)) &&
-    (section === "customer" || !e.flags?.includes("legal_marketing"))
+    (section === "customer" || !e.flags?.includes("legal_marketing")) && (section !== "strategy" || !e.flags?.includes("stale"))
   );
   const warnings: string[] = [];
   const competitorNames = section === "competitors" && state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
@@ -2733,7 +2760,7 @@ async function v2AnalysisPart(apiKey: string, body: Any, clock: ReturnType<typeo
   const schema = part === "core" ? CORE1_SCHEMA : part === "frameworks" ? FRAMEWORKS_SCHEMA : RECS_SCHEMA;
   const warnings: string[] = [];
   try {
-    const raw = await structured(apiKey, clock, warnings, `Analysis (${part})`, analysisPrompt(state.entity, state.evidence, todayStr(), part), schema, body?.deepResearch !== false, 0.3, 10_000);
+    const raw = await structured(apiKey, clock, warnings, `Analysis (${part})`, analysisPrompt(state.entity, currentEvidence(state.evidence), todayStr(), part), schema, body?.deepResearch !== false, 0.3, 10_000);
     return json({ part, ok: true, raw, warnings });
   } catch (e) {
     return json({ part, ok: false, raw: null, warnings: [...warnings, `Analysis (${part}) failed (${(e as Error)?.message ?? e}).`] });
