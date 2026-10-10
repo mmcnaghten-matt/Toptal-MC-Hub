@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Play, Square } from "lucide-react";
 import { toast } from "sonner";
 import { industries } from "@/data/industryData";
-import { useAllIndustryContent, useRefreshContent, useSaveContent } from "@/hooks/useIndustryContent";
+import { useAllIndustryContent, useIndustryScopes, useRefreshContent, useSaveContent } from "@/hooks/useIndustryContent";
 import type { IndustryResearchResult, ProgressChip } from "@/services/industryResearchPipeline";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +29,7 @@ const isClean = (c?: IndustryResearchResult) =>
 
 export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { data: stored } = useAllIndustryContent();
+  const { data: scopes } = useIndustryScopes();
   const refresh = useRefreshContent();
   const save = useSaveContent();
 
@@ -88,7 +89,7 @@ export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOp
       setChips([]);
       try {
         const content = await refresh.mutateAsync({
-          subIndustryId: q.subId, subIndustryName: q.subName, industryName: q.industryName, onProgress: setChips,
+          subIndustryId: q.subId, subIndustryName: q.subName, industryName: q.industryName, scope: scopes?.get(q.subId), onProgress: setChips,
         });
         patch(q.subId, { status: "draft", content });
       } catch (e) {

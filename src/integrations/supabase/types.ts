@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      industry_scopes: {
+        Row: {
+          scope: string
+          sub_industry_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          scope: string
+          sub_industry_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          scope?: string
+          sub_industry_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       industry_content: {
         Row: {
           challenges: Json

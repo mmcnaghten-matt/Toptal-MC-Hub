@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { industries, SubIndustry } from "@/data/industryData";
 import {
@@ -7,6 +7,8 @@ import {
   useSaveContent,
   useRevertContent,
   useRefreshContent,
+  useIndustryScopes,
+  useSaveScope,
   ContentVersion,
 } from "@/hooks/useIndustryContent";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,13 @@ export default function AdminIndustryInsights() {
   const saveContent = useSaveContent();
   const revertContent = useRevertContent();
   const refreshContent = useRefreshContent();
+  const { data: scopes } = useIndustryScopes();
+  const saveScope = useSaveScope();
+  const [scopeText, setScopeText] = useState("");
+  const savedScope = (selectedSubId && scopes?.get(selectedSubId)) || "";
+  useEffect(() => {
+    setScopeText(savedScope);
+  }, [selectedSubId, savedScope]);
 
   const selectedIndustry = industries.find((i) => i.id === selectedIndustryId);
   const selectedSub = selectedIndustry?.subIndustries.find((s) => s.id === selectedSubId);
@@ -110,6 +119,7 @@ export default function AdminIndustryInsights() {
         subIndustryId: selectedSubId,
         subIndustryName: selectedSub.name,
         industryName: selectedIndustry.name,
+        scope: scopeText.trim() || undefined,
         onProgress: setChips,
       },
       {
@@ -235,6 +245,33 @@ export default function AdminIndustryInsights() {
               <Button variant="outline" size="sm" onClick={() => { setShowHistory(!showHistory); setShowPreview(false); }}>
                 <History className="h-4 w-4 mr-1" /> History
               </Button>
+            </div>
+
+            {/* Research scope: what this sub-sector means in our model */}
+            <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <label className="text-sm font-medium text-foreground">Research scope</label>
+                <span className="text-xs text-muted-foreground">
+                  Tells AI Refresh what this sub-sector means in our model, so it researches the right thing. Optional.
+                </span>
+              </div>
+              <Textarea
+                value={scopeText}
+                onChange={(e) => setScopeText(e.target.value)}
+                rows={3}
+                placeholder='e.g. "The higher education industry itself: colleges and universities, their enrollment, funding, operations and workforce. Not student lending or financial aid."'
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => selectedSubId && saveScope.mutate({ subIndustryId: selectedSubId, scope: scopeText })}
+                  disabled={scopeText.trim() === savedScope.trim() || saveScope.isPending}
+                >
+                  {saveScope.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
+                  Save scope
+                </Button>
+              </div>
             </div>
 
             {contentLoading && <p className="text-muted-foreground">Loading content...</p>}

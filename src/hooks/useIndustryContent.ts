@@ -290,13 +290,55 @@ export function useRefreshContent() {
     mutationFn: async ({
       subIndustryName,
       industryName,
+      scope,
       onProgress,
     }: {
       subIndustryId: string;
       subIndustryName: string;
       industryName: string;
+      scope?: string;
       onProgress?: (chips: ProgressChip[]) => void;
     }): Promise<IndustryResearchResult> =>
-      runIndustryResearch({ call: callRefreshStep, subIndustryName, industryName, onProgress }),
+      runIndustryResearch({ call: callRefreshStep, subIndustryName, industryName, scope, onProgress }),
+  });
+}
+
+// Research scope per sub-sector: what the sub-sector means in our model (guides AI Refresh).
+export function useIndustryScopes() {
+  return useQuery({
+    queryKey: ["industry-scopes"],
+    queryFn: async (): Promise<Map<string, string>> => {
+      const { data, error } = await supabase.from("industry_scopes").select("sub_industry_id, scope");
+      if (error) {
+        console.error("Error fetching scopes:", error);
+        return new Map();
+      }
+      return new Map((data ?? []).map((r) => [r.sub_industry_id, r.scope]));
+    },
+  });
+}
+
+export function useSaveScope() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ subIndustryId, scope }: { subIndustryId: string; scope: string }) => {
+      const text = scope.trim();
+      if (!text) {
+        const { error } = await supabase.from("industry_scopes").delete().eq("sub_industry_id", subIndustryId);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase
+        .from("industry_scopes")
+        .upsert({ sub_industry_id: subIndustryId, scope: text, updated_by: "admin", updated_at: new Date().toISOString() });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["industry-scopes"] });
+      toast.success("Research scope saved");
+    },
+    onError: (error) => {
+      toast.error("Failed to save scope: " + error.message);
+    },
   });
 }

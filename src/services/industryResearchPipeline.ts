@@ -21,6 +21,8 @@ export interface IndustryResearchOptions {
   call: StepCall;
   subIndustryName: string;
   industryName: string;
+  /** Plain-words definition of what the sub-sector means in our model; overrides other readings of the name. */
+  scope?: string;
   onProgress?: (chips: ProgressChip[]) => void;
   /** Max requests in flight at once. */
   concurrency?: number;
@@ -63,7 +65,7 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
   const { call, subIndustryName, industryName, onProgress } = opts;
   const retryDelay = opts.retryDelayMs ?? 1500;
   const limit = opts.concurrency ?? 5;
-  const names = { subIndustryName, industryName };
+  const names = { subIndustryName, industryName, scope: opts.scope ?? "" };
 
   // ---- progress chips ----
   const chips = new Map<string, { id: string; label: string; status: ChipStatus; open: number; retried: boolean; failed: boolean }>(
