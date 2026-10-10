@@ -142,19 +142,22 @@ export default function AccountMarketIntel() {
     if (!result) return;
     setIsExporting(true);
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
+      const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const margin = 10;
       const contentWidth = pdfWidth - margin * 2;
 
-      const PIXEL_RATIO = 2;
+      // jsPDF stores images uncompressed unless told otherwise, and a 3000px-wide screenshot is far more than an A4
+      // page needs. Compress the images and cap the capture at about 1800px wide (roughly 240 dpi on A4).
+      const IMAGE_COMPRESSION = "MEDIUM" as const;
+      const TARGET_WIDTH_PX = 1800;
       const CONTENT_TOP = 15; // below the running header on section pages
       const captureElement = async (element: HTMLElement) => {
         const dataUrl = await toPng(element, {
           cacheBust: true,
           backgroundColor: "#ffffff",
-          pixelRatio: PIXEL_RATIO,
+          pixelRatio: Math.min(2, Math.max(1, TARGET_WIDTH_PX / Math.max(1, element.offsetWidth))),
           // Keep UI controls (the Export button and its "Exporting..." state) out of the PDF
           filter: (node) => !(node instanceof HTMLElement && node.hasAttribute("data-pdf-hide")),
         });
@@ -185,7 +188,7 @@ export default function AccountMarketIntel() {
         const firstPx = (pdfHeight - margin - y) / mmPerPx;
         const nextPx = (pdfHeight - margin - CONTENT_TOP) / mmPerPx;
         if (cap.img.height <= firstPx) {
-          pdf.addImage(cap.dataUrl, "PNG", margin, y, contentWidth, cap.scaledHeight);
+          pdf.addImage(cap.dataUrl, "PNG", margin, y, contentWidth, cap.scaledHeight, undefined, IMAGE_COMPRESSION);
           return y + cap.scaledHeight;
         }
         const cuts = planCutsFromImage(cap.img, firstPx, nextPx);
@@ -198,7 +201,7 @@ export default function AccountMarketIntel() {
           }
           const top = i === 0 ? y : CONTENT_TOP;
           const heightMm = (end - start) * mmPerPx;
-          pdf.addImage(sliceImageToDataUrl(cap.img, start, end), "PNG", margin, top, contentWidth, heightMm);
+          pdf.addImage(sliceImageToDataUrl(cap.img, start, end), "PNG", margin, top, contentWidth, heightMm, undefined, IMAGE_COMPRESSION);
           endY = top + heightMm;
         });
         return endY;
@@ -208,7 +211,7 @@ export default function AccountMarketIntel() {
       let currentY = margin;
       if (headerRef.current) {
         const header = await captureElement(headerRef.current);
-        pdf.addImage(header.dataUrl, "PNG", margin, currentY, contentWidth, header.scaledHeight);
+        pdf.addImage(header.dataUrl, "PNG", margin, currentY, contentWidth, header.scaledHeight, undefined, IMAGE_COMPRESSION);
         currentY += header.scaledHeight + 4;
       }
       const firstSection = SECTIONS[0];
