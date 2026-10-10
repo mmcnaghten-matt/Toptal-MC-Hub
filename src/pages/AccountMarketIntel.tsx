@@ -156,6 +156,7 @@ export default function AccountMarketIntel() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [chips, setChips] = useState<ProgressChip[]>([]);
+  const [logCopied, setLogCopied] = useState(false);
   const [deepResearch, setDeepResearch] = useState(true);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -676,8 +677,6 @@ export default function AccountMarketIntel() {
                     <div className="grid grid-cols-1 gap-4">
                       {[
                         { label: "TAM", value: result.marketOverview.metrics.tam, rows: result.marketOverview.metrics.tamRows, desc: "Total Addressable Market" },
-                        { label: "SAM", value: result.marketOverview.metrics.sam, rows: result.marketOverview.metrics.samRows, desc: "Serviceable Addressable Market" },
-                        { label: "SOM", value: result.marketOverview.metrics.som, rows: undefined, desc: "Serviceable Obtainable Market" },
                       ].map((item, i) => (
                         <div key={i} className="p-5 border border-border rounded-lg">
                           <div className="flex items-baseline gap-2 mb-2">
@@ -1097,6 +1096,28 @@ export default function AccountMarketIntel() {
                   <details className="rounded-lg border border-border bg-card text-sm">
                     <summary className="cursor-pointer px-6 py-4 font-semibold text-foreground">Research log</summary>
                     <div className="space-y-6 border-t border-border p-6">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const q = result.quality ?? {};
+                            await navigator.clipboard.writeText(
+                              JSON.stringify(
+                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
+                                null,
+                                2,
+                              ),
+                            );
+                            setLogCopied(true);
+                            setTimeout(() => setLogCopied(false), 2000);
+                          } catch {
+                            // clipboard unavailable: the log is still readable below
+                          }
+                        }}
+                        className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        {logCopied ? "Copied" : "Copy log"}
+                      </button>
                       {result.quality.scans && result.quality.scans.length > 0 && (
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs">
@@ -1129,6 +1150,19 @@ export default function AccountMarketIntel() {
                           {Object.entries(result.quality.sectionsOk).map(([k, ok]) => `${k} ${ok ? "ok" : "failed"}`).join(" · ")}
                           {result.quality.droppedCount != null && ` · ${result.quality.droppedCount} statements dropped by validation`}
                         </p>
+                      )}
+                      {result.quality.dropped && result.quality.dropped.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Dropped statements</h5>
+                          <ul className="space-y-1 text-xs text-muted-foreground">
+                            {result.quality.dropped.slice(0, 60).map((d, i) => (
+                              <li key={i}>
+                                <span className="font-medium text-foreground">{d.path}</span> — {d.reason}:{" "}
+                                <span className="italic">{d.text.slice(0, 140)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
                       {result.quality.warnings && result.quality.warnings.length > 0 && (
                         <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">

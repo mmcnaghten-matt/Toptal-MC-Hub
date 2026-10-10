@@ -31,7 +31,7 @@ export interface ResearchResult {
   };
   marketOverview: {
     definition: string;
-    metrics: { tam: string; sam: string; som: string; tamRows?: MarketRow[]; samRows?: MarketRow[] };
+    metrics: { tam: string; tamRows?: MarketRow[] };
     segmentation: string[];
     drivers: string[];
     inhibitors: string[];

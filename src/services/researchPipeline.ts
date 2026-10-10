@@ -170,7 +170,8 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
   const branchB = [
     factsSection("financials", "performance", state1, "Financials"),
     factsSection("strategy", "strategy", state1, "Strategy"),
-    factsSection("market", "market", state1, "Market"),
+    factsSection("market", "market_size", state1, "Market size"),
+    factsSection("market", "market_dynamics", state1, "Market drivers"),
     factsSection("customers", "customer", state1, "Customers"),
   ];
 
