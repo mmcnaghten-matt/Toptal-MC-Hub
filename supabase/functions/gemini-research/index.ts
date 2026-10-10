@@ -333,24 +333,36 @@ Write UNKNOWN for any field you cannot confirm from search results. Do not guess
 // The company's CURRENT reporting segments and the businesses it has sold or discontinued. Market research is then done
 // per current segment, and market figures for a divested business are not shown as current.
 const FOOTPRINT_STOP = new Set([
-  "products", "materials", "building", "business", "reinforcements", "composites", "insulation", "roofing", "doors", "windows", "shingles",
-  "manufacturing", "facility", "plants", "plant", "brands", "distribution", "residential", "commercial", "industrial", "fiberglass", "fibreglass",
-  "other", "various", "none", "unknown", "company", "operations", "segment",
+  "products", "product", "materials", "material", "building", "business", "reinforcements", "reinforcement", "composites", "composite",
+  "insulation", "roofing", "doors", "windows", "shingles", "manufacturing", "facility", "facilities", "plants", "plant", "brands", "brand",
+  "distribution", "residential", "commercial", "industrial", "fiberglass", "fibreglass", "glass", "fiber", "fibre", "yarns", "rovings",
+  "construction", "infrastructure", "other", "various", "none", "unknown", "company", "operations", "segment", "three", "several",
 ]);
-/** Distinctive terms of a sold business: its name, what it made, its plants and brands. */
+/**
+ * Distinctive terms of a sold business, used to drop evidence that treats it as current: its full name, brand and plant names
+ * ("Norandex", "Taloja"), and specific product phrases ("vinyl siding"). Generic words, places and single common words are
+ * left out so that evidence about the rest of the company is never removed.
+ */
 function footprintTerms(name: string, ...lists: string[]): string[] {
   const out = new Set<string>();
-  const add = (raw: string) => {
-    const t = raw.replace(/\*+|[()]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
+  const clean = (raw: string) => raw.replace(/\*+|[()]/g, " ").replace(/\s+/g, " ").trim();
+  const addName = (raw: string) => {
+    const t = clean(raw).toLowerCase();
     if (t.length < 4 || t.length > 60 || /^(not found|unknown|none)/.test(t)) return;
-    if (t.includes(" ") || (t.length >= 6 && !FOOTPRINT_STOP.has(t))) out.add(t);
+    // The business's own name: a phrase, or a distinctive single word (not a generic product word).
+    if (t.includes(" ") || (t.length >= 8 && !FOOTPRINT_STOP.has(t))) out.add(t);
   };
-  add(name);
+  addName(name);
   for (const l of lists) {
-    for (const part of l.split(/[,;]/)) {
-      add(part);
-      // "Taloja plant in India" -> Taloja: the plant's own name is what other sources use.
-      for (const m of part.matchAll(/\b([A-Z][a-z]{4,})\s+(?:plant|facility|site|mill|factory|campus|works)\b/g)) add(m[1]);
+    for (const rawPart of l.split(/[,;]/)) {
+      const part = clean(rawPart);
+      // "Norandex/Reynolds distribution business", "Taloja plant": the capitalised brand or plant name in front of the noun.
+      for (const m of part.matchAll(/((?:[A-Z][a-z]{4,}\/)*[A-Z][a-z]{4,})\s+(?:distribution|brands?|plants?|facilit(?:y|ies)|sites?|mills?|factory|campus|works|business)\b/g)) {
+        m[1].split("/").forEach((x) => out.add(x.toLowerCase()));
+      }
+      // A specific product phrase of two to four words with no generic words ("vinyl siding").
+      const words = part.toLowerCase().split(/\s+/).filter(Boolean);
+      if (words.length >= 2 && words.length <= 4 && part.length <= 40 && !words.some((w) => FOOTPRINT_STOP.has(w.replace(/[^a-z]/g, "")))) out.add(words.join(" "));
     }
   }
   return [...out].slice(0, 14);
@@ -937,9 +949,12 @@ const stripEvidenceRefs = (t: string) => t.replace(EVIDENCE_REF_RE, "").replace(
 // Not strategic and not a customer review theme: colour or SKU launches, awards and rankings, report publications.
 const MATERIALITY_RE = /\b(colou?rs?|shades?|SKUs?|awards?|award-winning|ranked|rankings?|recogni[sz]ed|best places to work|women'?s choice|colou?r of the year)\b|\b(published|releas\w+|issued|unveiled)\s+(?:its |the |a |an )?[^.]{0,40}\b(sustainability|esg|annual|impact|citizenship) report\b/i;
 const AWARD_RE = /\b(awards?|award-winning|ranked|rankings?|recogni[sz]ed|best places to work|women'?s choice|best of)\b/i;
-// Competitor claims must rest on primary or major-press sources or the competitor's own site, not on contractor blogs,
-// job sites or review sites.
-const competitorEvidenceOK = (e: Evidence) => (e.tier ?? 3) <= 2 || !!e.flags?.includes("own_site");
+// Competitor claims must not rest on contractor blogs, job sites or review sites.
+// Only sources that are known to be poor evidence about a competitor are refused (contractor and dealer blogs, review and
+// legal-marketing sites, look-alikes); ordinary tier-3 sources such as the competitor's own site and trade press are fine.
+const BAD_COMPETITOR_KINDS = ["seller", "review", "legal_marketing", "lookalike", "peer_list"];
+const competitorEvidenceOK = (e: Evidence) =>
+  (e.tier ?? 3) <= 2 || !!e.flags?.includes("own_site") || !(e.flags ?? []).some((f) => BAD_COMPETITOR_KINDS.includes(f));
 
 const notFound = (): Claim => ({ text: null, status: "not_found", evidenceIds: [] });
 
@@ -2343,10 +2358,14 @@ async function identifyCompetitors(apiKey: string, state: State, today: string, 
   let evText = ev.map((e) => e.text.toLowerCase()).join("\n");
   const candidates: { name: string; key: string; kind: "direct" | "indirect"; segment?: string }[] = [];
   const extra: { topic: string; r: GeminiResult }[] = [];
+  // Businesses the company already owns (an acquired brand named in its own description, such as Masonite for Owens Corning)
+  // are part of it, not competitors.
+  const ownText = [state.entity.description, ...segs.map((x) => `${x.name} ${x.description}`)].join(" ").toLowerCase();
   const addCandidate = (name: string, kind: "direct" | "indirect", segment?: string) => {
     const display = competitorDisplay(name);
     const key = competitorKey(name);
     if (display.length < 2 || display.length > 80 || key === companyKey) return;
+    if (key.length >= 5 && new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(ownText)) return;
     // Same company under another name, or a subsidiary of one already listed ("Saint-Gobain ISOVER"): keep one, the parent's name.
     const dup = candidates.find((c) => c.key === key || c.key.startsWith(key + " ") || key.startsWith(c.key + " "));
     if (dup) {
@@ -2359,10 +2378,13 @@ async function identifyCompetitors(apiKey: string, state: State, today: string, 
     if (candidates.length < 18) candidates.push({ name: display, key, kind, segment });
   };
 
-  if (ev.length) {
+  // Names the evidence itself puts forward. Runs at the same time as the per-segment search below, so the step keeps enough
+  // time for classification and a retry.
+  const fromEvidence = async (): Promise<{ direct: string[]; indirect: string[] }> => {
+    if (!ev.length) return { direct: [], indirect: [] };
     const prompt = `${entityBlock(state.entity)}
 
-From the evidence below, list the companies it names as DIRECT competitors of ${company} (same market, same customers), most prominent first (at most 8), and up to 4 INDIRECT competitors or alternatives. Use ONLY company names that appear in the evidence, exactly as written there. Do not list ${company} itself.
+From the evidence below, list the companies it names as DIRECT competitors of ${company} (same market, same customers), most prominent first (at most 8), and up to 4 INDIRECT competitors or alternatives. Use ONLY company names that appear in the evidence, exactly as written there. Do not list ${company} itself or businesses it owns.
 
 EVIDENCE:
 ${evidenceBlock(ev)}`;
@@ -2370,16 +2392,18 @@ ${evidenceBlock(ev)}`;
     try {
       const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, temperature: 0, thinkingBudget: 0, attempts: 1, timeoutMs: clock.timeout(25_000, 100_000) });
       const j = safeJson(r.text);
-      clean(j?.direct, evText).slice(0, 8).forEach((n) => addCandidate(n, "direct"));
-      clean(j?.indirect, evText).slice(0, 4).forEach((n) => addCandidate(n, "indirect"));
+      return { direct: clean(j?.direct, evText).slice(0, 8), indirect: clean(j?.indirect, evText).slice(0, 4) };
     } catch (e) {
       console.error("Competitor identification (evidence) failed:", e);
+      return { direct: [], indirect: [] };
     }
-  }
+  };
 
   // Rivals named in annual reports and trade press, one search per current segment. This is how a segment's main rival (the
   // one analysts always name) reaches the list even when comparison sites do not mention it.
-  const recall = async (targets: { name: string; description?: string }[], count: number, ms: number) => {
+  type Pick = { name: string; kind: "direct" | "indirect"; segment?: string };
+  const recall = async (targets: { name: string; description?: string }[], count: number, ms: number): Promise<Pick[]> => {
+    const found: Pick[] = [];
     const calls = targets.length
       ? targets.map((t) => `Today is ${today}.
 ${entityBlock(state.entity)}
@@ -2406,13 +2430,22 @@ INDIRECT: <company name> | <segment it competes in>`];
           const [name, seg] = m[1].replace(/\*+/g, "").split("|");
           return [{ name: name.trim(), segment: (seg ?? "").trim().slice(0, 80) || undefined }];
         });
-      pick("DIRECT").slice(0, 8).forEach((x) => addCandidate(x.name, "direct", x.segment));
-      pick("INDIRECT").slice(0, 6).forEach((x) => addCandidate(x.name, "indirect", x.segment));
+      found.push(...pick("DIRECT").slice(0, 8).map((x) => ({ ...x, kind: "direct" as const })), ...pick("INDIRECT").slice(0, 6).map((x) => ({ ...x, kind: "indirect" as const })));
       evText += "\n" + r.text.toLowerCase();
       extra.push({ topic: "competitors", r });
     }
+    return found;
   };
-  if (segs.length || candidates.filter((c) => c.kind === "direct").length < 3) await recall(segs.slice(0, 4), 3, clock.timeout(35_000, 85_000));
+  const [fromEv, recalled] = await Promise.all([
+    fromEvidence(),
+    segs.length || ev.length === 0 ? recall(segs.slice(0, 4), 3, clock.timeout(35_000, 85_000)) : Promise.resolve([] as Pick[]),
+  ]);
+  fromEv.direct.forEach((n) => addCandidate(n, "direct"));
+  fromEv.indirect.forEach((n) => addCandidate(n, "indirect"));
+  recalled.forEach((x) => addCandidate(x.name, x.kind, x.segment));
+  if (!segs.length && candidates.filter((c) => c.kind === "direct").length < 3 && ev.length > 0) {
+    (await recall([], 5, clock.timeout(30_000, 60_000))).forEach((x) => addCandidate(x.name, x.kind, x.segment));
+  }
 
   // Classification: keep only genuine competitors of the company's CURRENT businesses.
   type Class = "competitor" | "customer_channel" | "supplier" | "unrelated";
@@ -2427,7 +2460,7 @@ Classify each candidate against ${company}'s CURRENT businesses${segs.length ? `
 - competitor: sells a substitutable product or service to the same kind of customers as at least one current business of ${company}.
 - customer_channel: buys, distributes, resells, installs or contracts with ${company} (distributors, retailers, installers, contractors, builders).
 - supplier: supplies ${company} with materials, equipment or services.
-- unrelated: shares only a similar name, serves a different market (for example cement or aggregates for a building-products company, or glass for a company that has sold its glass business), or competes only in a business ${company} has sold.
+- unrelated: a business ${company} already owns (for example an acquired brand), shares only a similar name, serves a different market (for example cement or aggregates for a building-products company, or glass for a company that has sold its glass business), or competes only in a business ${company} has sold.
 Use what the evidence says and well-known facts about what each company does. For competitors, give the ONE current segment they compete in, exactly as named above.
 
 CANDIDATES:
@@ -2454,7 +2487,11 @@ ${cands.map((c, i) => `${i + 1}. ${c.name}${c.segment ? ` (named for: ${c.segmen
 
   const decide = (c: (typeof candidates)[number]) => {
     const v = verdicts.get(c.key);
-    if (!v) return { isCompetitor: c.kind === "direct", segment: c.segment ? canonicalSegment(c.segment) || c.segment : undefined, cls: "unclassified", reason: "" };
+    if (!v) {
+      // The classifier answered for others but not for this one: do not guess. Only when it did not run at all are direct candidates kept.
+      if (verdicts.size) return { isCompetitor: false, segment: undefined, cls: "unclassified", reason: "the classification did not cover this candidate" };
+      return { isCompetitor: c.kind === "direct", segment: c.segment ? canonicalSegment(c.segment) || c.segment : undefined, cls: "unclassified", reason: "" };
+    }
     const segment = canonicalSegment(v.segment) || canonicalSegment(c.segment);
     // With known segments, a competitor must compete in one of them (a glass maker is not a competitor of a company that sold its glass business).
     if (v.cls === "competitor" && segs.length && !segment) return { isCompetitor: false, segment: undefined, cls: "other_segment", reason: v.reason || "does not compete in a current segment" };
@@ -2466,7 +2503,7 @@ ${cands.map((c, i) => `${i + 1}. ${c.name}${c.segment ? ` (named for: ${c.segmen
   const missing = segs.slice(0, 4).filter((x) => !covered().has(capFirst(x.name)));
   if (missing.length && clock.remaining() > 55_000) {
     const before = candidates.length;
-    await recall(missing.map((x) => ({ name: x.name, description: x.description })), 5, clock.timeout(30_000, 45_000));
+    (await recall(missing.map((x) => ({ name: x.name, description: x.description })), 5, clock.timeout(30_000, 45_000))).forEach((x) => addCandidate(x.name, x.kind, x.segment));
     await classify(candidates.slice(before), clock.timeout(25_000, 20_000));
   }
 
