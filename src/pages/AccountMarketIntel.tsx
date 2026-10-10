@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -133,14 +133,6 @@ function WinLossColumns({ raw }: { raw: string }) {
   }
   return <div className="prose prose-neutral text-sm text-foreground"><Markdown>{raw}</Markdown></div>;
 }
-import {
-  ResponsiveContainer,
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-} from "recharts";
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 import { performResearch, type ProgressChip, type ResearchResult } from "@/services/geminiService";
@@ -264,17 +256,6 @@ export default function AccountMarketIntel() {
     sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
     setIsSidebarOpen(false);
   };
-
-  const radarData = useMemo(() => {
-    if (!result) return [];
-    return [
-      { subject: "Market Presence", A: 85, fullMark: 100 },
-      { subject: "Innovation", A: 90, fullMark: 100 },
-      { subject: "Financial Strength", A: 75, fullMark: 100 },
-      { subject: "Customer Loyalty", A: 80, fullMark: 100 },
-      { subject: "Operational Efficiency", A: 70, fullMark: 100 },
-    ];
-  }, [result]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -782,54 +763,28 @@ export default function AccountMarketIntel() {
                     </h3>
                   </div>
                   <div className="p-8 space-y-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                      <div className="h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                            <PolarGrid stroke="hsl(var(--border))" />
-                            <PolarAngleAxis
-                              dataKey="subject"
-                              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontWeight: 600 }}
-                            />
-                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                            <Radar
-                              name={result.companyName}
-                              dataKey="A"
-                              stroke="hsl(var(--primary))"
-                              fill="hsl(var(--primary))"
-                              fillOpacity={0.4}
-                            />
-                          </RadarChart>
-                        </ResponsiveContainer>
+                    <div className="grid grid-cols-2 gap-4 max-w-md">
+                      <div className="p-4 bg-secondary/50 rounded-lg">
+                        <div className="text-xl font-bold text-foreground">{result.competitiveLandscape.directCompetitors.length}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Direct Competitors</div>
                       </div>
+                      <div className="p-4 bg-secondary/50 rounded-lg">
+                        <div className="text-xl font-bold text-foreground">{result.competitiveLandscape.indirectCompetitors.length}</div>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Indirect Rivals</div>
+                      </div>
+                    </div>
+                    {result.competitiveLandscape.directCompetitors.length > 0 && (
                       <div className="space-y-6">
-                        <h4 className="text-sm font-bold text-foreground uppercase tracking-widest">Market Positioning Analysis</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          The competitive landscape is characterized by high fragmentation in the niche segments but strong consolidation among top-tier leaders. {result.companyName} maintains a competitive edge through its focus on innovation and customer-centric value propositions.
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-4 bg-secondary/50 rounded-lg">
-                            <div className="text-xl font-bold text-foreground">{result.competitiveLandscape.directCompetitors.length}</div>
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Direct Competitors</div>
-                          </div>
-                          <div className="p-4 bg-secondary/50 rounded-lg">
-                            <div className="text-xl font-bold text-foreground">{result.competitiveLandscape.indirectCompetitors.length}</div>
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Indirect Rivals</div>
-                          </div>
+                        <h4 className="text-sm font-bold text-foreground border-l-4 border-primary pl-3">Direct Competitors</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {result.competitiveLandscape.directCompetitors.map((c, i) => (
+                            <div key={i} className="p-4 border border-border rounded-lg hover:border-primary transition-colors">
+                              <div className="font-bold text-foreground"><Rich>{c}</Rich></div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                    <div className="space-y-6">
-                      <h4 className="text-sm font-bold text-foreground border-l-4 border-primary pl-3">Direct Competitors</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {result.competitiveLandscape.directCompetitors.map((c, i) => (
-                          <div key={i} className="p-4 border border-border rounded-lg hover:border-primary transition-colors">
-                            <div className="font-bold text-foreground mb-1"><Rich>{c}</Rich></div>
-                            <div className="text-xs text-muted-foreground">Primary market rival with overlapping product features.</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </section>
 
