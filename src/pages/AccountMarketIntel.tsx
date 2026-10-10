@@ -1148,7 +1148,7 @@ export default function AccountMarketIntel() {
                             const q = result.quality ?? {};
                             await navigator.clipboard.writeText(
                               JSON.stringify(
-                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, competitorFilter: q.competitorFilter, sourceFlags: q.sourceFlags, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
+                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, competitorFilter: q.competitorFilter, sourceFlags: q.sourceFlags, dateChecks: q.dateChecks, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
                                 null,
                                 2,
                               ),
@@ -1201,6 +1201,24 @@ export default function AccountMarketIntel() {
                               </li>
                             ))}
                           </ul>
+                        </div>
+                      )}
+                      {result.quality.dateChecks && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Date checks</h5>
+                          <p className="mb-2 text-xs text-muted-foreground">
+                            {result.quality.dateChecks.confirmed} dated statements confirmed on the cited page · {result.quality.dateChecks.corroborated} events confirmed by a primary source ·{" "}
+                            {result.quality.dateChecks.unverified} could not be checked (primary or major-press source kept) · {result.quality.dateChecks.dropped.length} removed
+                          </p>
+                          {result.quality.dateChecks.dropped.length > 0 && (
+                            <ul className="space-y-1 text-xs text-muted-foreground">
+                              {result.quality.dateChecks.dropped.map((d, i) => (
+                                <li key={i}>
+                                  <span className="font-medium text-foreground">{d.reason}</span>: <span className="italic">{d.text.slice(0, 160)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       )}
                       {result.quality.sourceFlags && result.quality.sourceFlags.length > 0 && (

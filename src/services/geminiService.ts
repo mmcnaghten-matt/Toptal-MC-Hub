@@ -106,6 +106,8 @@ export interface ResearchResult {
     competitorFilter?: { name: string; classification: string; kept: boolean; reason: string }[];
     /** Sources kept in the report that deserve a second look (look-alike domains, peer lists, seller pages). */
     sourceFlags?: { title: string; url: string; flags: string[] }[];
+    /** Dated statements checked against the pages they cite, and the evidence removed because the page did not support its date. */
+    dateChecks?: { confirmed: number; unverified: number; corroborated: number; dropped: { id: number; reason: string; text: string }[] };
     sectionsOk?: Record<string, boolean>;
     verifier?: string;
   };

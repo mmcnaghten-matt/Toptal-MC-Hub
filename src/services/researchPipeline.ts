@@ -49,6 +49,7 @@ const CHIPS: { id: string; label: string }[] = [
   { id: "market", label: "Market" },
   { id: "customers", label: "Customers" },
   { id: "competitors", label: "Competitors" },
+  { id: "dates", label: "Checking dates" },
   { id: "analysis", label: "Analysis" },
   { id: "report", label: "Final report" },
 ];
@@ -165,7 +166,22 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
 
   // ---- 3. ledger (fatal: no evidence, no report) ----
   const ledger1 = await attempt({ step: "ledger", entity, companyName, slices: [profileSlice, segmentSlice, ...scanned].filter(Boolean) });
-  const state1 = ledger1.data.state;
+
+  // ---- 3b. date check: every dated statement is checked against the page it cites ----
+  // Never fatal: if the check cannot run, the report continues with a warning.
+  const verify = async (state: any): Promise<any> => {
+    begin("dates");
+    try {
+      const r = await attempt({ step: "verify_evidence", state });
+      end("dates", { retried: r.retried });
+      return r.data.state;
+    } catch (e) {
+      warnings.push(`Date check could not run (${errMsg(e)}); dates in the report are not verified against the cited pages.`);
+      end("dates", { failed: true });
+      return state;
+    }
+  };
+  const state1 = await verify(ledger1.data.state);
 
   // ---- 4. fact sections ----
   const factsSection = async (chip: string, section: string, state: any, label: string) => {
@@ -203,7 +219,7 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
       const slices = [...(idn.slices ?? []), ...compSlices].filter((x) => x?.meta);
       const withCompetitors = { ...state1, competitors, validatedCompetitors: idn.validated ?? competitors };
       state2 = slices.length
-        ? (await attempt({ step: "ledger", state: withCompetitors, slices })).data.state
+        ? await verify((await attempt({ step: "ledger", state: withCompetitors, slices })).data.state)
         : withCompetitors;
       if (!competitors.length) warnings.push("No competitors could be identified, so competitor deep dives rely on general research only.");
     } catch (e) {
