@@ -47,6 +47,8 @@ export interface IndustryResearchResult {
     sourcesDroppedByType?: number;
     sourceTiers?: { primary: number; major: number; other: number };
     verifier?: string;
+    repaired?: { path: string; before: string; after: string }[];
+    topUps?: string[];
   };
 }
 
@@ -115,6 +117,9 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
 
   const warnings: string[] = [];
   const dropped: any[] = [];
+  const verifierLog: string[] = [];
+  const repaired: any[] = [];
+  const topUps: string[] = [];
   const scanLog: { topic: string; status: string; ms: number; segments: number; retried: boolean }[] = [];
   const segmentsOf = (slice: any) => slice?.meta?.groundingSupports?.length ?? 0;
 
@@ -154,6 +159,8 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
       const r = await attempt({ step: "synth", state, ...body });
       if (r.data?.dropped?.length) dropped.push(...r.data.dropped);
       if (r.data?.warnings?.length) warnings.push(...r.data.warnings);
+      if (r.data?.verifier) verifierLog.push(`${body.part}${body.want ? " (top-up)" : ""}: ${r.data.verifier}`);
+      if (r.data?.repaired?.length) repaired.push(...r.data.repaired);
       end(chip, { retried: r.retried, failed: !r.data?.ok });
       return r.data?.ok ? r.data : null;
     } catch (e) {
@@ -165,9 +172,37 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
   const [ov, ini] = await Promise.all([synth("overview", { part: "overview" }), synth("initiatives", { part: "initiatives" })]);
   if (!ov && !ini) throw new Error("The research did not produce usable results. Try again.");
 
+  // Lists that came back thin get ONE top-up pass asking for angles not yet covered (never fatal).
+  const MIN = { challenges: 3, initiatives: 3, needs: 5 };
+  const titleKey = (t: string) => t.split(":")[0].toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+  const merge = (have: any[], more: any[], key: (x: any) => string) => {
+    const seen = new Set(have.map(key));
+    return [...have, ...more.filter((x) => !seen.has(key(x)))];
+  };
+  let challenges: any[] = ov?.challenges ?? [];
+  let initiatives: any[] = ini?.initiatives ?? [];
+  if (ov && challenges.length < MIN.challenges) {
+    const t = await synth("overview", { part: "overview", want: MIN.challenges - challenges.length + 1, exclude: challenges.map((c) => c.text.split(":")[0]) });
+    const added = merge(challenges, t?.challenges ?? [], (x) => titleKey(x.text));
+    if (added.length > challenges.length) topUps.push(`challenges +${added.length - challenges.length}`);
+    challenges = added;
+  }
+  if (ini && initiatives.length < MIN.initiatives) {
+    const t = await synth("initiatives", { part: "initiatives", want: MIN.initiatives - initiatives.length + 1, exclude: initiatives.map((c) => c.text.split(":")[0]) });
+    const added = merge(initiatives, t?.initiatives ?? [], (x) => titleKey(x.text));
+    if (added.length > initiatives.length) topUps.push(`initiatives +${added.length - initiatives.length}`);
+    initiatives = added;
+  }
+
   // ---- 4. needs, derived from the validated challenges and initiatives ----
-  const needsRes = await synth("needs", { part: "needs", challenges: ov?.challenges ?? [], initiatives: ini?.initiatives ?? [] });
-  const needs: any[] = needsRes?.needs ?? [];
+  const needsRes = await synth("needs", { part: "needs", challenges, initiatives });
+  let needs: any[] = needsRes?.needs ?? [];
+  if (needsRes && needs.length < MIN.needs) {
+    const t = await synth("needs", { part: "needs", challenges, initiatives, want: MIN.needs - needs.length + 1, exclude: needs.map((n) => n.name) });
+    const added = merge(needs, t?.needs ?? [], (x) => String(x.name).toLowerCase().replace(/[^a-z0-9 ]/g, ""));
+    if (added.length > needs.length) topUps.push(`needs +${added.length - needs.length}`);
+    needs = added;
+  }
 
   // ---- 5. MC offers (separate from writing the needs) ----
   let offers: any[] = [];
@@ -191,8 +226,8 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
   try {
     const r = await attempt({
       step: "report", state,
-      overview: ov?.overview ?? null, challenges: ov?.challenges ?? [], initiatives: ini?.initiatives ?? [],
-      needs, offers, dropped, scanLog, clientWarnings: warnings,
+      overview: ov?.overview ?? null, challenges, initiatives,
+      needs, offers, dropped, scanLog, clientWarnings: warnings, verifierLog, repaired, topUps,
     });
     end("report", { retried: r.retried });
     return r.data as IndustryResearchResult;

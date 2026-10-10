@@ -101,6 +101,23 @@ export function RefreshPreview({ content, applying, onApply, onDiscard }: Props)
                 </tbody>
               </table>
             )}
+            {q.topUps && q.topUps.length > 0 && (
+              <p className="text-muted-foreground">Thin lists were topped up with a second pass: {q.topUps.join(" · ")}</p>
+            )}
+            {q.repaired && q.repaired.length > 0 && (
+              <div>
+                <p className="mb-1 font-bold uppercase tracking-widest text-muted-foreground">
+                  Rewritten without unsupported figures ({q.repaired.length})
+                </p>
+                <ul className="space-y-1 text-muted-foreground">
+                  {q.repaired.slice(0, 30).map((r, i) => (
+                    <li key={i}>
+                      <span className="font-medium text-foreground">{r.path}</span>: <span className="line-through">{r.before.slice(0, 120)}</span> → {r.after.slice(0, 140)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             {q.dropped && q.dropped.length > 0 && (
               <div>
                 <p className="mb-1 font-bold uppercase tracking-widest text-muted-foreground">Dropped by validation</p>
