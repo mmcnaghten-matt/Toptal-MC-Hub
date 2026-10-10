@@ -107,6 +107,7 @@ import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 import { performResearch, type ProgressChip, type ResearchResult } from "@/services/geminiService";
 import ToptalLogo from "@/components/ToptalLogo";
+import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/components/ResearchMethod";
 import { cn } from "@/lib/utils";
 import { planCutsFromImage, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
@@ -128,6 +129,7 @@ export default function AccountMarketIntel() {
   const [loading, setLoading] = useState(false);
   const [chips, setChips] = useState<ProgressChip[]>([]);
   const [logCopied, setLogCopied] = useState(false);
+  const [jsonCopied, setJsonCopied] = useState(false);
   const [deepResearch, setDeepResearch] = useState(true);
   const [result, setResult] = useState<ResearchResult | null>(null);
   // The report's sources are numbered by position ([1] is the first), so citations can open them.
@@ -237,6 +239,15 @@ export default function AccountMarketIntel() {
         sectionHeader(`${result.companyName} - ${section.label}`);
         const sec = await captureElement(element);
         placeCaptured(sec, CONTENT_TOP, `${result.companyName} - ${section.label} (cont.)`);
+      }
+
+      // How this research was done (the method and this report's numbers)
+      const methodEl = sectionRefs.current["method"];
+      if (methodEl) {
+        pdf.addPage();
+        sectionHeader(`${result.companyName} - How this research was done`);
+        const meth = await captureElement(methodEl);
+        placeCaptured(meth, CONTENT_TOP, `${result.companyName} - How this research was done (cont.)`);
       }
 
       // Sources: the numbered list the [n] citations point to (continues across pages when long)
@@ -538,6 +549,14 @@ export default function AccountMarketIntel() {
                         </div>
                       ))}
                     </div>
+                    <p className="mt-3 border-t border-primary-foreground/20 pt-3 text-[10px] leading-snug text-primary-foreground/70">{AI_CAVEAT}</p>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("method")}
+                      className="mt-2 text-[10px] font-semibold text-primary-foreground underline underline-offset-2 hover:text-accent"
+                    >
+                      How this was researched
+                    </button>
                   </div>
                 </div>
               </aside>
@@ -554,6 +573,7 @@ export default function AccountMarketIntel() {
                     <h2 className="text-3xl font-bold text-foreground tracking-tight">
                       {result.companyName}
                     </h2>
+                    <p className="mt-2 max-w-xl text-xs text-muted-foreground">{AI_CAVEAT_SHORT}</p>
                   </div>
                   <div className="flex gap-3">
                     <button
@@ -577,11 +597,12 @@ export default function AccountMarketIntel() {
                   ref={(el) => { sectionRefs.current["executive"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
                 >
-                  <div className="px-8 py-6 border-b border-border bg-secondary/50 flex items-center">
+                  <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <FileText className="w-5 h-5 text-primary" />
                       1. Executive Summary
                     </h3>
+                    <SectionNote k="executive" />
                   </div>
                   <div className="p-8 space-y-8">
                     <div className="prose prose-neutral max-w-none text-foreground leading-relaxed">
@@ -623,11 +644,12 @@ export default function AccountMarketIntel() {
                   ref={(el) => { sectionRefs.current["performance"] = el; }}
                   className="bg-card rounded-lg shadow-sm border border-border overflow-hidden scroll-mt-24"
                 >
-                  <div className="px-8 py-6 border-b border-border bg-secondary/50 flex items-center">
+                  <div className="px-8 py-6 border-b border-border bg-secondary/50">
                     <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                       <BarChart3 className="w-5 h-5 text-primary" />
                       2. Business Performance &amp; Strategic Initiatives
                     </h3>
+                    <SectionNote k="performance" />
                   </div>
                   <div className="p-8 space-y-8">
                     <div className="prose prose-neutral max-w-none text-foreground leading-relaxed">
@@ -695,6 +717,7 @@ export default function AccountMarketIntel() {
                       <Globe className="w-5 h-5 text-primary" />
                       3. Market Overview
                     </h3>
+                    <SectionNote k="market" />
                   </div>
                   <div className="p-8 space-y-8">
                     <div className="prose prose-neutral max-w-none text-foreground">
@@ -791,6 +814,7 @@ export default function AccountMarketIntel() {
                       <Users className="w-5 h-5 text-primary" />
                       4. Competitive Landscape
                     </h3>
+                    <SectionNote k="landscape" />
                   </div>
                   <div className="p-8 space-y-10">
                     <div className="grid grid-cols-2 gap-4 max-w-md">
@@ -828,6 +852,7 @@ export default function AccountMarketIntel() {
                       <Layers className="w-5 h-5 text-primary" />
                       5. Competitor Deep Dives
                     </h3>
+                    <SectionNote k="deepdive" />
                   </div>
                   <div className="divide-y divide-border">
                     {result.competitorDeepDives
@@ -883,6 +908,7 @@ export default function AccountMarketIntel() {
                       <ShieldAlert className="w-5 h-5 text-primary" />
                       6. Strategic Frameworks
                     </h3>
+                    <SectionNote k="strategic" />
                   </div>
                   <div className="p-8 space-y-12">
                     {/* SWOT */}
@@ -975,6 +1001,7 @@ export default function AccountMarketIntel() {
                       <UserCheck className="w-5 h-5 text-primary" />
                       7. Customer Review Themes
                     </h3>
+                    <SectionNote k="customer" />
                   </div>
                   <div className="p-8 space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1021,6 +1048,7 @@ export default function AccountMarketIntel() {
                       <Lightbulb className="w-6 h-6 text-primary" />
                       8. Recommendations & Strategic Roadmap
                     </h3>
+                    <SectionNote k="recommendations" />
                   </div>
                   <div className="p-8 space-y-10">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -1074,6 +1102,7 @@ export default function AccountMarketIntel() {
                       <Target className="w-5 h-5 text-primary" />
                       9. MC Service Opportunities
                     </h3>
+                    <SectionNote k="mc" />
                   </div>
                   <div className="p-8">
                     <div className="overflow-x-auto">
@@ -1102,6 +1131,9 @@ export default function AccountMarketIntel() {
                     </div>
                   </div>
                 </section>
+
+                {/* How this research was done: the method and this run's numbers, just before the sources */}
+                <ResearchMethod result={result} sectionRef={(el) => { sectionRefs.current["method"] = el; }} />
 
                 {/* Sources — numbered to match the [n] citations in the report text */}
                 {result.sources.length > 0 && (
@@ -1164,6 +1196,22 @@ export default function AccountMarketIntel() {
                       >
                         {logCopied ? "Copied" : "Copy log"}
                       </button>
+                      {/* The whole report as JSON (including this log), for the QC checker in scripts/qc */}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+                            setJsonCopied(true);
+                            setTimeout(() => setJsonCopied(false), 2000);
+                          } catch {
+                            // clipboard unavailable
+                          }
+                        }}
+                        className="ml-2 rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        {jsonCopied ? "Copied" : "Copy report JSON"}
+                      </button>
                       {result.quality.scans && result.quality.scans.length > 0 && (
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs">
@@ -1220,6 +1268,26 @@ export default function AccountMarketIntel() {
                               ))}
                             </ul>
                           )}
+                        </div>
+                      )}
+                      {result.quality.dateChecks?.byTopic && Object.keys(result.quality.dateChecks.byTopic).length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Evidence removed by the date and source checks, by topic</h5>
+                          <ul className="space-y-1 text-xs text-muted-foreground">
+                            {Object.entries(result.quality.dateChecks.byTopic).sort((a, b) => b[1] - a[1]).map(([k, n]) => (
+                              <li key={k}>
+                                <span className="font-medium text-foreground tabular-nums">{n}</span> · {k}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {result.quality.sourceDomains && result.quality.sourceDomains.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Cited domains</h5>
+                          <p className="text-xs text-muted-foreground">
+                            {result.quality.sourceDomains.map((d) => `${d.domain} (${d.count}${d.kinds.length ? `, ${d.kinds.join("/")}` : ""})`).join(" · ")}
+                          </p>
                         </div>
                       )}
                       {result.quality.sourceFlags && result.quality.sourceFlags.length > 0 && (

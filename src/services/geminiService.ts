@@ -107,7 +107,28 @@ export interface ResearchResult {
     /** Sources kept in the report that deserve a second look (look-alike domains, peer lists, seller pages). */
     sourceFlags?: { title: string; url: string; flags: string[] }[];
     /** Dated statements checked against the pages they cite, and the evidence removed because the page did not support its date. */
-    dateChecks?: { confirmed: number; unverified: number; corroborated: number; dropped: { id: number; reason: string; text: string }[] };
+    dateChecks?: {
+      confirmed: number;
+      unverified: number;
+      corroborated: number;
+      dropped: { id: number; reason: string; text: string }[];
+      /** Evidence removed by the date checks, counted per topic and reason. */
+      byTopic?: Record<string, number>;
+    };
+    /** Counts the "How this research was done" section shows. */
+    methodStats?: {
+      evidenceFound: number;
+      evidenceUsed: number;
+      evidenceRemovedByChecks: number;
+      claimsChecked: number;
+      claimsRemovedByVerifier: number;
+      statementsDropped: number;
+    };
+    /** Every domain cited in the report, so blocked sites and source rules can be confirmed from one list. */
+    sourceDomains?: { domain: string; count: number; tier: number; kinds: string[] }[];
+    sourceTiers?: { primary: number; major: number; other: number };
+    evidenceCount?: number;
+    sourceCount?: number;
     sectionsOk?: Record<string, boolean>;
     verifier?: string;
   };
