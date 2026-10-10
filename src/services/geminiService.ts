@@ -12,6 +12,10 @@ export interface ResearchResult {
     financialHighlights: string;
     recentMetrics: string[];
     strategicInitiatives: { name: string; description: string }[];
+    strategicInitiativeGroups?: {
+      group: string;
+      subgroups: { name: string; items: { name: string; description: string }[] }[];
+    }[];
   };
   marketOverview: {
     definition: string;

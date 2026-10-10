@@ -32,8 +32,29 @@ const toStr = (v: unknown): string => {
   if (typeof v === "object") return JSON.stringify(v, null, 2);
   return String(v);
 };
-const Markdown = ({ children, ...props }: React.ComponentProps<typeof ReactMarkdown> & { children: any }) => (
-  <ReactMarkdown {...props}>{toStr(children)}</ReactMarkdown>
+// Citations like [3] render as small superscript links to the numbered Sources list at the end of the report.
+const citationize = (text: string) => text.replace(/\[(\d+)\]/g, "[\\[$1\\]](#source-$1)");
+const CitationLink = ({ href, children, node: _node, ...rest }: React.ComponentProps<"a"> & { node?: unknown }) =>
+  href?.startsWith("#source-") ? (
+    <sup className="ml-px text-[9px] font-medium leading-none text-muted-foreground/80 hover:text-primary">
+      <a href={href} className="no-underline text-inherit">{children}</a>
+    </sup>
+  ) : (
+    <a href={href} {...rest}>{children}</a>
+  );
+// The Tailwind typography plugin is not enabled, so style the basic blocks explicitly.
+const mdComponents = {
+  a: CitationLink,
+  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-3 last:mb-0">{children}</p>,
+  ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-5 space-y-1.5">{children}</ul>,
+  ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-5 space-y-1.5">{children}</ol>,
+};
+const Markdown = ({ children, components, ...props }: React.ComponentProps<typeof ReactMarkdown> & { children: any }) => (
+  <ReactMarkdown {...props} components={{ ...mdComponents, ...components }}>{citationize(toStr(children))}</ReactMarkdown>
+);
+// Inline version for single-line text (list items, pills, table cells): bold/italics and citations, no paragraph wrapper.
+const Rich = ({ children }: { children: any }) => (
+  <Markdown components={{ p: ({ children: c }) => <>{c}</> }}>{children}</Markdown>
 );
 
 // MC taxonomy practice colors (match the Services page cards). serviceOffering arrives as "L2 > L3".
@@ -85,7 +106,7 @@ function WinLossColumns({ raw }: { raw: string }) {
               {wins.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-green-500" />
-                  {w}
+                  <span><Rich>{w}</Rich></span>
                 </li>
               ))}
             </ul>
@@ -96,7 +117,7 @@ function WinLossColumns({ raw }: { raw: string }) {
               {losses.map((l, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-400" />
-                  {l}
+                  <span><Rich>{l}</Rich></span>
                 </li>
               ))}
             </ul>
@@ -536,28 +557,28 @@ export default function AccountMarketIntel() {
                     <div className="prose prose-neutral max-w-none text-foreground leading-relaxed">
                       <Markdown>{result.executiveSummary.tldr}</Markdown>
                     </div>
+                    <div className="p-5 bg-secondary/30 rounded-lg border border-border">
+                      <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Key Market Trends</h4>
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                        {result.executiveSummary.keyTrends.map((t, i) => (
+                          <li key={i} className="text-sm font-medium text-foreground flex items-start gap-2">
+                            <TrendingUp className="w-3 h-3 mt-1 shrink-0 text-primary" />
+                            <span><Rich>{t}</Rich></span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="p-5 bg-secondary/30 rounded-lg border border-border">
-                        <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Key Market Trends</h4>
-                        <ul className="space-y-2">
-                          {result.executiveSummary.keyTrends.map((t, i) => (
-                            <li key={i} className="text-sm font-medium text-foreground flex items-start gap-2">
-                              <TrendingUp className="w-3 h-3 mt-1 shrink-0 text-primary" />
-                              {t}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="p-5 bg-secondary/30 rounded-lg border border-border">
+                      <div className="p-5 bg-secondary/30 rounded-lg border border-border md:col-span-1">
                         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Competitive Positioning</h4>
                         <span className="text-xl font-bold text-foreground">
                           {result.executiveSummary.competitivePositioning}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">Based on current market share and innovation trajectory.</p>
                       </div>
-                      <div className="p-5 bg-primary text-primary-foreground rounded-lg shadow-lg">
+                      <div className="p-5 bg-primary text-primary-foreground rounded-lg shadow-lg md:col-span-2">
                         <h4 className="text-xs font-bold text-primary-foreground/70 uppercase tracking-widest mb-3">The Big Opportunity</h4>
-                        <p className="text-sm font-bold leading-relaxed">{result.executiveSummary.bigOpportunity}</p>
+                        <p className="text-sm font-bold leading-relaxed"><Rich>{result.executiveSummary.bigOpportunity}</Rich></p>
                       </div>
                     </div>
                   </div>
@@ -582,24 +603,50 @@ export default function AccountMarketIntel() {
                       <div className="flex flex-wrap gap-2">
                         {result.businessPerformance.recentMetrics.map((m, i) => (
                           <span key={i} className="inline-flex items-center px-3 py-1.5 rounded-full bg-secondary text-xs font-medium text-foreground border border-border">
-                            {m}
+                            <Rich>{m}</Rich>
                           </span>
                         ))}
                       </div>
                     )}
                     <div>
-                      <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
                         <Target className="w-4 h-4 text-primary" />
                         Key Strategic Initiatives
                       </h4>
-                      <div className="space-y-3">
-                        {result.businessPerformance.strategicInitiatives.map((init, i) => (
-                          <div key={i} className="p-4 rounded-lg border border-border bg-secondary/20">
-                            <p className="text-sm font-semibold text-foreground mb-1">{init.name}</p>
-                            <p className="text-sm text-muted-foreground">{init.description}</p>
-                          </div>
-                        ))}
-                      </div>
+                      <p className="text-xs text-muted-foreground mb-4">Last 24 months, grouped by theme. Themes with nothing significant are omitted.</p>
+                      {(result.businessPerformance.strategicInitiativeGroups?.length ?? 0) > 0 ? (
+                        <div className="space-y-6">
+                          {result.businessPerformance.strategicInitiativeGroups!.map((g) => (
+                            <div key={g.group}>
+                              <h5 className="text-xs font-bold uppercase tracking-widest text-primary mb-3">{g.group}</h5>
+                              <div className="space-y-4">
+                                {g.subgroups.map((sg) => (
+                                  <div key={sg.name}>
+                                    <div className="text-xs font-semibold text-muted-foreground mb-2">{sg.name}</div>
+                                    <div className="space-y-2">
+                                      {sg.items.map((init, i) => (
+                                        <div key={i} className="p-4 rounded-lg border border-border bg-secondary/20">
+                                          <p className="text-sm font-semibold text-foreground mb-1">{init.name}</p>
+                                          <p className="text-sm text-muted-foreground"><Rich>{init.description}</Rich></p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {result.businessPerformance.strategicInitiatives.map((init, i) => (
+                            <div key={i} className="p-4 rounded-lg border border-border bg-secondary/20">
+                              <p className="text-sm font-semibold text-foreground mb-1">{init.name}</p>
+                              <p className="text-sm text-muted-foreground"><Rich>{init.description}</Rich></p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -619,16 +666,20 @@ export default function AccountMarketIntel() {
                     <div className="prose prose-neutral max-w-none text-foreground">
                       <Markdown>{result.marketOverview.definition}</Markdown>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                       {[
                         { label: "TAM", value: result.marketOverview.metrics.tam, desc: "Total Addressable Market" },
                         { label: "SAM", value: result.marketOverview.metrics.sam, desc: "Serviceable Addressable Market" },
                         { label: "SOM", value: result.marketOverview.metrics.som, desc: "Serviceable Obtainable Market" },
                       ].map((item, i) => (
-                        <div key={i} className="text-center p-4 border border-border rounded-lg">
-                          <div className="text-xs font-bold text-muted-foreground uppercase mb-1">{item.label}</div>
-                          <div className="text-sm font-semibold text-foreground mb-1 leading-snug">{item.value}</div>
-                          <div className="text-[10px] text-muted-foreground">{item.desc}</div>
+                        <div key={i} className="p-5 border border-border rounded-lg">
+                          <div className="flex items-baseline gap-2 mb-2">
+                            <span className="text-xs font-bold text-primary uppercase tracking-widest">{item.label}</span>
+                            <span className="text-[11px] text-muted-foreground">{item.desc}</span>
+                          </div>
+                          <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-ul:my-0 prose-li:my-0.5">
+                            <Markdown>{item.value}</Markdown>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -642,7 +693,7 @@ export default function AccountMarketIntel() {
                           {result.marketOverview.drivers.map((d, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-3 p-3 bg-accent/5 rounded-lg border border-accent/10">
                               <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                              {d}
+                              <span><Rich>{d}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -656,7 +707,7 @@ export default function AccountMarketIntel() {
                           {result.marketOverview.inhibitors.map((d, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-3 p-3 bg-destructive/5 rounded-lg border border-destructive/10">
                               <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-                              {d}
+                              <span><Rich>{d}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -719,7 +770,7 @@ export default function AccountMarketIntel() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {result.competitiveLandscape.directCompetitors.map((c, i) => (
                           <div key={i} className="p-4 border border-border rounded-lg hover:border-primary transition-colors">
-                            <div className="font-bold text-foreground mb-1">{c}</div>
+                            <div className="font-bold text-foreground mb-1"><Rich>{c}</Rich></div>
                             <div className="text-xs text-muted-foreground">Primary market rival with overlapping product features.</div>
                           </div>
                         ))}
@@ -745,24 +796,24 @@ export default function AccountMarketIntel() {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <h4 className="text-2xl font-bold text-foreground">{c.name}</h4>
                           <span className="px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase rounded tracking-widest">
-                            {c.pricingModel}
+                            <Rich>{c.pricingModel}</Rich>
                           </span>
                         </div>
-                        <p className="text-foreground leading-relaxed">{c.valueProposition}</p>
+                        <p className="text-foreground leading-relaxed"><Rich>{c.valueProposition}</Rich></p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-3">
                             <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Key Strengths</h5>
                             <div className="flex flex-wrap gap-2">
                               {c.strengths.map((s, si) => (
                                 <span key={si} className="text-xs font-semibold bg-accent/10 text-accent px-3 py-1 rounded-full border border-accent/20">
-                                  {s}
+                                  <Rich>{s}</Rich>
                                 </span>
                               ))}
                             </div>
                           </div>
                           <div className="space-y-3">
                             <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Gap Analysis</h5>
-                            <p className="text-sm text-foreground italic">"{c.gapAnalysis}"</p>
+                            <p className="text-sm text-foreground italic">"<Rich>{c.gapAnalysis}</Rich>"</p>
                           </div>
                         </div>
                       </div>
@@ -792,7 +843,7 @@ export default function AccountMarketIntel() {
                           {result.strategicFrameworks.swot.strengths.map((s, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-2">
                               <span className="mt-1.5 w-1.5 h-1.5 bg-accent rounded-full shrink-0" />
-                              {s}
+                              <span><Rich>{s}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -805,7 +856,7 @@ export default function AccountMarketIntel() {
                           {result.strategicFrameworks.swot.weaknesses.map((s, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-2">
                               <span className="mt-1.5 w-1.5 h-1.5 bg-destructive rounded-full shrink-0" />
-                              {s}
+                              <span><Rich>{s}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -818,7 +869,7 @@ export default function AccountMarketIntel() {
                           {result.strategicFrameworks.swot.opportunities.map((s, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-2">
                               <span className="mt-1.5 w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
-                              {s}
+                              <span><Rich>{s}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -831,7 +882,7 @@ export default function AccountMarketIntel() {
                           {result.strategicFrameworks.swot.threats.map((s, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-2">
                               <span className="mt-1.5 w-1.5 h-1.5 bg-destructive rounded-full shrink-0" />
-                              {s}
+                              <span><Rich>{s}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -841,7 +892,7 @@ export default function AccountMarketIntel() {
                     {/* Porter's Five Forces */}
                     <div className="space-y-6">
                       <h4 className="text-sm font-bold text-foreground uppercase tracking-widest">Porter's Five Forces</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="space-y-3">
                         {[
                           { label: "Rivalry", score: result.strategicFrameworks.portersFiveForces.competitiveRivalry, icon: Users },
                           { label: "Suppliers", score: result.strategicFrameworks.portersFiveForces.supplierPower, icon: Building2 },
@@ -849,10 +900,12 @@ export default function AccountMarketIntel() {
                           { label: "Substitutes", score: result.strategicFrameworks.portersFiveForces.threatOfSubstitution, icon: Zap },
                           { label: "New Entrants", score: result.strategicFrameworks.portersFiveForces.threatOfNewEntry, icon: ChevronRight },
                         ].map((force, i) => (
-                          <div key={i} className="p-4 border border-border rounded-lg text-center">
-                            <force.icon className="w-5 h-5 text-primary mx-auto mb-3" />
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">{force.label}</div>
-                            <div className="text-sm text-foreground">{force.score}</div>
+                          <div key={i} className="flex flex-col sm:flex-row gap-2 sm:gap-6 p-4 border border-border rounded-lg">
+                            <div className="flex items-center gap-2 sm:w-40 shrink-0">
+                              <force.icon className="w-5 h-5 text-primary shrink-0" />
+                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{force.label}</span>
+                            </div>
+                            <div className="text-sm text-foreground leading-relaxed"><Rich>{force.score}</Rich></div>
                           </div>
                         ))}
                       </div>
@@ -875,12 +928,14 @@ export default function AccountMarketIntel() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="p-6 bg-secondary/30 rounded-lg border border-border">
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">Market Sentiment</h4>
-                        <div className="text-base font-semibold text-foreground mb-2 leading-snug">{result.customerInsights.sentiment}</div>
+                        <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-p:font-semibold prose-p:leading-snug prose-ul:my-2 prose-li:my-0.5 mb-2">
+                          <Markdown>{result.customerInsights.sentiment}</Markdown>
+                        </div>
                         <p className="text-sm text-muted-foreground">Aggregated from reviews, social media, and industry reports.</p>
                       </div>
                       <div className="p-6 bg-primary/5 rounded-lg border border-primary/10">
                         <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-4">Unmet Customer Needs</h4>
-                        <div className="prose prose-neutral text-sm text-foreground">
+                        <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-ul:my-0 prose-li:my-0.5">
                           <Markdown>{result.customerInsights.unmetNeeds}</Markdown>
                         </div>
                       </div>
@@ -911,7 +966,7 @@ export default function AccountMarketIntel() {
                           {result.recommendations.product.map((s, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-3">
                               <ChevronRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                              {s}
+                              <span><Rich>{s}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -922,7 +977,7 @@ export default function AccountMarketIntel() {
                           {result.recommendations.marketing.map((s, i) => (
                             <li key={i} className="text-sm text-foreground flex items-start gap-3">
                               <ChevronRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                              {s}
+                              <span><Rich>{s}</Rich></span>
                             </li>
                           ))}
                         </ul>
@@ -930,7 +985,7 @@ export default function AccountMarketIntel() {
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-primary uppercase tracking-widest">Resource Allocation</h4>
                         <p className="text-sm text-foreground leading-relaxed">
-                          {result.recommendations.resourceAllocation}
+                          <Rich>{result.recommendations.resourceAllocation}</Rich>
                         </p>
                       </div>
                     </div>
@@ -975,7 +1030,7 @@ export default function AccountMarketIntel() {
                               <td className="py-4 px-4">
                                 <OfferingPill value={opp.serviceOffering} />
                               </td>
-                              <td className="py-4 px-4 text-sm text-muted-foreground italic">"{opp.rationale}"</td>
+                              <td className="py-4 px-4 text-sm text-muted-foreground italic">"<Rich>{opp.rationale}</Rich>"</td>
                             </tr>
                           ))}
                         </tbody>
@@ -998,7 +1053,7 @@ export default function AccountMarketIntel() {
                     </div>
                     <ol className="p-8 space-y-2">
                       {result.sources.map((src, i) => (
-                        <li key={i} className="flex gap-3 text-sm">
+                        <li key={i} id={`source-${i + 1}`} className="flex gap-3 text-sm scroll-mt-24">
                           <span className="w-8 shrink-0 text-right font-medium text-muted-foreground">[{i + 1}]</span>
                           <a
                             href={src.url}
