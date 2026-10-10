@@ -543,7 +543,8 @@ export default function AccountMarketIntel() {
               </aside>
 
               {/* Main Content */}
-              <div className="flex-1 space-y-8">
+              {/* min-w-0 keeps one wide table or long unbroken string from stretching the whole column past the screen */}
+              <div className="flex-1 min-w-0 space-y-8">
                 {/* Report Header */}
                 <div
                   ref={headerRef}
@@ -1093,7 +1094,7 @@ export default function AccountMarketIntel() {
                               <td className="py-4 px-4">
                                 <OfferingPill value={opp.serviceOffering} />
                               </td>
-                              <td className="py-4 px-4 text-sm text-muted-foreground italic">"<Rich>{opp.rationale}</Rich>"</td>
+                              <td className="py-4 px-4 text-sm text-muted-foreground italic break-words">"<Rich>{opp.rationale}</Rich>"</td>
                             </tr>
                           ))}
                         </tbody>
