@@ -1,5 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export interface MarketRow {
+  segment: string;
+  geography: string;
+  year: number;
+  value: string;
+  publisher: string;
+  cite: string;
+}
+
 export interface ResearchResult {
   companyName: string;
   executiveSummary: {
@@ -19,7 +28,7 @@ export interface ResearchResult {
   };
   marketOverview: {
     definition: string;
-    metrics: { tam: string; sam: string; som: string };
+    metrics: { tam: string; sam: string; som: string; tamRows?: MarketRow[]; samRows?: MarketRow[] };
     segmentation: string[];
     drivers: string[];
     inhibitors: string[];

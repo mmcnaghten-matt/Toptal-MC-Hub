@@ -671,18 +671,46 @@ export default function AccountMarketIntel() {
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                       {[
-                        { label: "TAM", value: result.marketOverview.metrics.tam, desc: "Total Addressable Market" },
-                        { label: "SAM", value: result.marketOverview.metrics.sam, desc: "Serviceable Addressable Market" },
-                        { label: "SOM", value: result.marketOverview.metrics.som, desc: "Serviceable Obtainable Market" },
+                        { label: "TAM", value: result.marketOverview.metrics.tam, rows: result.marketOverview.metrics.tamRows, desc: "Total Addressable Market" },
+                        { label: "SAM", value: result.marketOverview.metrics.sam, rows: result.marketOverview.metrics.samRows, desc: "Serviceable Addressable Market" },
+                        { label: "SOM", value: result.marketOverview.metrics.som, rows: undefined, desc: "Serviceable Obtainable Market" },
                       ].map((item, i) => (
                         <div key={i} className="p-5 border border-border rounded-lg">
                           <div className="flex items-baseline gap-2 mb-2">
                             <span className="text-xs font-bold text-primary uppercase tracking-widest">{item.label}</span>
                             <span className="text-[11px] text-muted-foreground">{item.desc}</span>
                           </div>
-                          <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-ul:my-0 prose-li:my-0.5">
-                            <Markdown>{item.value}</Markdown>
-                          </div>
+                          {item.rows && item.rows.length > 0 ? (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-sm">
+                                <thead>
+                                  <tr className="border-b border-border text-[10px] uppercase tracking-widest text-muted-foreground">
+                                    <th className="py-2 pr-4 font-bold">Segment</th>
+                                    <th className="py-2 pr-4 font-bold">Geography</th>
+                                    <th className="py-2 pr-4 font-bold">Year</th>
+                                    <th className="py-2 pr-4 font-bold text-right">Value</th>
+                                    <th className="py-2 font-bold">Source</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                  {item.rows.map((r, ri) => (
+                                    <tr key={ri}>
+                                      <td className="py-2 pr-4 font-medium text-foreground">{r.segment}</td>
+                                      <td className="py-2 pr-4 text-muted-foreground">{r.geography}</td>
+                                      <td className="py-2 pr-4 text-muted-foreground tabular-nums">{r.year}</td>
+                                      <td className="py-2 pr-4 text-right text-base font-semibold text-foreground tabular-nums whitespace-nowrap">{r.value}</td>
+                                      <td className="py-2 text-xs text-muted-foreground"><Rich>{`${r.publisher}${r.cite ? " " + r.cite : ""}`}</Rich></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              <p className="mt-2 text-[11px] text-muted-foreground">Latest published estimate per segment, largest first.</p>
+                            </div>
+                          ) : (
+                            <div className="prose prose-sm prose-neutral max-w-none text-foreground prose-ul:my-0 prose-li:my-0.5">
+                              <Markdown>{item.value}</Markdown>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
