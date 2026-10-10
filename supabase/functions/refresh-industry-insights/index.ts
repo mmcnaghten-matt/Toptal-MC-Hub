@@ -426,6 +426,8 @@ type Item = { text: string; basedOn: number[] };
 type State = {
   subIndustryName: string;
   industryName: string;
+  /** Optional plain-words definition of what this sub-sector means in our model (authoritative). */
+  scope: string;
   sources: Source[];
   evidence: Evidence[];
   queries: string[];
@@ -445,9 +447,15 @@ const TOPICS = [
   { key: "moves", ask: "Concrete programs and investments that organizations in the sub-sector have announced or launched in the last 24 months (transformation programs, modernization, new products, operating-model or cost initiatives), with who announced them and when." },
 ];
 
-const researchPrompt = (ask: string, sub: string, industry: string, today: string) => `Today is ${today}.
-You are researching the "${sub}" sub-sector of the "${industry}" industry: the sector as a whole, NOT any single company.
+// The scope, when set, says what the sub-sector means in our model. It overrides any other reading of the name.
+const scopeBlock = (scope: string) =>
+  scope
+    ? `\nSCOPE (authoritative, set by our team): ${scope}\nFollow this scope exactly. Ignore any other meaning of the sub-sector name, and treat the industry name only as a grouping label in our model. Do not report or cite material that falls outside the scope.\n`
+    : "";
 
+const researchPrompt = (ask: string, sub: string, industry: string, today: string, scope: string) => `Today is ${today}.
+You are researching the "${sub}" sub-sector of the "${industry}" industry: the sector as a whole, NOT any single company.
+${scopeBlock(scope)}
 RESEARCH TASK: ${ask}
 
 Rules:
@@ -539,6 +547,7 @@ function readState(raw: Any, allowEmpty = false): State | null {
   return {
     subIndustryName: String(raw.subIndustryName ?? "").slice(0, 200),
     industryName: String(raw.industryName ?? "").slice(0, 200),
+    scope: String(raw.scope ?? "").slice(0, 800),
     sources,
     evidence,
     queries: list(raw.queries).map(String).slice(0, 100),
@@ -549,7 +558,8 @@ function readState(raw: Any, allowEmpty = false): State | null {
 const names = (body: Any) => {
   const sub = typeof body?.subIndustryName === "string" ? body.subIndustryName.trim().slice(0, 200) : "";
   const industry = typeof body?.industryName === "string" ? body.industryName.trim().slice(0, 200) : "";
-  return sub && industry ? { sub, industry } : null;
+  const scope = typeof body?.scope === "string" ? body.scope.trim().slice(0, 800) : "";
+  return sub && industry ? { sub, industry, scope } : null;
 };
 
 // ---------- Requests ----------
@@ -558,7 +568,7 @@ async function v2Scan(apiKey: string, body: Any, clock: ReturnType<typeof makeCl
   const n = names(body);
   const tp = TOPICS.find((t) => t.key === body?.topic);
   if (!n || !tp) return json({ error: "subIndustryName, industryName and a valid topic are required." }, 400);
-  const prompt = researchPrompt(tp.ask, n.sub, n.industry, todayStr());
+  const prompt = researchPrompt(tp.ask, n.sub, n.industry, todayStr(), n.scope);
   const t0 = Date.now();
   const deadline = t0 + clock.timeout(110_000, 10_000);
   const run = (ms: number) => callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, temperature: 0, timeoutMs: ms, attempts: 2 });
@@ -592,13 +602,13 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
   }
   const warnings: string[] = [];
   if (ledger.evidence.length < MIN_EVIDENCE_WARN) warnings.push(`Only ${ledger.evidence.length} citable facts were found; expect thin results.`);
-  const state: State = { subIndustryName: n.sub, industryName: n.industry, sources: ledger.sources, evidence: ledger.evidence, queries: ledger.queries, warnings };
+  const state: State = { subIndustryName: n.sub, industryName: n.industry, scope: n.scope, sources: ledger.sources, evidence: ledger.evidence, queries: ledger.queries, warnings };
   return json({ state });
 }
 
 const SYNTH_HEAD = (st: State, today: string) => `You are an expert management-consulting industry analyst writing for sales teams. Today is ${today}.
 SUB-SECTOR: "${st.subIndustryName}" within the "${st.industryName}" industry. Write about the sub-sector as a whole, not any single company.
-
+${scopeBlock(st.scope)}
 EVIDENCE (format: E<id> [topic] text). This is the ONLY information you may use:
 ${evidenceBlock(st.evidence)}
 
