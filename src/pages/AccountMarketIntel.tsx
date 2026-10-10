@@ -263,6 +263,15 @@ export default function AccountMarketIntel() {
         const sec = await captureElement(element);
         placeCaptured(element, sec, CONTENT_TOP, `${result.companyName} - ${section.label} (cont.)`);
       }
+
+      // Sources: the numbered list the [n] citations point to (continues across pages when long)
+      const sourcesEl = sectionRefs.current["sources"];
+      if (sourcesEl) {
+        pdf.addPage();
+        sectionHeader(`${result.companyName} - Sources`);
+        const src = await captureElement(sourcesEl);
+        placeCaptured(sourcesEl, src, CONTENT_TOP, `${result.companyName} - Sources (cont.)`);
+      }
       pdf.save(`${result.companyName.replace(/\s+/g, "_")}_Market_Intelligence_Report.pdf`);
     } catch (err) {
       console.error("PDF Export failed:", err);
@@ -1101,7 +1110,10 @@ export default function AccountMarketIntel() {
 
                 {/* Sources — numbered to match the [n] citations in the report text */}
                 {result.sources.length > 0 && (
-                  <section className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+                  <section
+                    ref={(el) => { sectionRefs.current["sources"] = el; }}
+                    className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+                  >
                     <div className="px-8 py-6 border-b border-border bg-secondary/50">
                       <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
                         <CheckCircle2 className="w-5 h-5 text-primary" />
