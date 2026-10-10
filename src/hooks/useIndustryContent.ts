@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { industries, SubIndustry } from "@/data/industryData";
+import { industries, SubIndustry, SourceRef } from "@/data/industryData";
+import { runIndustryResearch, type IndustryResearchResult, type ProgressChip } from "@/services/industryResearchPipeline";
 import { toast } from "sonner";
 
 export interface DbSubIndustryContent {
@@ -18,6 +19,8 @@ export interface DbSubIndustryContent {
     mcOffers: string[];
     narrative: string;
   }>;
+  sources?: SourceRef[];
+  researched_at?: string | null;
   updated_at: string;
   updated_by: string;
 }
@@ -57,6 +60,8 @@ export function useSubIndustryContent(subIndustryId: string | null) {
           initiatives: data.initiatives as unknown as string[],
           needs: data.needs as unknown as SubIndustry["needs"],
           updatedAt: data.updated_at,
+          sources: ((data as { sources?: unknown }).sources as SourceRef[] | undefined) ?? [],
+          researchedAt: (data as { researched_at?: string | null }).researched_at ?? undefined,
         };
       }
 
@@ -122,7 +127,14 @@ export function useSaveContent() {
       industryId: string;
       subIndustryName: string;
       industryName: string;
-      content: { overview: string; challenges: string[]; initiatives: string[]; needs: SubIndustry["needs"] };
+      content: {
+        overview: string;
+        challenges: string[];
+        initiatives: string[];
+        needs: SubIndustry["needs"];
+        sources?: SourceRef[];
+        researchedAt?: string;
+      };
     }) => {
       // Get current content for versioning
       const { data: existing } = await supabase
@@ -158,6 +170,8 @@ export function useSaveContent() {
             challenges: content.challenges as any,
             initiatives: content.initiatives as any,
             needs: content.needs as any,
+            sources: (content.sources ?? []) as any,
+            researched_at: content.researchedAt ?? null,
             updated_by: "admin",
           })
           .eq("sub_industry_id", subIndustryId);
@@ -174,6 +188,8 @@ export function useSaveContent() {
           challenges: content.challenges as any,
           initiatives: content.initiatives as any,
           needs: content.needs as any,
+          sources: (content.sources ?? []) as any,
+          researched_at: content.researchedAt ?? null,
           updated_by: "admin",
         });
 
@@ -233,6 +249,8 @@ export function useRevertContent() {
           challenges: versionContent.challenges as any,
           initiatives: versionContent.initiatives as any,
           needs: versionContent.needs as any,
+          sources: (versionContent.sources ?? []) as any,
+          researched_at: versionContent.researched_at ?? null,
           updated_by: "admin-revert",
         })
         .eq("sub_industry_id", subIndustryId);
@@ -251,30 +269,32 @@ export function useRevertContent() {
   });
 }
 
-// Refresh content using AI
+// One request to the refresh function. Errors carry the HTTP status so the pipeline can decide whether to retry.
+async function callRefreshStep(body: Record<string, unknown>) {
+  const { data, error } = await supabase.functions.invoke("refresh-industry-insights", { body });
+  if (error) {
+    // functions.invoke hides the response body on non-2xx; the function puts a readable message in it.
+    const res = (error as { context?: Response }).context;
+    const detail = await res?.json?.().catch(() => null);
+    throw Object.assign(new Error(detail?.error || error.message || "Refresh failed"), { status: res?.status });
+  }
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+// Refresh content with evidence-grounded research (see industryResearchPipeline.ts)
 export function useRefreshContent() {
   return useMutation({
     mutationFn: async ({
-      subIndustryId,
       subIndustryName,
       industryName,
+      onProgress,
     }: {
       subIndustryId: string;
       subIndustryName: string;
       industryName: string;
-    }) => {
-      const { data, error } = await supabase.functions.invoke("refresh-industry-insights", {
-        body: { subIndustryId, subIndustryName, industryName },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      return data as {
-        overview: string;
-        challenges: string[];
-        initiatives: string[];
-        needs: SubIndustry["needs"];
-      };
-    },
+      onProgress?: (chips: ProgressChip[]) => void;
+    }): Promise<IndustryResearchResult> =>
+      runIndustryResearch({ call: callRefreshStep, subIndustryName, industryName, onProgress }),
   });
 }

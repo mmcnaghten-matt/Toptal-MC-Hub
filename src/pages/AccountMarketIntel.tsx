@@ -23,39 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import ReactMarkdown from "react-markdown";
-
-// Safely stringify values before passing to Markdown (Gemini may return objects)
-const toStr = (v: unknown): string => {
-  if (typeof v === "string") return v;
-  if (v == null) return "";
-  if (typeof v === "object") return JSON.stringify(v, null, 2);
-  return String(v);
-};
-// Citations like [3] render as small superscript links to the numbered Sources list at the end of the report.
-const citationize = (text: string) => text.replace(/\[(\d+)\]/g, "[\\[$1\\]](#source-$1)");
-const CitationLink = ({ href, children, node: _node, ...rest }: React.ComponentProps<"a"> & { node?: unknown }) =>
-  href?.startsWith("#source-") ? (
-    <sup className="ml-px text-[9px] font-medium leading-none text-muted-foreground/80 hover:text-primary">
-      <a href={href} className="no-underline text-inherit">{children}</a>
-    </sup>
-  ) : (
-    <a href={href} {...rest}>{children}</a>
-  );
-// The Tailwind typography plugin is not enabled, so style the basic blocks explicitly.
-const mdComponents = {
-  a: CitationLink,
-  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-3 last:mb-0">{children}</p>,
-  ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-5 space-y-1.5">{children}</ul>,
-  ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-5 space-y-1.5">{children}</ol>,
-};
-const Markdown = ({ children, components, ...props }: React.ComponentProps<typeof ReactMarkdown> & { children: any }) => (
-  <ReactMarkdown {...props} components={{ ...mdComponents, ...components }}>{citationize(toStr(children))}</ReactMarkdown>
-);
-// Inline version for single-line text (list items, pills, table cells): bold/italics and citations, no paragraph wrapper.
-const Rich = ({ children }: { children: any }) => (
-  <Markdown components={{ p: ({ children: c }) => <>{c}</> }}>{children}</Markdown>
-);
+import { Markdown, Rich, toStr } from "@/components/Cited";
 
 // MC taxonomy practice colors (match the Services page cards). serviceOffering arrives as "L2 > L3".
 const L2_COLORS: Record<string, { text: string; bg: string }> = {

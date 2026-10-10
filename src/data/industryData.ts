@@ -5,6 +5,12 @@ export interface Need {
   narrative: string;
 }
 
+export interface SourceRef {
+  id: number;
+  title: string;
+  url: string;
+}
+
 export interface SubIndustry {
   id: string;
   name: string;
@@ -13,6 +19,9 @@ export interface SubIndustry {
   initiatives: string[];
   needs: Need[];
   updatedAt?: string;
+  /** Numbered sources behind the [n] citations in the text (set by the evidence-grounded refresh). */
+  sources?: SourceRef[];
+  researchedAt?: string;
 }
 
 export interface Industry {

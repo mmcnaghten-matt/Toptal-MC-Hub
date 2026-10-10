@@ -12,10 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, RefreshCw, Save, History, RotateCcw, Edit3, Eye, Plus, Trash2, Loader2, ShieldX } from "lucide-react";
+import { ChevronLeft, RefreshCw, Save, History, RotateCcw, Edit3, Plus, Trash2, Loader2, ShieldX } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import SignOutButton from "@/components/SignOutButton";
 import { toast } from "sonner";
+import { RefreshPreview } from "@/components/RefreshPreview";
+import { ProgressChips } from "@/components/ProgressChips";
+import type { IndustryResearchResult, ProgressChip } from "@/services/industryResearchPipeline";
 import { useAdminRole } from "@/hooks/useAdminRole";
 
 export default function AdminIndustryInsights() {
@@ -26,12 +29,8 @@ export default function AdminIndustryInsights() {
   const [editMode, setEditMode] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [previewContent, setPreviewContent] = useState<{
-    overview: string;
-    challenges: string[];
-    initiatives: string[];
-    needs: SubIndustry["needs"];
-  } | null>(null);
+  const [previewContent, setPreviewContent] = useState<IndustryResearchResult | null>(null);
+  const [chips, setChips] = useState<ProgressChip[]>([]);
 
   // Edit state
   const [editOverview, setEditOverview] = useState("");
@@ -93,6 +92,9 @@ export default function AdminIndustryInsights() {
           challenges: editChallenges,
           initiatives: editInitiatives,
           needs: editNeeds,
+          // keep the sources behind any citations in the text
+          sources: currentContent?.sources,
+          researchedAt: currentContent?.researchedAt,
         },
       },
       { onSuccess: () => setEditMode(false) }
@@ -106,13 +108,14 @@ export default function AdminIndustryInsights() {
         subIndustryId: selectedSubId,
         subIndustryName: selectedSub.name,
         industryName: selectedIndustry.name,
+        onProgress: setChips,
       },
       {
         onSuccess: (data) => {
           setPreviewContent(data);
           setShowPreview(true);
           setShowHistory(false);
-          toast.success("AI refresh complete — review the preview below");
+          toast.success("Research complete — review the preview below");
         },
         onError: (error) => {
           toast.error("AI refresh failed: " + error.message);
@@ -129,7 +132,14 @@ export default function AdminIndustryInsights() {
         industryId: selectedIndustry.id,
         subIndustryName: selectedSub.name,
         industryName: selectedIndustry.name,
-        content: previewContent,
+        content: {
+          overview: previewContent.overview,
+          challenges: previewContent.challenges,
+          initiatives: previewContent.initiatives,
+          needs: previewContent.needs,
+          sources: previewContent.sources,
+          researchedAt: previewContent.researchedAt,
+        },
       },
       {
         onSuccess: () => {
@@ -223,50 +233,19 @@ export default function AdminIndustryInsights() {
             {contentLoading && <p className="text-muted-foreground">Loading content...</p>}
 
             {/* AI Preview */}
-            {showPreview && previewContent && (
-              <div className="rounded-lg border-2 border-primary bg-primary/5 p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-foreground flex items-center gap-2">
-                    <Eye className="h-4 w-4" /> AI-Generated Preview
-                  </h3>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={applyPreview} disabled={saveContent.isPending}>
-                      {saveContent.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
-                      Apply & Save
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => { setShowPreview(false); setPreviewContent(null); }}>
-                      Discard
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Overview</p>
-                  <p className="text-sm text-foreground">{previewContent.overview}</p>
-                </div>
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Challenges ({previewContent.challenges.length})</p>
-                    <ul className="space-y-1">{previewContent.challenges.map((c, i) => <li key={i} className="text-sm text-foreground">• {c}</li>)}</ul>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Initiatives ({previewContent.initiatives.length})</p>
-                    <ul className="space-y-1">{previewContent.initiatives.map((init, i) => <li key={i} className="text-sm text-foreground">• {init}</li>)}</ul>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Needs ({previewContent.needs.length})</p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {previewContent.needs.map((need, i) => (
-                      <div key={i} className="rounded border border-border p-3 space-y-1">
-                        <p className="font-medium text-sm text-foreground">{need.name}</p>
-                        <p className="text-xs text-muted-foreground">Signals: {need.signals.join(", ")}</p>
-                        <p className="text-xs text-primary">Offers: {need.mcOffers.join(", ")}</p>
-                        <p className="text-xs text-muted-foreground italic">{need.narrative}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {refreshContent.isPending && (
+              <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+                <p className="text-sm font-medium text-foreground">Researching this sub-sector (this takes a few minutes)...</p>
+                <ProgressChips chips={chips} />
               </div>
+            )}
+            {showPreview && previewContent && (
+              <RefreshPreview
+                content={previewContent}
+                applying={saveContent.isPending}
+                onApply={applyPreview}
+                onDiscard={() => { setShowPreview(false); setPreviewContent(null); }}
+              />
             )}
 
             {/* Version History */}

@@ -1,13 +1,15 @@
-import { Need } from "@/data/industryData";
+import { Need, SourceRef } from "@/data/industryData";
+import { Rich, SourcesList } from "@/components/Cited";
 import { ChevronLeft, Radio, Briefcase, MessageSquareText } from "lucide-react";
 
 interface Props {
   need: Need;
   onBack: () => void;
   colorVar: string;
+  sources?: SourceRef[];
 }
 
-export function NeedDetail({ need, onBack }: Props) {
+export function NeedDetail({ need, onBack, sources }: Props) {
   return (
     <div className="fade-in space-y-6">
       {/* Header */}
@@ -80,10 +82,12 @@ export function NeedDetail({ need, onBack }: Props) {
             Talking points for sales conversations
           </p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {need.narrative}
+            <Rich>{need.narrative}</Rich>
           </p>
         </section>
       </div>
+
+      <SourcesList sources={sources} />
     </div>
   );
 }

@@ -24,6 +24,8 @@ export type Database = {
           initiatives: Json
           needs: Json
           overview: string
+          researched_at: string | null
+          sources: Json
           sub_industry_id: string
           sub_industry_name: string
           updated_at: string
@@ -38,6 +40,8 @@ export type Database = {
           initiatives?: Json
           needs?: Json
           overview?: string
+          researched_at?: string | null
+          sources?: Json
           sub_industry_id: string
           sub_industry_name: string
           updated_at?: string
@@ -52,6 +56,8 @@ export type Database = {
           initiatives?: Json
           needs?: Json
           overview?: string
+          researched_at?: string | null
+          sources?: Json
           sub_industry_id?: string
           sub_industry_name?: string
           updated_at?: string

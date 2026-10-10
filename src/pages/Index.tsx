@@ -94,7 +94,8 @@ const Index = () => {
           <NeedDetail
             need={selectedNeed}
             onBack={() => setSelectedNeed(null)}
-            colorVar={selectedIndustry.colorVar} />
+            colorVar={selectedIndustry.colorVar}
+            sources={displaySub?.sources} />
           }
           </div>
         }

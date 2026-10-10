@@ -1,5 +1,6 @@
 import { SubIndustry, Need } from "@/data/industryData";
 import { AlertTriangle, Rocket, ArrowRight, Target } from "lucide-react";
+import { Rich, SourcesList } from "@/components/Cited";
 
 interface Props {
   subIndustry: SubIndustry & { updatedAt?: string };
@@ -11,7 +12,21 @@ function stripMd(text: string): string {
   return text.replace(/\*\*/g, "").trim();
 }
 
+// "Title: description" items: bold title, then the description with small citation links.
+function ItemText({ text }: { text: string }) {
+  const t = stripMd(text);
+  if (!t.includes(": ")) return <Rich>{t}</Rich>;
+  return (
+    <>
+      <strong className="font-semibold text-card-foreground">{stripMd(t.split(": ")[0])}:</strong> <Rich>{t.split(": ").slice(1).join(": ")}</Rich>
+    </>
+  );
+}
+
 export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
+  const researchedDate = subIndustry.researchedAt
+    ? new Date(subIndustry.researchedAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })
+    : null;
   const formattedDate = subIndustry.updatedAt
     ? new Date(subIndustry.updatedAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })
     : null;
@@ -19,7 +34,10 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
   return (
     <div className="fade-in space-y-8">
       {formattedDate && (
-        <p className="text-xs text-muted-foreground">Updated {formattedDate}</p>
+        <p className="text-xs text-muted-foreground">
+          Updated {formattedDate}
+          {researchedDate && <> · Researched {researchedDate} from {subIndustry.sources?.length ?? 0} sources</>}
+        </p>
       )}
       {/* Overview */}
       <section className="rounded-lg border border-border bg-card p-6">
@@ -30,7 +48,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
           {subIndustry.name}
         </h3>
         <p className="leading-relaxed text-muted-foreground">
-          {subIndustry.overview}
+          <Rich>{subIndustry.overview}</Rich>
         </p>
       </section>
 
@@ -48,9 +66,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                   {i + 1}
                 </span>
                 <span>
-                  {stripMd(c).includes(": ") ? (
-                    <><strong className="font-semibold text-card-foreground">{stripMd(stripMd(c).split(": ")[0])}:</strong> {stripMd(c).split(": ").slice(1).join(": ")}</>
-                  ) : stripMd(c)}
+                  <ItemText text={c} />
                 </span>
               </li>
             ))}
@@ -69,9 +85,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                   {i + 1}
                 </span>
                 <span>
-                  {stripMd(init).includes(": ") ? (
-                    <><strong className="font-semibold text-card-foreground">{stripMd(stripMd(init).split(": ")[0])}:</strong> {stripMd(init).split(": ").slice(1).join(": ")}</>
-                  ) : stripMd(init)}
+                  <ItemText text={init} />
                 </span>
               </li>
             ))}
@@ -120,6 +134,8 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
           ))}
         </div>
       </section>
+
+      <SourcesList sources={subIndustry.sources} />
     </div>
   );
 }
