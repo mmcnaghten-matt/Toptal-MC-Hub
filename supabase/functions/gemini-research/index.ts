@@ -177,15 +177,16 @@ type GroundingMeta = {
   searchEntryPoint?: { renderedContent?: string };
 };
 type GeminiResult = { text: string; meta: GroundingMeta | null };
-type Source = { id: number; title: string; url: string };
-type Evidence = { id: number; topic: string; text: string; sourceIds: number[] };
+type Source = { id: number; title: string; url: string; tier?: number };
+// tier: 1 primary (filings, regulators, company releases), 2 major press/analysts, 3 everything else. srcTiers aligns with sourceIds.
+type Evidence = { id: number; topic: string; text: string; sourceIds: number[]; tier?: number; srcTiers?: number[] };
 type Claim = {
   text: string | null;
   status: "sourced" | "not_found";
   evidenceIds: number[];
   verification?: "supported" | "partial" | "unchecked";
 };
-type Item = { text: string; basedOn: number[] };
+type Item = { text: string; basedOn: number[]; rejected?: boolean };
 type Named = { name: string; evidenceIds: number[] };
 type Entity = {
   name: string;
@@ -201,6 +202,8 @@ type Ctx = {
   evidence: Evidence[];
   dropped: { path: string; reason: string; text: string }[];
   sourced: { path: string; claim: Claim }[];
+  /** Analysis items (synthesised text), registered so a verifier pass can check them against their cited evidence. */
+  items: { path: string; item: Item }[];
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -361,6 +364,7 @@ RESEARCH TASK: ${ask}
 Rules:
 - Use Google Search. Report only facts stated in the search results. Never estimate, extrapolate, or fill gaps from memory.
 - Write short, self-contained sentences with ONE fact each. Name the company in each sentence, and for any figure give its date or period and who reported it (e.g. "Acme raised $12M in a Series A in March 2024, according to TechCrunch.").
+- Prefer primary sources (SEC filings, the company's investor-relations pages and press releases, regulators), then major news outlets and analyst firms. Avoid social media, stock-forum or stock-data aggregator pages, vendor marketing blogs and law-firm sites.
 - Prefer sources from the last 24 months for metrics and news.
 - Distinguish company claims ("the company says...") from independent reporting.
 - If you cannot find something, write one line "NOT FOUND: <item>". Incomplete answers are expected and fine.
@@ -392,12 +396,69 @@ function normUrl(url: string): string {
   }
 }
 
+// ---------- Source tiers ----------
+// Evidence is only as good as its source. Known-bad types (social media, stock forums, content farms, law-firm
+// marketing) are dropped before any synthesis; the rest are ranked so primary sources win when facts conflict.
+const DOMAINS_EXCLUDED = [
+  "facebook.com", "fb.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "tiktok.com", "pinterest.com", "quora.com",
+  "linkedin.com", "youtube.com", "youtu.be", "stocktwits.com", "koalagains.com", "capout.ai", "creately.com",
+  ...(Deno.env.get("SOURCE_DENYLIST") ?? "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean),
+];
+const DOMAINS_T1 = ["sec.gov", "europa.eu", "prnewswire.com", "businesswire.com", "globenewswire.com", "accesswire.com"];
+const DOMAINS_T2 = [
+  "reuters.com", "bloomberg.com", "wsj.com", "ft.com", "cnbc.com", "apnews.com", "nytimes.com", "washingtonpost.com", "barrons.com",
+  "economist.com", "marketwatch.com", "fortune.com", "axios.com", "bbc.com", "theguardian.com", "politico.com",
+  "gartner.com", "idc.com", "forrester.com", "mckinsey.com", "bcg.com", "bain.com", "deloitte.com", "pwc.com", "kpmg.com", "ey.com",
+  "accenture.com", "statista.com", "spglobal.com", "moodys.com", "fitchratings.com", "morningstar.com", "grandviewresearch.com",
+  "marketsandmarkets.com", "mordorintelligence.com", "fortunebusinessinsights.com", "precedenceresearch.com",
+];
+const LAW_FIRM_RE = /(law ?firm|lawfirm|attorneys?|lawyers?|lawsuit|mesothelioma|asbestos)/i;
+const matchesDomain = (host: string, list: string[]) => list.some((d) => host === d || host.endsWith("." + d));
+
+function hostOf(url: string, title?: string): string {
+  let host = "";
+  try {
+    host = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    // not a URL
+  }
+  // Unresolved grounding redirects: Google puts the site's domain in the title.
+  if ((!host || /vertexaisearch|googleusercontent|(^|\.)google\.com$/.test(host)) && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(title ?? "")) {
+    host = (title as string).toLowerCase().replace(/^www\./, "");
+  }
+  return host;
+}
+
+// "www.owenscorning.com", "[x](https://investors.owenscorning.com)" -> "owenscorning.com"
+function rootDomainOf(text?: string): string {
+  const m = (text ?? "").match(/(?:[a-z0-9-]+\.)+[a-z]{2,}/gi);
+  if (!m) return "";
+  const labels = m[m.length - 1].toLowerCase().replace(/^www\./, "").split(".");
+  const n = labels.length >= 3 && labels[labels.length - 1].length === 2 && ["co", "com", "org", "net", "gov", "ac"].includes(labels[labels.length - 2]) ? 3 : 2;
+  return labels.slice(-n).join(".");
+}
+
+/** 0 = excluded, 1 = primary, 2 = major press / analysts, 3 = everything else. */
+function sourceTier(url: string, title: string | undefined, companyRoot: string): 0 | 1 | 2 | 3 {
+  const host = hostOf(url, title);
+  if (!host) return 3;
+  if (matchesDomain(host, DOMAINS_EXCLUDED)) return 0;
+  if (LAW_FIRM_RE.test(host.replace(/[-.]/g, " ")) || LAW_FIRM_RE.test(title ?? "")) return 0;
+  if (matchesDomain(host, DOMAINS_T1) || /\.(gov|mil)(\.[a-z]{2})?$/.test(host) || (companyRoot && matchesDomain(host, [companyRoot]))) return 1;
+  if (matchesDomain(host, DOMAINS_T2)) return 2;
+  return 3;
+}
+
 function buildLedger(
   results: { topic: string; r: GeminiResult }[],
   urlMap: Map<string, string>,
   existing?: { sources: Source[]; evidence: Evidence[] },
+  companyWebsite?: string,
 ) {
-  const sources: Source[] = [...(existing?.sources ?? [])];
+  const companyRoot = rootDomainOf(companyWebsite);
+  let droppedByTier = 0;
+  const sources: Source[] = [...(existing?.sources ?? [])].map((x) => ({ ...x, tier: x.tier ?? (sourceTier(x.url, x.title, companyRoot) || 3) }));
+  const tierOfSource = new Map<number, number>(sources.map((x) => [x.id, x.tier ?? 3]));
   const srcIndex = new Map<string, number>(sources.map((x) => [normUrl(x.url), x.id]));
   const evidence: Evidence[] = [...(existing?.evidence ?? [])];
   const seen = new Set<string>(evidence.map((e) => `${e.topic}|${e.text.toLowerCase()}`));
@@ -411,15 +472,22 @@ function buildLedger(
     if (!meta) continue;
     if (meta.searchEntryPoint?.renderedContent) searchSuggestions.push(meta.searchEntryPoint.renderedContent);
     queries.push(...(meta.webSearchQueries ?? []));
-    const chunkSrc = (meta.groundingChunks ?? []).map((c) => {
+    const excludedChunks = new Set<number>();
+    const chunkSrc = (meta.groundingChunks ?? []).map((c, ci) => {
       const raw = c.web?.uri;
       if (!raw) return null;
       const url = urlMap.get(raw) ?? raw;
+      const tier = sourceTier(url, c.web?.title, companyRoot);
+      if (tier === 0) {
+        excludedChunks.add(ci);
+        return null;
+      }
       const key = normUrl(url);
       let id = srcIndex.get(key);
       if (!id) {
         id = sources.length + 1;
-        sources.push({ id, title: c.web?.title ?? new URL(url).host, url });
+        sources.push({ id, title: c.web?.title ?? new URL(url).host, url, tier });
+        tierOfSource.set(id, tier);
         srcIndex.set(key, id);
       }
       return id;
@@ -428,16 +496,20 @@ function buildLedger(
       const text = (s.segment?.text ?? "").replace(/^[\s*-]+/, "").trim();
       if (text.length < 15 || /NOT FOUND/i.test(text) || /^(CONFIDENCE|OTHER_ENTITIES)\b/.test(text)) continue;
       const ids = [...new Set((s.groundingChunkIndices ?? []).map((i) => chunkSrc[i]).filter((x): x is number => x != null))];
-      if (!ids.length) continue;
+      if (!ids.length) {
+        if ((s.groundingChunkIndices ?? []).some((i) => excludedChunks.has(i))) droppedByTier++;
+        continue;
+      }
       const k = `${topic}|${text.toLowerCase()}`;
       if (seen.has(k)) continue;
       seen.add(k);
       if (evidence.length >= MAX_EVIDENCE || (perTopic.get(topic) ?? 0) >= topicCap(topic)) break; // this topic is full (later topics still get their share)
       perTopic.set(topic, (perTopic.get(topic) ?? 0) + 1);
-      evidence.push({ id: evidence.length + 1, topic, text, sourceIds: ids });
+      const srcTiers = ids.map((id) => tierOfSource.get(id) ?? 3);
+      evidence.push({ id: evidence.length + 1, topic, text, sourceIds: ids, tier: Math.min(...srcTiers), srcTiers });
     }
   }
-  return { sources, evidence, searchSuggestions, queries: [...new Set(queries)] };
+  return { sources, evidence, searchSuggestions, queries: [...new Set(queries)], droppedByTier };
 }
 
 // ---------- Step 2: schemas + structuring prompts ----------
@@ -539,7 +611,7 @@ const RECS_SCHEMA = obj({
   mcOpportunities: ANALYSIS_SCHEMA.properties.mcOpportunities,
 });
 
-const evidenceBlock = (ev: Evidence[]) => ev.map((e) => `E${e.id} [${e.topic}] ${e.text}`).join("\n");
+const evidenceBlock = (ev: Evidence[]) => ev.map((e) => `E${e.id} [${e.topic}|T${e.tier ?? 2}] ${e.text}`).join("\n");
 
 const factsPrompt = (e: Entity, ev: Evidence[], today: string, competitors?: string[]) => `You are building the fact base of a market-intelligence report. Today is ${today}.
 ${entityBlock(e)}
@@ -557,7 +629,7 @@ Rules:
 7. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
   competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
 } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.
-8. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are reasons customers choose the company; lossReasons are reasons customers leave or choose a competitor.
+8. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are things customers praise about the company; lossReasons are things customers criticise or complain about (review themes, NOT win/loss data).
 9. strategicInitiatives: only SIGNIFICANT initiatives the evidence shows the company announced or started in the last ${INITIATIVE_WINDOW_MONTHS} months. For each, set subgroup to exactly one of these sub-categories and group to the group it belongs to, give a short name, and a one-sentence description that includes the month and year from the evidence. At most 3 per sub-category, most recent first. A sub-category with nothing significant gets no entries.
 
 SUB-CATEGORIES
@@ -572,7 +644,8 @@ ${evidenceBlock(ev)}
 
 Rules:
 1. Every item must list in basedOn the E numbers (integers) it rests on. If you cannot point to evidence for an item, leave it out: null for single fields, [] for lists. Fewer, well-grounded items beat filling every slot, but do use the evidence you have: a well-documented company should get a full analysis.
-2. Judgement and synthesis are expected, but introduce no new facts: no figures, percentages, budgets, targets, dates, names, customers or events that are not in the cited evidence.`;
+2. Judgement and synthesis are expected, but introduce no new facts: no figures, percentages, budgets, targets, dates, names, customers or events that are not in the cited evidence.
+2a. Evidence lines carry a source tier (T1 primary, T2 major press and analysts, T3 other). Rest conclusions on T1 and T2 evidence. Do not draw a trend or conclusion from a single aggregator figure, or from figures reported on different bases (original versus restated, total versus continuing operations). Write a company's own marketing claims as that company's claim. Investment commentary ("undervalued", price targets) is not a strength. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.`;
   if (part === "core") {
     return `${head}
 3. executiveSummary.tldr: 3-4 sentences for leadership on the company's position, recent performance and priorities.
@@ -640,14 +713,18 @@ const validEvidence = (ids: unknown, ctx: Ctx, topics?: string[]) =>
 
 const notFound = (): Claim => ({ text: null, status: "not_found", evidenceIds: [] });
 
-function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { allowHedge?: boolean }): Claim {
+function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { allowHedge?: boolean; primaryOnly?: boolean }): Claim {
   if (c?.status !== "sourced") return notFound();
   const text = typeof c.text === "string" ? c.text.trim() : "";
-  const ev = validEvidence(c.evidenceIds, ctx, topics);
+  const evAny = validEvidence(c.evidenceIds, ctx, topics);
+  // Financial results must rest on primary (T1) or major-press/analyst (T2) evidence, never on aggregators or blogs.
+  const ev = opts?.primaryOnly ? evAny.filter((e) => (e.tier ?? 2) <= 2) : evAny;
   const reason = !text
     ? "empty text"
     : !ev.length
-    ? topics ? `no valid ${topics.join("/")} evidence cited` : "no valid evidence cited"
+    ? opts?.primaryOnly && evAny.length
+      ? "financial figure needs a primary or major-press source"
+      : topics ? `no valid ${topics.join("/")} evidence cited` : "no valid evidence cited"
     : !opts?.allowHedge && (HEDGE_I.test(text) || HEDGE_CS.test(text))
     ? "hedged language in a factual field"
     : !figuresSupported(text, ev, false)
@@ -662,16 +739,45 @@ function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { 
   return claim;
 }
 
+// Quantities stated in words ("over half", "majority", "doubled") carry no numeral for figuresSupported to check,
+// so require the cited evidence to say something equivalent.
+const QUANT_RE = /\b(over half|more than half|at least half|half of|the majority|a majority|majority of|most of|nearly all|almost all|a third|one[- ]third|two[- ]thirds|three[- ]quarters|doubled|tripled|quadrupled|halved|\d+[- ]fold)\b/i;
+function quantityWordsSupported(text: string, ev: Evidence[]): boolean {
+  const m = text.match(QUANT_RE);
+  if (!m) return true;
+  const phrase = m[0].toLowerCase();
+  const hay = ev.map((e) => e.text.toLowerCase()).join(" ");
+  if (hay.includes(phrase)) return true;
+  if (/half|majority|most of|nearly all|almost all|three[- ]quarters/.test(phrase)) return /\b(half|majority|most|nearly all|almost all|three[- ]quarters|[5-9]\d(\.\d+)?\s?%)/.test(hay);
+  if (/third/.test(phrase)) return /\b(third|3\d(\.\d+)?\s?%)/.test(hay);
+  return /(doubl|tripl|quadrupl|halved|\d+[- ]fold|\b[2-9]x\b|\d{3,}\s?%)/.test(hay);
+}
+
 function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
   const text = typeof it?.text === "string" ? it.text.trim() : "";
   if (!text) return null;
-  const ev = validEvidence(it.basedOn, ctx);
-  const reason = !ev.length ? "no evidence basis" : !figuresSupported(text, ev, true) ? "figure not present in cited evidence" : null;
+  const evAll = validEvidence(it.basedOn, ctx);
+  // Evidence that has a source attached, so the statement always renders with a visible citation.
+  const ev = evAll.filter((e) => e.sourceIds.length > 0);
+  const reason = !evAll.length
+    ? "no evidence basis"
+    : !ev.length
+    ? "no source attached to the cited evidence"
+    : !figuresSupported(text, ev, true)
+    ? "figure not present in cited evidence"
+    : !quantityWordsSupported(text, ev)
+    ? "quantity wording not supported by cited evidence"
+    : // a statement about the company's financial performance cannot rest on aggregators or blogs alone
+      (text.match(FIN_FIGURE) ?? []).length > 0 && ev.some((e) => e.topic === "performance") && !ev.some((e) => (e.tier ?? 2) <= 2)
+    ? "financial figure needs a primary or major-press source"
+    : null;
   if (reason) {
     ctx.dropped.push({ path, reason, text });
     return null;
   }
-  return { text, basedOn: ev.map((e) => e.id) };
+  const item: Item = { text, basedOn: ev.map((e) => e.id) };
+  ctx.items.push({ path, item });
+  return item;
 }
 
 const list = (a: unknown): Any[] => (Array.isArray(a) ? a : []);
@@ -721,8 +827,8 @@ function latestPerSegment(entries: MarketEntry[]): MarketEntry[] {
 
 function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
   const f = raw ?? {};
-  const claims = (a: unknown, p: string, topics?: string[]) =>
-    list(a).map((c, i) => checkClaim(c, `${p}[${i}]`, ctx, topics)).filter((c) => c.status === "sourced");
+  const claims = (a: unknown, p: string, topics?: string[], opts?: { allowHedge?: boolean; primaryOnly?: boolean }) =>
+    list(a).map((c, i) => checkClaim(c, `${p}[${i}]`, ctx, topics, opts)).filter((c) => c.status === "sourced");
   const mentioned = (name: string) => ctx.evidence.some((e) => e.text.toLowerCase().includes(name.toLowerCase()));
   const named = (a: unknown, p: string): Named[] =>
     list(a).flatMap((n, i) => {
@@ -815,8 +921,8 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
 
   return {
     businessPerformance: {
-      financialHighlights: claims(bp.financialHighlights, "businessPerformance.financialHighlights"),
-      recentMetrics: claims(bp.recentMetrics, "businessPerformance.recentMetrics"),
+      financialHighlights: claims(bp.financialHighlights, "businessPerformance.financialHighlights", undefined, { primaryOnly: true }),
+      recentMetrics: claims(bp.recentMetrics, "businessPerformance.recentMetrics", undefined, { primaryOnly: true }),
       strategicInitiatives: initiatives(bp.strategicInitiatives),
     },
     marketOverview: {
@@ -871,8 +977,8 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
         };
         return [{
           name,
-          revenue: checkClaim(d?.revenue, `${p}.revenue`, ctx),
-          headcount: checkClaim(d?.headcount, `${p}.headcount`, ctx),
+          revenue: checkClaim(d?.revenue, `${p}.revenue`, ctx, undefined, { primaryOnly: true }),
+          headcount: checkClaim(d?.headcount, `${p}.headcount`, ctx, undefined, { primaryOnly: true }),
           activity: checkClaim(d?.activity, `${p}.activity`, ctx),
           pricingModel: checkClaim(d?.pricingModel, `${p}.pricingModel`, ctx),
           description: about(d?.description, `${p}.description`),
@@ -914,7 +1020,7 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
     competitorGaps: list(a.competitorGaps).flatMap((g, i) => {
       const item = one(g, `competitorGaps[${i}]`);
       const competitor = typeof g?.competitor === "string" ? g.competitor.trim() : "";
-      return item && competitor ? [{ competitor, ...item }] : [];
+      return item && competitor ? [Object.assign(item, { competitor })] : [];
     }),
     swot: {
       strengths: many(sw.strengths, "swot.strengths"),
@@ -952,6 +1058,7 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
         serviceOffering: String(o.serviceOffering ?? ""),
         rationale: item.text,
         basedOn: item.basedOn,
+        item,
       }];
     }),
   };
@@ -960,13 +1067,19 @@ type Analysis = ReturnType<typeof validateAnalysis>;
 type Opportunity = Analysis["mcOpportunities"][number];
 
 // ---------- Step 4: verifier ----------
-async function verifyClaims(apiKey: string, ctx: Ctx, timeoutMs: number): Promise<string> {
+async function verifyClaims(apiKey: string, ctx: Ctx, timeoutMs: number, mode: "facts" | "analysis" = "facts"): Promise<string> {
   const items = ctx.sourced.filter((s) => s.claim.status === "sourced").slice(0, MAX_VERIFY);
   if (!items.length) return "no sourced claims";
-  const prompt = `For each numbered CLAIM, judge whether the EVIDENCE listed under it supports it.
-"supported": every part of the claim, including numbers, dates, names and attribution, is stated in the evidence.
+  const rubric = mode === "facts"
+    ? `"supported": every part of the claim, including numbers, dates, names and attribution, is stated in the evidence.
 "partial": the core is supported, but a detail is missing or slightly overstated.
-"unsupported": the evidence does not state it, contradicts it, or is about a different company.
+"unsupported": the evidence does not state it, contradicts it, or is about a different company.`
+    : `These claims are analysis written from the evidence, so reasonable synthesis is fine.
+"supported": the evidence supports the claim, and any number, quantity (including words like "over half" or "majority"), date, name or event in it appears in the evidence.
+"partial": mostly supported, but the wording is somewhat stronger than the evidence.
+"unsupported": the claim states a number, quantity, date, name or event that the evidence does not contain, contradicts the evidence, or is about a different company or business.`;
+  const prompt = `For each numbered CLAIM, judge whether the EVIDENCE listed under it supports it.
+${rubric}
 
 ${items
     .map((s, i) =>
@@ -1057,12 +1170,115 @@ async function normalizeOpportunities(apiKey: string, rows: Opportunity[], timeo
   return rows.filter((r) => VALID_SET.has(r.serviceOffering));
 }
 
+// Remove analysis items the verifier judged unsupported (flagged `rejected`).
+function applyRejections(a: Analysis): void {
+  const keep = <T extends Item | null>(x: T): T | null => (x && !x.rejected ? x : null);
+  const keepAll = (xs: Item[]) => xs.filter((x) => !x.rejected);
+  const es = a.executiveSummary;
+  es.tldr = keep(es.tldr);
+  es.bigOpportunity = keep(es.bigOpportunity);
+  es.keyTrends = keepAll(es.keyTrends);
+  es.competitivePositioning.rationale = keep(es.competitivePositioning.rationale);
+  if (!es.competitivePositioning.rationale) es.competitivePositioning.label = "Insufficient evidence";
+  a.performanceSummary = keepAll(a.performanceSummary);
+  a.competitorGaps = a.competitorGaps.filter((g) => !g.rejected);
+  for (const k of ["strengths", "weaknesses", "opportunities", "threats"] as const) a.swot[k] = keepAll(a.swot[k]);
+  for (const k of Object.keys(a.portersFiveForces) as (keyof Analysis["portersFiveForces"])[]) a.portersFiveForces[k] = keep(a.portersFiveForces[k]);
+  for (const k of Object.keys(a.pestle) as (keyof Analysis["pestle"])[]) a.pestle[k] = keep(a.pestle[k]);
+  a.recommendations.product = keepAll(a.recommendations.product);
+  a.recommendations.marketing = keepAll(a.recommendations.marketing);
+  a.recommendations.resourceAllocation = keep(a.recommendations.resourceAllocation);
+  a.recommendations.roadmap = keep(a.recommendations.roadmap);
+  a.mcOpportunities = a.mcOpportunities.filter((o) => !o.item.rejected);
+}
+
+// Number the citations in the final text 1..n in order of first appearance, and keep only the sources actually cited.
+const NO_RENUMBER = new Set(["sources", "claims", "quality", "entity", "evidence", "searchSuggestions", "generatedAt", "companyName"]);
+function renumberCitations(report: Any, sources: Source[]): Any {
+  const map = new Map<number, number>();
+  const order: number[] = [];
+  const rewrite = (v: Any): Any => {
+    if (typeof v === "string") {
+      return v.replace(/\[(\d+)\]/g, (_m, d) => {
+        const id = Number(d);
+        if (!map.has(id)) {
+          map.set(id, map.size + 1);
+          order.push(id);
+        }
+        return `[${map.get(id)}]`;
+      });
+    }
+    if (Array.isArray(v)) return v.map(rewrite);
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, rewrite(x)]));
+    return v;
+  };
+  const out: Any = {};
+  for (const [k, v] of Object.entries(report)) out[k] = NO_RENUMBER.has(k) ? v : rewrite(v);
+  const byId = new Map(sources.map((x) => [x.id, x]));
+  out.sources = order.map((id) => byId.get(id) ?? { id, title: `Source ${id}`, url: "" });
+  return out;
+}
+
+// Best effort: replace a source's domain-only title with the page's own <title>. Never blocks the report for long.
+async function fetchTitles(sources: Source[], budgetMs: number): Promise<void> {
+  const deadline = Date.now() + budgetMs;
+  const decode = (t: string) => t.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
+  await Promise.allSettled(sources.map(async (src) => {
+    if (!/^https?:/.test(src.url)) return;
+    const left = deadline - Date.now();
+    if (left < 500) return;
+    const res = await fetch(src.url, {
+      signal: AbortSignal.timeout(Math.min(4000, left)), redirect: "follow",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MCHubBot/1.0)", Accept: "text/html" },
+    });
+    if (!res.ok || !(res.headers.get("content-type") ?? "").includes("html") || !res.body) {
+      await res.body?.cancel();
+      return;
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let html = "";
+    while (html.length < 48_000 && !/<\/title>/i.test(html)) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      html += dec.decode(value, { stream: true });
+    }
+    await reader.cancel();
+    const m = html.match(/<title[^>]*>([\s\S]{2,300}?)<\/title>/i);
+    const title = m ? decode(m[1]).replace(/\s+/g, " ").trim() : "";
+    if (title && !/^(just a moment|access denied|attention required|403|404|forbidden|robot|captcha)/i.test(title)) {
+      const host = hostOf(src.url, src.title);
+      src.title = `${title.slice(0, 150)}${host ? ` — ${host}` : ""}`;
+    }
+  }));
+}
+
 // ---------- Legacy (previous UI) shape, with [n] citations into `sources` ----------
 type Placeholders = { facts: string; core: string; recs: string };
 function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeholders) {
+  // At most 3 citations per statement: best source tier first, then sources shared by several cited facts, then earliest.
   const cite = (evIds: number[]) => {
-    const s = [...new Set(evIds.flatMap((id) => ctx.byId.get(id)?.sourceIds ?? []))].sort((x, y) => x - y);
-    return s.length ? " " + s.map((n) => `[${n}]`).join("") : "";
+    const score = new Map<number, { tier: number; n: number }>();
+    for (const id of evIds) {
+      const e = ctx.byId.get(id);
+      if (!e) continue;
+      e.sourceIds.forEach((sid, i) => {
+        const t = e.srcTiers?.[i] ?? e.tier ?? 3;
+        const cur = score.get(sid);
+        if (cur) {
+          cur.tier = Math.min(cur.tier, t);
+          cur.n++;
+        } else {
+          score.set(sid, { tier: t, n: 1 });
+        }
+      });
+    }
+    const top = [...score.entries()]
+      .sort((a, b) => a[1].tier - b[1].tier || b[1].n - a[1].n || a[0] - b[0])
+      .slice(0, 3)
+      .map(([sid]) => sid)
+      .sort((x, y) => x - y);
+    return top.length ? " " + top.map((n) => `[${n}]`).join("") : "";
   };
   const fc = (c: Claim) =>
     c.status === "sourced" && c.text
@@ -1090,6 +1306,7 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
       tldr: fi(a.executiveSummary.tldr),
       keyTrends: fis(a.executiveSummary.keyTrends),
       competitivePositioning: a.executiveSummary.competitivePositioning.label,
+      positioningRationale: fi(a.executiveSummary.competitivePositioning.rationale, ""),
       bigOpportunity: fi(a.executiveSummary.bigOpportunity),
     },
     businessPerformance: {
@@ -1216,6 +1433,8 @@ type State = {
   warnings: string[];
   timings: Record<string, number>;
   researchModel: string;
+  /** Supports dropped because every source was an excluded type (social media, stock forums, ...). */
+  droppedByTier?: number;
   // set by the competitors step
   competitors?: Competitor[];
   // set by the facts step
@@ -1234,6 +1453,7 @@ const makeCtx = (evidence: Evidence[], dropped: Ctx["dropped"] = []): Ctx => ({
   evidence,
   dropped,
   sourced: [],
+  items: [],
 });
 
 // Structured (no tools, evidence-only) call. Prefers Pro when asked, falls back to Flash if Pro fails or times out.
@@ -1298,7 +1518,7 @@ async function stepResearch(
   t0 = Date.now();
   const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
   const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 20_000)));
-  const ledger = buildLedger(results, urlMap);
+  const ledger = buildLedger(results, urlMap, undefined, entity.website);
   tick("ledger", t0);
   if (!ledger.evidence.length) {
     return { ok: false, status: 422, body: { error: "Search returned no citable evidence for this company, so no report was produced.", entity, warnings } };
@@ -1448,7 +1668,7 @@ async function stepCompetitors(apiKey: string, state: State, deepResearch: boole
   t0 = Date.now();
   const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
   const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 20_000)));
-  const ledger = buildLedger(results, urlMap, { sources: state.sources, evidence: state.evidence });
+  const ledger = buildLedger(results, urlMap, { sources: state.sources, evidence: state.evidence }, state.entity.website);
   timings.competitorsLedger = Date.now() - t0;
 
   return {
@@ -1621,7 +1841,8 @@ const FACT_BASE_RULES = `Rules:
 2. Restate the evidence faithfully. Copy every number, date, currency amount and percentage exactly as written in the cited evidence, with the period it refers to. Never compute, convert, round, add up, or estimate.
 3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
-5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").`;
+5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
+5a. Evidence lines carry a source tier: T1 primary (filings, regulators, company releases), T2 major press and analysts, T3 everything else. Prefer T1 and T2. Financial results (revenue, income, margins, cash returned, market capitalization, headcount, funding) must come from T1 or T2 evidence only. A fact whose only support is a company's own marketing is written as that company's claim ("GAF says..."). Never present investment commentary (valuation opinions, "undervalued", price targets) as a fact or a strength. Never combine figures reported on different bases (for example original versus restated, or total versus continuing operations) into one statement or range: use the most recent restated figure and say which basis it is.`;
 
 const FACT_SECTION_RULES: Record<Section, (competitors?: string[]) => string> = {
   performance: () =>
@@ -1642,7 +1863,7 @@ ${groupsPrompt([0, 1, 2, 3, 4, 5])}`,
       competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
     } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.`,
   customer: () =>
-    `6. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are reasons customers choose the company; lossReasons are reasons customers leave or choose a competitor.`,
+    `6. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are things customers praise about the company; lossReasons are things customers criticise or complain about. These are review themes from review and complaint sites, NOT win/loss data: never claim they explain why deals were won or lost.`,
 };
 
 const factsSectionPrompt = (e: Entity, ev: Evidence[], today: string, section: Section, competitors?: string[]) =>
@@ -1751,7 +1972,7 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
   const results = slices.filter((x) => x.meta).map((x) => ({ topic: x.topic, r: { text: "", meta: x.meta } as GeminiResult }));
   const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
   const urlMap = await resolveRedirects(uris, Math.min(8000, Math.max(1500, clock.remaining() - 30_000)));
-  const ledger = buildLedger(results, urlMap, base ? { sources: base.sources, evidence: base.evidence } : undefined);
+  const ledger = buildLedger(results, urlMap, base ? { sources: base.sources, evidence: base.evidence } : undefined, entity.website);
   if (!ledger.evidence.length) {
     return json({ error: "Search returned no citable evidence for this company, so no report was produced.", entity }, 422);
   }
@@ -1769,6 +1990,7 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
     warnings,
     timings: base?.timings ?? {},
     researchModel: FLASH_MODEL,
+    droppedByTier: (base?.droppedByTier ?? 0) + ledger.droppedByTier,
     competitors: base?.competitors,
   };
   return json({ state });
@@ -1908,12 +2130,21 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
 
   const warnings = [...state.warnings, ...list(body?.clientWarnings).map(String).slice(0, 40), ...parts.flatMap((p) => list(p?.warnings).map(String))];
   const left = clock.remaining();
-  let mc: Opportunity[] = [];
-  try {
-    mc = await normalizeOpportunities(apiKey, analysis.mcOpportunities, Math.min(25_000, Math.max(3_000, left - 8_000)));
-  } catch (e) {
-    console.error("MC normalisation failed:", e);
-  }
+  // MC offer mapping and the analysis verifier run together; the verifier checks every analysis statement against
+  // its cited evidence (numbers, quantity words, names) and removes the ones it cannot support.
+  const wrappers = ctx.items.map((x) => ({ path: x.path, claim: { text: x.item.text, status: "sourced", evidenceIds: x.item.basedOn } as Claim, item: x.item }));
+  const [mcRes, verRes] = await Promise.allSettled([
+    normalizeOpportunities(apiKey, analysis.mcOpportunities, Math.min(25_000, Math.max(3_000, left - 8_000))),
+    left > 30_000 ? verifyClaims(apiKey, { ...ctx, sourced: wrappers }, Math.min(40_000, left - 12_000), "analysis") : Promise.resolve("skipped (time budget)"),
+  ]);
+  wrappers.forEach((w) => {
+    if (w.claim.status === "not_found") w.item.rejected = true;
+  });
+  const analysisVerifier = verRes.status === "fulfilled" ? verRes.value : `failed (${(verRes.reason as Error)?.message})`;
+  if (!analysisVerifier.startsWith("checked") && analysisVerifier !== "no sourced claims") warnings.push(`Analysis verifier ${analysisVerifier}; analysis statements are unchecked.`);
+  applyRejections(analysis);
+  let mc: Opportunity[] = mcRes.status === "fulfilled" ? mcRes.value.filter((o) => !o.item.rejected) : [];
+  if (mcRes.status === "rejected") console.error("MC normalisation failed:", mcRes.reason);
 
   const placeholders: Placeholders = { facts: NF, core: NF, recs: rawRecs ? NF : NOT_GENERATED };
   const cov = sectionCoverage(facts, analysis, mc);
@@ -1924,13 +2155,12 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
     segments: Number(x?.segments) || 0, retried: !!x?.retried,
   }));
 
-  const report: Any = {
+  let report: Any = {
     companyName: state.companyName,
     entity: state.entity,
     ...toLegacy(facts, analysis, mc, ctx, placeholders),
     sources: state.sources,
-    evidence: state.evidence,
-    claims: { facts, analysis: { ...analysis, mcOpportunities: mc } },
+    claims: { facts, analysis: { ...analysis, mcOpportunities: mc.map(({ item: _item, ...o }) => o) } },
     quality: {
       steps: { facts: SECTIONS.every(okSection), analysis: !!rawCore && !!rawFrameworks, recommendations: !!rawRecs },
       sectionsOk: Object.fromEntries(SECTIONS.map((sec) => [sec, okSection(sec)])),
@@ -1949,10 +2179,11 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
       sections: cov.sections,
       evidenceCount: state.evidence.length,
       sourceCount: state.sources.length,
+      sourcesDroppedByType: state.droppedByTier ?? 0,
       sourcedClaims,
       droppedCount: dropped.length,
       dropped,
-      verifier: verifiers.join("; ") || "not run",
+      verifier: [...verifiers, `analysis: ${analysisVerifier}`].join("; "),
       warnings,
       searchQueries: state.queries,
       models: { research: FLASH_MODEL, facts: FLASH_MODEL, analysis: deepResearch ? `${PRO_MODEL} (falls back to ${FLASH_MODEL})` : FLASH_MODEL },
@@ -1985,7 +2216,15 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   }
   if (!rawFrameworks) swap(report, ["strategicFrameworks"]);
 
-  console.log(JSON.stringify({ company: state.entity.name, evidence: state.evidence.length, scans: scanLog.length, sourcedClaims, dropped: dropped.length }));
+  // Citations renumbered 1..n (only what the text cites), then real page titles for those sources.
+  report = renumberCitations(report, state.sources);
+  await fetchTitles(report.sources, Math.min(8_000, Math.max(0, clock.remaining() - 8_000)));
+  const tierCounts = { primary: 0, major: 0, other: 0 };
+  for (const src of report.sources as Source[]) tierCounts[src.tier === 1 ? "primary" : src.tier === 2 ? "major" : "other"]++;
+  report.quality.sourceCount = report.sources.length;
+  report.quality.sourceTiers = tierCounts;
+
+  console.log(JSON.stringify({ company: state.entity.name, evidence: state.evidence.length, scans: scanLog.length, sourcedClaims, dropped: dropped.length, sources: report.sources.length }));
   return json(report);
 }
 
@@ -1994,7 +2233,10 @@ function readState(raw: Any, allowEmpty = false): State | null {
   if (!raw || typeof raw !== "object" || !raw.entity || typeof raw.entity.name !== "string") return null;
   const evidence: Evidence[] = list(raw.evidence).slice(0, MAX_EVIDENCE).flatMap((e) =>
     typeof e?.text === "string" && Number.isInteger(e?.id)
-      ? [{ id: e.id, topic: String(e.topic ?? ""), text: e.text.slice(0, 2000), sourceIds: list(e.sourceIds).filter((n) => Number.isInteger(n)) }]
+      ? [{
+        id: e.id, topic: String(e.topic ?? ""), text: e.text.slice(0, 2000), sourceIds: list(e.sourceIds).filter((n) => Number.isInteger(n)),
+        tier: [1, 2, 3].includes(e.tier) ? e.tier : 2, srcTiers: list(e.srcTiers).map((n) => ([1, 2, 3].includes(n) ? n : 3)),
+      }]
       : []
   );
   if (!evidence.length && !allowEmpty) return null;
@@ -2008,9 +2250,14 @@ function readState(raw: Any, allowEmpty = false): State | null {
       ownership: s(en.ownership), confidence: s(en.confidence), otherEntities: s(en.otherEntities),
     },
     evidence,
-    sources: list(raw.sources),
+    sources: list(raw.sources).slice(0, 800).flatMap((x): Source[] =>
+      Number.isInteger(x?.id)
+        ? [{ id: x.id, title: String(x.title ?? "").slice(0, 300), url: String(x.url ?? "").slice(0, 2000), tier: [1, 2, 3].includes(x.tier) ? x.tier : 3 }]
+        : []
+    ),
     queries: list(raw.queries),
     searchSuggestions: list(raw.searchSuggestions),
+    droppedByTier: Number(raw.droppedByTier) || 0,
     warnings: list(raw.warnings).map(String),
     timings: raw.timings && typeof raw.timings === "object" ? raw.timings : {},
     researchModel: String(raw.researchModel ?? FLASH_MODEL),
