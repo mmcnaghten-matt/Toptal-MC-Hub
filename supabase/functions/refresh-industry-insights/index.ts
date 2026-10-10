@@ -286,6 +286,13 @@ function normUrl(url: string): string {
 const DOMAINS_EXCLUDED = [
   "facebook.com", "fb.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "tiktok.com", "pinterest.com", "quora.com",
   "linkedin.com", "youtube.com", "youtu.be", "stocktwits.com", "koalagains.com", "capout.ai", "creately.com",
+  // Stock-data aggregators (third-party ratios on a different basis than the filings)
+  "stockanalysis.com", "wallstreetzen.com", "fullratio.com", "macrotrends.net", "companiesmarketcap.com", "gurufocus.com",
+  "simplywall.st", "stockscan.io", "marketbeat.com", "finance.yahoo.com", "seekingalpha.com", "investing.com", "tipranks.com",
+  "zacks.com", "ycharts.com", "finbox.com", "alphaspread.com", "stockinvest.us", "reportlinker.com",
+  // Job and employee-review sites, company-profile databases, conference and event marketing
+  "indeed.com", "glassdoor.com", "ziprecruiter.com", "simplyhired.com", "monster.com", "comparably.com", "owler.com", "craft.co",
+  "growjo.com", "leadiq.com", "zoominfo.com", "similarweb.com", "cbinsights.com", "tracxn.com", "globaldata.com", "iqpc.com", "iqpc.co.uk",
   ...(Deno.env.get("SOURCE_DENYLIST") ?? "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean),
 ];
 const DOMAINS_T1 = ["sec.gov", "europa.eu", "prnewswire.com", "businesswire.com", "globenewswire.com", "accesswire.com"];
@@ -502,6 +509,8 @@ type State = {
   queries: string[];
   warnings: string[];
   droppedByTier: number;
+  /** What the date check did: dated events confirmed on the cited page, evidence removed and why. */
+  dateChecks?: { confirmed: number; unverified: number; dropped: { id: number; reason: string; text: string }[] };
 };
 type Dropped = { path: string; reason: string; text: string };
 
@@ -532,13 +541,18 @@ Rules:
 - Use Google Search. Report only facts stated in the search results. Never estimate, extrapolate, or fill gaps from memory.
 - Write short, self-contained sentences with ONE fact each. Name the sub-sector or industry in each sentence, and for any figure give its date or period and who reported it (e.g. "U.S. retail banks spent $X on Y in 2025, according to Deloitte.").
 - Prefer primary sources (regulators, statistical agencies, company filings and press releases), then major news outlets and analyst or consulting firms. Avoid social media, stock-forum or stock-data aggregator pages, vendor marketing blogs and law-firm sites.
-- Prefer sources from the last 24 months.
+- Prefer sources from the last 24 months. Give the date of every event exactly as the source states it; if a source does not state the year, write "date not stated" and never assume the current year.
 - Distinguish claims by companies from independent reporting by analysts, regulators or the press.
 - If you cannot find something, write one line "NOT FOUND: <item>". Incomplete answers are expected and fine.
 - No recommendations, opinions, or analysis.`;
 
 // ---------- Validation ----------
 const WINDOW_MONTHS = 24;
+// Pipeline-internal evidence references ("(E37, E47)") must never reach the page.
+const EVIDENCE_REF_RE = /\s*[(\[]\s*(?:(?:based on|see|per|from|evidence)\s+)?E\d+(?:\s*(?:,|;|&|and)\s*E\d+)*\s*[)\]]/gi;
+const stripEvidenceRefs = (t: string) => t.replace(EVIDENCE_REF_RE, "").replace(/\bE\d+(?:\s*,\s*E\d+)+\b/g, "").replace(/\s{2,}/g, " ").trim();
+// Not an initiative: colour or SKU launches, awards and rankings, publications of reports.
+const MATERIALITY_RE = /\b(colou?rs?|shades?|SKUs?|awards?|award-winning|ranked|rankings?|recogni[sz]ed|best places to work|colou?r of the year)\b|\b(published|releas\w+|issued|unveiled)\s+(?:its |the |a |an )?[^.]{0,40}\b(sustainability|esg|annual|impact|citizenship) report\b/i;
 const cutoffYear = () => new Date(Date.now() - WINDOW_MONTHS * 30.44 * 86_400_000).getFullYear();
 
 const evidenceFor = (ids: unknown, byId: Map<number, Evidence>): Evidence[] =>
@@ -574,6 +588,7 @@ function judge(text: string, ev: Evidence[], kind: Kind): Verdict {
   const r = textReason(text, ev);
   if (r) return { reason: r, repairable: true };
   if (kind === "event") {
+    if (MATERIALITY_RE.test(text)) return { reason: "not an initiative (colour or SKU launch, award, ranking or report publication)", repairable: false };
     const years = (text.match(/\b20\d\d\b/g) ?? []).map(Number);
     if (years.length && Math.max(...years) < cutoffYear()) return { reason: `older than ${WINDOW_MONTHS} months`, repairable: false };
   }
@@ -582,7 +597,7 @@ function judge(text: string, ev: Evidence[], kind: Kind): Verdict {
 
 // Strict check used when assembling the final report (no rewriting at that point).
 function checkItem(it: Any, path: string, byId: Map<number, Evidence>, dropped: Dropped[], reg?: { path: string; item: Item }[], kind: Kind = "interpretive"): Item | null {
-  const text = typeof it?.text === "string" ? it.text.trim() : "";
+  const text = typeof it?.text === "string" ? stripEvidenceRefs(it.text) : "";
   if (!text) return null;
   const evAll = evidenceFor(it?.basedOn, byId);
   const ev = evAll.filter((e) => e.sourceIds.length > 0);
@@ -624,7 +639,7 @@ async function vetItems(
   const fixable: { i: number; path: string; text: string; ev: Evidence[]; basedOn: number[]; reason: string }[] = [];
   raw.forEach((it, i) => {
     const path = `${prefix}[${i}]`;
-    const text = typeof it?.text === "string" ? it.text.trim() : "";
+    const text = typeof it?.text === "string" ? stripEvidenceRefs(it.text) : "";
     if (!text) return;
     const evAll = evidenceFor(it?.basedOn, byId);
     const ev = evAll.filter((e) => e.sourceIds.length > 0);
@@ -650,7 +665,7 @@ async function vetItems(
     }
   }
   fixable.forEach((f, k) => {
-    const nt = rewrites[k];
+    const nt = rewrites[k] ? stripEvidenceRefs(rewrites[k]) : "";
     if (nt && !judge(nt, f.ev, kind)) {
       const item: Item = { text: nt, basedOn: f.basedOn };
       reg.push({ path: f.path, item });
@@ -683,7 +698,7 @@ type NeedIn = { name: string; signals: string[]; narrative: string; basedOn: num
 function finalizeNeed(
   n: Any, name: string, narrative: string, ev: Evidence[], path: string, dropped: Dropped[], reg?: { path: string; item: Item }[],
 ): NeedIn | null {
-  const signals = list(n?.signals).map((x) => (typeof x === "string" ? x.trim() : "")).filter(Boolean).filter((sg, i) => {
+  const signals = list(n?.signals).map((x) => (typeof x === "string" ? stripEvidenceRefs(x) : "")).filter(Boolean).filter((sg, i) => {
     if (figuresSupported(sg, ev, true)) return true;
     dropped.push({ path: `${path}.signals[${i}]`, reason: "figure not present in cited evidence", text: sg });
     return false;
@@ -699,8 +714,8 @@ function finalizeNeed(
 
 // Strict check used when assembling the final report.
 function checkNeed(n: Any, path: string, byId: Map<number, Evidence>, dropped: Dropped[], reg?: { path: string; item: Item }[]): NeedIn | null {
-  const name = typeof n?.name === "string" ? n.name.trim() : "";
-  const narrative = typeof n?.narrative === "string" ? n.narrative.trim() : "";
+  const name = typeof n?.name === "string" ? stripEvidenceRefs(n.name) : "";
+  const narrative = typeof n?.narrative === "string" ? stripEvidenceRefs(n.narrative) : "";
   if (!name || !narrative) return null;
   const evAll = evidenceFor(n?.basedOn, byId);
   const ev = evAll.filter((e) => e.sourceIds.length > 0);
@@ -721,8 +736,8 @@ async function vetNeeds(
   const fixable: { i: number; path: string; n: Any; name: string; text: string; ev: Evidence[]; reason: string }[] = [];
   raw.forEach((n, i) => {
     const path = `needs[${i}]`;
-    const name = typeof n?.name === "string" ? n.name.trim() : "";
-    const narrative = typeof n?.narrative === "string" ? n.narrative.trim() : "";
+    const name = typeof n?.name === "string" ? stripEvidenceRefs(n.name) : "";
+    const narrative = typeof n?.narrative === "string" ? stripEvidenceRefs(n.narrative) : "";
     if (!name || !narrative) return;
     const evAll = evidenceFor(n?.basedOn, byId);
     const ev = evAll.filter((e) => e.sourceIds.length > 0);
@@ -747,7 +762,7 @@ async function vetNeeds(
     }
   }
   fixable.forEach((f, k) => {
-    const nt = rewrites[k];
+    const nt = rewrites[k] ? stripEvidenceRefs(rewrites[k]) : "";
     if (nt && !judge(nt, f.ev, "interpretive")) {
       const need = finalizeNeed(f.n, f.name, nt, f.ev, f.path, dropped, reg);
       if (need) {
@@ -814,6 +829,13 @@ function readState(raw: Any, allowEmpty = false): State | null {
     queries: list(raw.queries).map(String).slice(0, 100),
     warnings: list(raw.warnings).map(String).slice(0, 50),
     droppedByTier: Number(raw.droppedByTier) || 0,
+    dateChecks: raw.dateChecks && typeof raw.dateChecks === "object"
+      ? {
+        confirmed: Math.max(0, Number(raw.dateChecks.confirmed) || 0),
+        unverified: Math.max(0, Number(raw.dateChecks.unverified) || 0),
+        dropped: list(raw.dateChecks.dropped).slice(0, 100).map((d) => ({ id: Number(d?.id) || 0, reason: String(d?.reason ?? "").slice(0, 120), text: String(d?.text ?? "").slice(0, 240) })),
+      }
+      : undefined,
   };
 }
 
@@ -880,7 +902,8 @@ Rules:
 3. Be specific to "${st.subIndustryName}". Do not write statements that would apply equally to any industry (generic AI, talent or supply-chain remarks) unless the evidence ties them to this sub-sector.
 4. Prefer developments from the last ${WINDOW_MONTHS} months.
 4a. Evidence lines carry a source tier (T1 primary: regulators, statistical agencies, company releases; T2 major press and analyst or consulting firms; T3 other). Rest conclusions on T1 and T2 evidence; statistics and figures must come from T1 or T2. Do not combine figures reported on different bases, years or geographies into one statement. Write a company's or vendor's own marketing claim as that party's claim. Investment commentary ("undervalued", price targets) is not a sector development. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.
-4b. The overview, challenges, initiatives and need narratives are YOUR interpretation of what the evidence implies. Cite in basedOn the evidence that motivates each one, but do not force a statistic into it: include a number, percentage or dollar amount ONLY when it is essential and appears exactly in the cited evidence; otherwise describe the issue qualitatively.`;
+4b. The overview, challenges, initiatives and need narratives are YOUR interpretation of what the evidence implies. Cite in basedOn the evidence that motivates each one, but do not force a statistic into it: include a number, percentage or dollar amount ONLY when it is essential and appears exactly in the cited evidence; otherwise describe the issue qualitatively.
+4c. Never write evidence ids (such as E12) in any text; they belong only in basedOn. Initiatives are substantive programs and investments: skip colour or SKU launches, awards, rankings and publications of reports. Use an event's date only as the evidence states it; never infer a year.`;
 
 const OVERVIEW_SCHEMA = obj({ overview: OPT_ITEM, challenges: arr(ITEM) });
 const INITIATIVES_SCHEMA = obj({ initiatives: arr(ITEM) });
@@ -1033,11 +1056,191 @@ ${indexes.map((i) => `${i}. ${needs[i].name} | signals: ${needs[i].signals.join(
   return json({ ok: Object.keys(result).length > 0, offers: needs.map((_, i) => result[i] ?? null), warnings });
 }
 
+// ---------- Date integrity (events only) ----------
+// The ledger holds the research model's SUMMARY of a page, and a model summarising an undated or old article tends to write the
+// current year. For the event topics (regulation, deals, programs and moves) a statement with a recent date is checked against
+// the page it cites: the page must show that date. Overview, challenges and needs are directional and are not date-checked.
+const EVENT_TOPICS = new Set(["regulation", "competition_ma", "moves"]);
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ldquo: "\u201c", rdquo: "\u201d", lsquo: "\u2018", rsquo: "\u2019",
+  ndash: "\u2013", mdash: "\u2014", hellip: "\u2026", reg: "\u00ae", copy: "\u00a9", trade: "\u2122", deg: "\u00b0", middot: "\u00b7",
+};
+function cleanText(t: string): string {
+  let out = t;
+  for (let i = 0; i < 2; i++) {
+    out = out.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, e: string) => {
+      if (e[0] === "#") {
+        const code = e[1].toLowerCase() === "x" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return Number.isFinite(code) && code > 31 && code < 0x110000 ? String.fromCodePoint(code) : m;
+      }
+      return NAMED_ENTITIES[e.toLowerCase()] ?? m;
+    });
+  }
+  return out.replace(/[\u00a0\u2007\u202f]/g, " ").replace(/[\u200b-\u200d\ufeff]/g, "");
+}
+const plainTitle = (t: string) =>
+  cleanText(t).replace(/[\u2013\u2014]/g, " - ").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\u2026/g, "...").replace(/\s+/g, " ").trim();
+const BOT_CHECK_TITLE_RE = /^(just a moment|access denied|attention required|human verification|verify(ing)? you are human|are you a (human|robot)|security check|checking your browser|please wait|enable javascript|one more step|pardon our interruption|request blocked|403|404|forbidden|robot|captcha)/i;
+
+const MONTH_RE = "(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+const monthNo = (m: string) => ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(m.slice(0, 3).toLowerCase()) + 1;
+const ymKey = (y: number, m: number) => `${y}-${String(m).padStart(2, "0")}`;
+const monthsOf = (ym: string) => Number(ym.slice(0, 4)) * 12 + Number(ym.slice(5, 7));
+
+/** "July 17, 2026", "17 July 2026", "2026-07-17", "07/17/2026" -> "2026-07" (deduplicated). */
+function monthYears(text: string): string[] {
+  const out = new Set<string>();
+  for (const m of text.matchAll(new RegExp(`\\b${MONTH_RE}\\.?\\s+(?:\\d{1,2}(?:st|nd|rd|th)?,?\\s+)?((?:19|20)\\d\\d)\\b`, "gi"))) out.add(ymKey(Number(m[2]), monthNo(m[1])));
+  for (const m of text.matchAll(new RegExp(`\\b\\d{1,2}(?:st|nd|rd|th)?\\s+${MONTH_RE}\\.?,?\\s+((?:19|20)\\d\\d)\\b`, "gi"))) out.add(ymKey(Number(m[2]), monthNo(m[1])));
+  for (const m of text.matchAll(/\b((?:19|20)\d\d)-(0[1-9]|1[0-2])-\d\d\b/g)) out.add(ymKey(Number(m[1]), Number(m[2])));
+  for (const m of text.matchAll(/\b(0?[1-9]|1[0-2])\/\d{1,2}\/((?:19|20)\d\d)\b/g)) out.add(ymKey(Number(m[2]), Number(m[1])));
+  return [...out];
+}
+/** The recent dates (last 3 years, up to next year) a statement asserts. */
+function claimDates(text: string, curYear: number): { my: string[]; years: number[] } {
+  const my = monthYears(text).filter((x) => Number(x.slice(0, 4)) >= curYear - 3 && Number(x.slice(0, 4)) <= curYear + 1);
+  const years = [...new Set((text.match(/\b(?:19|20)\d\d\b/g) ?? []).map(Number))].filter((y) => y >= curYear - 3 && y <= curYear + 1);
+  return { my, years };
+}
+const toYm = (v: string): string | undefined => {
+  const iso = v.match(/^(\d{4})-(\d{2})/);
+  if (iso) return ymKey(Number(iso[1]), Number(iso[2]));
+  const t = Date.parse(v);
+  return Number.isFinite(t) ? ymKey(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth() + 1) : undefined;
+};
+
+type PageInfo = { read: boolean; pub?: string; my?: string[]; years?: number[] };
+/** What a page says about its own date: publication date, dates in the body, years in the body (outside copyright lines and footers). */
+function parsePage(html: string, url: string): PageInfo {
+  const PUB_NAMES = new Set(["article:published_time", "og:published_time", "datepublished", "pubdate", "publishdate", "publish-date", "date", "dc.date", "dc.date.issued", "parsely-pub-date", "sailthru.date"]);
+  let pub: string | undefined;
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+    const name = tag.match(/(?:property|name|itemprop)=["']([^"']+)["']/i)?.[1]?.toLowerCase();
+    const content = tag.match(/content=["']([^"']+)["']/i)?.[1];
+    if (name && content && PUB_NAMES.has(name)) {
+      pub = toYm(content);
+      if (pub) break;
+    }
+  }
+  pub ??= toYm(html.match(/"datePublished"\s*:\s*"([^"]+)"/)?.[1] ?? "");
+  pub ??= toYm(html.match(/<time\b[^>]*datetime=["']([^"']+)["']/i)?.[1] ?? "");
+  const urlDate = url.match(/\/((?:19|20)\d\d)\/(0[1-9]|1[0-2])(?:\/|$)/);
+  if (!pub && urlDate) pub = ymKey(Number(urlDate[1]), Number(urlDate[2]));
+  const text = cleanText(
+    html.slice(0, 400_000)
+      .replace(/<(script|style|noscript|nav|footer|header|aside|svg|form)\b[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/<[^>]+>/g, " "),
+  ).replace(/\s+/g, " ").replace(/(?:\u00a9|copyright)\s*(?:\(c\)\s*)?(?:19|20)\d\d(?:\s*[-\u2013]\s*(?:19|20)\d\d)?/gi, " ");
+  return {
+    read: text.length >= 400,
+    pub,
+    my: monthYears(text).slice(0, 60),
+    years: [...new Set((text.match(/\b(?:19|20)\d\d\b/g) ?? []).map(Number))].filter((y) => y >= 1990).slice(0, 40),
+  };
+}
+async function readPage(url: string, timeoutMs: number): Promise<PageInfo> {
+  if (!/^https?:/.test(url) || /\.pdf($|\?)/i.test(url) || url.includes("grounding-api-redirect") || timeoutMs < 500) return { read: false };
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(timeoutMs), redirect: "follow",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MCHubBot/1.0)", Accept: "text/html" },
+    });
+    if (!res.ok || !/html/.test(res.headers.get("content-type") ?? "") || !res.body) {
+      await res.body?.cancel();
+      return { read: false };
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let html = "";
+    while (html.length < 300_000) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      html += dec.decode(value, { stream: true });
+    }
+    await reader.cancel();
+    return parsePage(html, url);
+  } catch {
+    return { read: false };
+  }
+}
+type DateVerdict = "confirmed" | "contradicted" | "not_shown" | "unreadable";
+function dateVerdict(claim: { my: string[]; years: number[] }, pages: PageInfo[]): DateVerdict {
+  const read = pages.filter((p) => p.read);
+  const confirms = (pg: PageInfo) =>
+    claim.my.length
+      ? !!pg.my?.some((m) => claim.my.includes(m)) || (!!pg.pub && claim.my.some((m) => Math.abs(monthsOf(pg.pub!) - monthsOf(m)) <= 6))
+      : claim.years.some((y) => !!pg.years?.includes(y) || (!!pg.pub && Number(pg.pub.slice(0, 4)) === y));
+  const minYear = Math.min(...claim.years);
+  // An article published two or more years before the date it is said to report cannot be reporting it.
+  const contradicts = (pg: PageInfo) => !!pg.pub && Number(pg.pub.slice(0, 4)) <= minYear - 2;
+  if (read.some(confirms)) return "confirmed";
+  if (read.some(contradicts)) return "contradicted";
+  return read.length ? "not_shown" : "unreadable";
+}
+async function runPool<T>(items: T[], n: number, fn: (x: T) => Promise<void>): Promise<void> {
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (i < items.length) await fn(items[i++]);
+  }));
+}
+
+// Request: check the dates of event evidence against the cited pages and drop what a page contradicts or does not show.
+// A page that cannot be read (bot block, script-only) is not evidence against the date: the evidence is kept as unverified.
+// Never fails the run.
+async function v2VerifyEvidence(body: Any, clock: ReturnType<typeof makeClock>) {
+  const state = readState(body?.state);
+  if (!state) return json({ error: "Missing or invalid research state. Start again." }, 400);
+  const now = new Date();
+  const cy = now.getUTCFullYear();
+  const log = state.dateChecks ?? { confirmed: 0, unverified: 0, dropped: [] };
+  const drop = new Map<number, string>();
+  const srcById = new Map(state.sources.map((x) => [x.id, x]));
+  const bestTier = (e: Evidence) => Math.min(...(e.srcTiers?.length ? e.srcTiers : [e.tier ?? 3]));
+  const eventRows = state.evidence.filter((e) => EVENT_TOPICS.has(e.topic));
+  const dated = eventRows.map((e) => ({ e, c: claimDates(e.text, cy) })).filter((x) => x.c.years.length > 0);
+  const undated = eventRows.filter((e) => !claimDates(e.text, cy).years.length && bestTier(e) > 1);
+  // Pages behind dated statements first, then the other non-primary event pages (their publication date shows old material).
+  const ids = [...new Set([...dated.flatMap((x) => x.e.sourceIds), ...undated.flatMap((e) => e.sourceIds)])].slice(0, 80);
+  const pages = new Map<number, PageInfo>();
+  const deadline = Date.now() + Math.max(8_000, Math.min(45_000, clock.remaining() - 60_000));
+  await runPool(ids, 12, async (id) => {
+    const src = srcById.get(id);
+    if (src) pages.set(id, await readPage(src.url, Math.min(6_000, deadline - Date.now())));
+  });
+  const pagesOf = (e: Evidence) => e.sourceIds.map((id) => pages.get(id)).filter((p): p is PageInfo => !!p);
+
+  for (const { e, c } of dated) {
+    const verdict = dateVerdict(c, pagesOf(e));
+    if (verdict === "confirmed") log.confirmed++;
+    else if (verdict === "contradicted") drop.set(e.id, "date contradicts the cited page");
+    else if (verdict === "not_shown" && bestTier(e) > 1) drop.set(e.id, "the cited page does not show this date");
+    else log.unverified++;
+  }
+  // Event evidence from a page published before the research window, with no recent date of its own.
+  const limit = cy * 12 + now.getUTCMonth() + 1 - WINDOW_MONTHS;
+  for (const e of undated) {
+    const pubs = pagesOf(e).map((p) => p.pub).filter((x): x is string => !!x);
+    if (pubs.length > 0 && pubs.length === e.sourceIds.length && pubs.every((pb) => monthsOf(pb) < limit)) drop.set(e.id, `source page older than ${WINDOW_MONTHS} months`);
+  }
+  for (const e of eventRows) {
+    if (!drop.has(e.id) && /date not stated/i.test(e.text)) drop.set(e.id, "event has no stated date");
+  }
+
+  const kept = state.evidence.filter((e) => !drop.has(e.id));
+  for (const e of state.evidence) {
+    if (drop.has(e.id) && log.dropped.length < 100) log.dropped.push({ id: e.id, reason: drop.get(e.id)!, text: e.text.slice(0, 240) });
+  }
+  return json({
+    state: { ...state, evidence: kept, dateChecks: log },
+    summary: { event: eventRows.length, dated: dated.length, dropped: drop.size, pagesRead: ids.length },
+  });
+}
+
 // ---------- Source titles ----------
 // Best effort: replace a source's domain-only title with the page's own <title>. Never blocks the report for long.
 async function fetchTitles(sources: Source[], budgetMs: number): Promise<void> {
   const deadline = Date.now() + budgetMs;
-  const decode = (t: string) => t.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
   await Promise.allSettled(sources.map(async (src) => {
     if (!/^https?:/.test(src.url)) return;
     const left = deadline - Date.now();
@@ -1060,10 +1263,10 @@ async function fetchTitles(sources: Source[], budgetMs: number): Promise<void> {
     }
     await reader.cancel();
     const m = html.match(/<title[^>]*>([\s\S]{2,300}?)<\/title>/i);
-    const title = m ? decode(m[1]).replace(/\s+/g, " ").trim() : "";
-    if (title && !/^(just a moment|access denied|attention required|403|404|forbidden|robot|captcha)/i.test(title)) {
+    const title = m ? plainTitle(m[1]) : "";
+    if (title && !BOT_CHECK_TITLE_RE.test(title)) {
       const host = hostOf(src.url, src.title);
-      src.title = `${title.slice(0, 150)}${host ? ` — ${host}` : ""}`;
+      src.title = `${title.slice(0, 150)}${host ? ` - ${host}` : ""}`;
     }
   }));
 }
@@ -1164,6 +1367,7 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
       evidenceCount: state.evidence.length,
       sourceCount: sources.length,
       sourcesDroppedByType: state.droppedByTier,
+      dateChecks: state.dateChecks ?? { confirmed: 0, unverified: 0, dropped: [] },
       sourceTiers: tierCounts,
       verifier,
       repaired: repairedLog,
@@ -1308,6 +1512,7 @@ Deno.serve(async (req) => {
     switch (body?.step) {
       case "scan": return await v2Scan(GEMINI_API_KEY, body, clock);
       case "ledger": return await v2Ledger(body, clock);
+      case "verify_evidence": return await v2VerifyEvidence(body, clock);
       case "synth": return await v2Synth(GEMINI_API_KEY, body, clock);
       case "offers": return await v2Offers(GEMINI_API_KEY, body, clock);
       case "report": return await v2Report(GEMINI_API_KEY, body, clock);
