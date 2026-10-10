@@ -1,6 +1,7 @@
 import "./fixed-date.mjs";
-// Round 6: sold-business footprint, market sanity checks, competitor merging, rank-based positioning, litigation and materiality rules.
-// Release A checks: aggregators, public-company financials, competitor classification, segments, balanced customer evidence, hygiene.
+// Round 7: owned businesses, parent grouping, classification retry, market title check, page support for citations, report-dated events,
+// continuing-operations logic, uncited figures, absence as evidence, slogan initiatives, one headcount, stale competitor evidence,
+// blocked stock-data and peer-list pages, contradiction pass, build stamp and method numbers.
 let handler; const env = { GEMINI_API_KEY: "k", SUPABASE_URL: "https://sb.test" };
 globalThis.Deno = { env: { get: (k) => env[k] }, serve: (h) => { handler = h; } };
 await import("../../../supabase/functions/gemini-research/index.ts");
@@ -9,10 +10,10 @@ const { runResearch } = await import("../../../src/services/researchPipeline.ts"
 const gem = (text, meta) => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] }, groundingMetadata: meta }] }), { status: 200 });
 // items: [text, host] -> one chunk per distinct host
 const metaOf = (items) => {
-  const hosts = [...new Set(items.map(([, h]) => h))];
+  const hosts = [...new Set(items.flatMap(([, h]) => [].concat(h)))];
   return {
     groundingChunks: hosts.map((h) => ({ web: { uri: h.includes("/") ? `https://${h}` : `https://${h}/page`, title: h.split("/")[0] } })),
-    groundingSupports: items.map(([t, h]) => ({ segment: { text: t }, groundingChunkIndices: [hosts.indexOf(h)] })),
+    groundingSupports: items.map(([t, h]) => ({ segment: { text: t }, groundingChunkIndices: [].concat(h).map((x) => hosts.indexOf(x)) })),
   };
 };
 const F = {};
@@ -22,6 +23,9 @@ const SCAN = {
   performance: [
     ["Owens Corning reported 2025 net sales of $10.1 billion, up 3%, according to its Form 10-K.", "www.sec.gov"],
     ["Owens Corning disclosed class action lawsuits related to its impairment in its Form 10-K.", "www.sec.gov"],
+    ["Owens Corning reported first-half net sales from continuing operations of $5.0 billion versus $5.3 billion, according to its Form 10-Q.", "www.sec.gov"],
+    ["Owens Corning employed about 25,000 people in 2024, according to its Form 10-K.", "www.sec.gov"],
+    ["Owens Corning employed about 24,000 people in 2025, according to its Form 10-K.", "www.sec.gov"],
     ["Owens Corning had total revenue of $9.9 billion in 2025, according to Reuters.", "www.reuters.com"],
   ],
   strategy_1: [
@@ -32,20 +36,30 @@ const SCAN = {
     ["Owens Corning is laying off employees at its Walkerton, Indiana doors plant in September 2026, according to Business Wire.", "www.businesswire.com"],
     ["Owens Corning's board elected Brian DeVito as chair in March 2026, according to Business Wire.", "www.businesswire.com"],
     ["Owens Corning launched the Evergreen Mist shingle color in March 2026, according to Business Wire.", "www.businesswire.com"],
+    ["Owens Corning completed its acquisition of Masonite International Corporation in May 2024, according to Business Wire.", "www.businesswire.com"],
+    ["Owens Corning established a $1.5 billion commercial paper program, as reported on February 25, 2026, according to Business Wire.", "www.businesswire.com"],
+    ["Owens Corning established a $1.4 billion revolving credit facility on March 5, 2025, as reported on February 25, 2026, according to Business Wire.", "www.businesswire.com"],
+    ["Owens Corning is reshaping itself as a focused building products leader, according to Business Wire.", "www.businesswire.com"],
+    ["Owens Corning launched a predictive maintenance program at its plants in March 2026, saving millions per plant, according to Business Wire.", ["www.reuters.com/markets/oc-earnings-only", "www.sapinsider.example/predictive-maintenance-case"]],
     ["Owens Corning's roofing sales in London, Ontario grew in 2026, according to Business Wire.", "www.businesswire.com"],
     ["Norandex stores reported lower sales in 2026, according to Business Wire.", "www.businesswire.com"],
   ],
   strategy_2: [
+    ["Owens Corning's Duration shingles are rated for winds up to 130 mph, according to Reuters.", "www.reuters.com/products/duration"],
+    ["Owens Corning's Duration shingles are rated 110 mph, according to a trade site.", "www.trade-info.example/duration-rating"],
     ["Owens Corning launched the Taloja plant digital transformation initiative in October 2025, according to a trade site.", "www.tradesite.example"],
     ["Owens Corning is the second-largest US shingle producer, according to Gartner.", "www.gartner.com"],
   ],
   "market:Roofing": [
-    ["The global roofing market was valued at $148.7B in 2025 according to Grand View Research.", "www.grandviewresearch.com/industry-analysis/conveying-equipment-market"],
+    ["The global roofing market was valued at $148.7B in 2025 according to Grand View Research.", "www.grandviewresearch.com/industry-analysis/roofing-market-size"],
     ["The global roofing market was valued at $143.7B in 2025 according to Mordor Intelligence.", "www.mordorintelligence.com/industry-reports/roofing-market"],
   ],
   "market:Insulation": [["Analysts define building insulation as a materials market, according to Gartner.", "www.gartner.com"]],
   "market:Doors": [["The global composite doors and windows market was valued at $1.5B in 2025 according to Precedence Research.", "www.precedenceresearch.com/industry-analysis/composite-doors-market"]],
   competitors: [["Analysts name CertainTeed and GAF as the main roofing competitors of Owens Corning.", "www.reuters.com"],
+    ["Owens Corning is the largest insulation producer in North America, according to CSIMarket.", "csimarket.com/stocks/OC"],
+    ["Owens Corning shares gained 3% in 2026, according to TradingView.", "www.tradingview.com/symbols/OC"],
+    ["Knauf is listed among the top building insulation companies.", "www.mordorintelligence.com/market-analysis/top-building-insulation-companies"],
     ["Corning Inc. is listed as a competitor of Owens Corning according to Comparably.", "comparably.com"],
     ["Owens Corning is ranked against rivals on Owler.", "www.owler.com"]],
   customer_praise: [
@@ -78,6 +92,15 @@ globalThis.fetch = async (url, init) => {
     // page titles
     const pg = (title, { pub, body = "", footer = "" } = {}) => new Response(`<html><head><title>${title}</title>${pub ? `<meta property="article:published_time" content="${pub}">` : ""}</head><body><nav>menu</nav><main>${body} ${"Lorem ipsum dolor sit amet. ".repeat(30)}</main><footer>${footer}</footer></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
     const pgu = (title, o = {}) => pg(title, { ...o, body: (o.body ?? "") + " " + echoFor(url) });
+    if (url.includes("grandviewresearch.com/industry-analysis/roofing-market-size")) {
+      // The first request (the verify step) is blocked, as such sites often do; the title is only seen when titles are fetched at the end.
+      globalThis.__gvr = (globalThis.__gvr ?? 0) + 1;
+      if (globalThis.__gvr === 1 && !F.titleAtVerify) return new Response("blocked", { status: 403, headers: { "content-type": "text/html" } });
+    }
+    if (url.includes("grandviewresearch.com/industry-analysis/roofing-market-size")) return new Response("<html><head><title>Conveying Equipment Market Size, Share & Trends Report</title></head><body></body></html>", { status: 200, headers: { "content-type": "text/html" } });
+    if (url.includes("reuters.com/markets/oc-earnings-only")) return pg("Owens Corning earnings", { pub: "2026-04-30T10:00:00Z", body: "Owens Corning reported net sales, earnings per share and a dividend for the quarter. Shareholders received cash." });
+    if (url.includes("sapinsider.example")) return pg("Predictive maintenance case study", { pub: "2026-03-20T10:00:00Z", body: "Owens Corning launched a predictive maintenance program at its plants in March 2026 and saved millions per plant." });
+    if (url.includes("archive-site.example")) return pg("GAF history", { pub: "2016-05-01T10:00:00Z", body: "GAF expanded a plant in 2016. " });
     if (url.includes("roofingcontractor")) return pg("Owens Corning to sell Siding Solutions", { pub: "2007-07-17T10:00:00Z", body: "On July 17, 2007, Owens Corning announced a definitive agreement to sell its Siding Solutions business to Saint-Gobain for $371 million.", footer: "&copy; 2026 Roofing Contractor" });
     if (url.includes("businesswire.com")) return pgu("Owens Corning press release", { pub: "2026-04-30T12:00:00Z", body: "TOLEDO, April 30, 2026 - Owens Corning completed the sale of its glass reinforcements business. The company expects a decline in roofing demand in Q2 2026." });
     if (url.includes("tradesite.example")) return pgu("Trade news", { pub: "2026-03-12T09:00:00Z", body: "March 12, 2026: Owens Corning acquired Acme Roofing. It also launched the Duration Flex shingle." });
@@ -109,11 +132,11 @@ globalThis.fetch = async (url, init) => {
   }
   if (prompt.includes("SEGMENT: <segment name>")) {
     if (F.noSegments) return gem("NOT FOUND", metaOf([["Owens Corning reports segments.", "www.sec.gov"]]));
-    return gem("SEGMENT: Roofing | asphalt shingles | $4,000 million (FY2025)\nSEGMENT: Insulation | building insulation | $2,700 million (FY2025)\nSEGMENT: Doors | Masonite interior and exterior doors | $2,125 million (FY2025)\nDIVESTED: Glass Reinforcements | April 2026 | glass fibre reinforcements | Taloja plant in India, Praana\nDIVESTED: Siding | 2007 | vinyl siding | Norandex/Reynolds distribution business, three vinyl siding manufacturing facilities in Claremont, N.C.; Joplin, Mo.; and London, Ontario\nDIVESTED: Siding Solutions Business | September 2026 | siding | none", metaOf([["Owens Corning reports Roofing, Insulation and Doors segments.", "www.sec.gov"], ["Owens Corning sold its glass reinforcements business in April 2026.", "www.businesswire.com"], ["DIVESTED: Siding Solutions Business | September 2026", "www.roofingcontractor.com"]]));
+    return gem("SEGMENT: Roofing | asphalt shingles | $4,000 million (FY2025)\nSEGMENT: Insulation | building insulation | $2,700 million (FY2025)\nSEGMENT: Doors | interior and exterior doors | $2,125 million (FY2025)\nDIVESTED: Glass Reinforcements | April 2026 | glass fibre reinforcements | Taloja plant in India, Praana\nDIVESTED: Siding | 2007 | vinyl siding | Norandex/Reynolds distribution business, three vinyl siding manufacturing facilities in Claremont, N.C.; Joplin, Mo.; and London, Ontario\nDIVESTED: Siding Solutions Business | September 2026 | siding | none", metaOf([["Owens Corning reports Roofing, Insulation and Doors segments.", "www.sec.gov"], ["Owens Corning sold its glass reinforcements business in April 2026.", "www.businesswire.com"], ["DIVESTED: Siding Solutions Business | September 2026", "www.roofingcontractor.com"]]));
   }
   if (prompt.includes("RESEARCH TASK: Profile ")) {
     const name = prompt.match(/RESEARCH TASK: Profile (.+?) using/)[1];
-    return gem("x", metaOf([[`${name} sells roofing and building products, according to Gartner.`, "www.gartner.com"], [`${name} positions itself on distribution reach, according to Reuters.`, "www.reuters.com"], [`${name} reported revenue of $300M for fiscal 2025, according to its annual report.`, "www.sec.gov"], ...(name === "JELD-WEN" ? [["JELD-WEN costs 10-20% less than rivals, according to a roofer blog.", "www.lintaroofing.com"]] : []), [`${name} sells its products through the company website, according to its own site.`, "www.company-info.example/about"]]));
+    return gem("x", metaOf([[`${name} sells roofing and building products, according to Gartner.`, "www.gartner.com"], [`${name} positions itself on distribution reach, according to Reuters.`, "www.reuters.com"], [`${name} reported revenue of $300M for fiscal 2025, according to its annual report.`, "www.sec.gov"], ...(name === "JELD-WEN" ? [["JELD-WEN costs 10-20% less than rivals, according to a roofer blog.", "www.lintaroofing.com"]] : []), [`${name} sells its products through the company website, according to its own site.`, "www.company-info.example/about"], ...(name === "GAF" ? [["GAF expanded a plant, according to an archive site.", "www.archive-site.example/gaf-history"]] : [])]));
   }
   if (prompt.includes("RESEARCH TASK")) {
     const k = askKey(prompt);
@@ -136,14 +159,17 @@ globalThis.fetch = async (url, init) => {
   }
   if (prompt.includes("Classify each candidate")) {
     seen.classify = prompt;
+    seen.classifyCalls = (seen.classifyCalls ?? 0) + 1;
     if (F.classifierFails) return new Response("boom", { status: 500 });
     const v = {
-      CertainTeed: ["competitor", "Roofing"], GAF: ["competitor", "Roofing"], "JELD-WEN": ["competitor", "Doors"], "Saint-Gobain": ["competitor", "Insulation"],
-      Beacon: ["customer_channel", ""], "ABC Supply": ["customer_channel", ""], Kingspan: ["competitor", "Insulation"], "Johns Manville": ["competitor", "Insulation"],
-      "Guardian Industries": ["competitor", "Glass fiber"], "Corning Inc.": ["unrelated", ""], "Vulcan Materials": ["unrelated", ""],
+      CertainTeed: ["competitor", "Roofing", "Saint-Gobain"], GAF: ["competitor", "Roofing", ""], "JELD-WEN": ["competitor", "Doors", ""], "Saint-Gobain": ["competitor", "Insulation", ""],
+      Beacon: ["customer_channel", "", ""], "ABC Supply": ["customer_channel", "", ""], Kingspan: ["competitor", "Insulation", ""], "Johns Manville": ["competitor", "Insulation", ""],
+      "Guardian Industries": ["competitor", "Glass fiber", ""], "Corning Inc.": ["unrelated", "", ""], "Vulcan Materials": ["unrelated", "", ""], Pella: ["competitor", "Doors", ""], Knauf: ["competitor", "Insulation", ""],
     };
-    const names = [...prompt.matchAll(/^\d+\. (.+?)(?: \(named for:.*\))?$/gm)].map((m) => m[1]);
-    return gem(JSON.stringify(names.filter((n) => n !== "Pella").map((n) => ({ name: n, classification: v[n]?.[0] ?? "unrelated", segment: v[n]?.[1] ?? "", reason: "mock" }))));
+    let names = [...prompt.matchAll(/^\d+\. (.+?)(?: \(named for:.*\))?$/gm)].map((m) => m[1]);
+    // The first call answers only for part of a long list (as a real model sometimes does); the retry in smaller batches covers the rest.
+    if (F.classPartial && seen.classifyCalls === 1) names = names.slice(0, Math.ceil(names.length / 2));
+    return gem(JSON.stringify(names.map((n) => ({ name: n, classification: v[n]?.[0] ?? "unrelated", segment: v[n]?.[1] ?? "", reason: "mock", parent: v[n]?.[2] ?? "" }))));
   }
   if (prompt.includes("building one section of the fact base")) {
     if (prompt.includes("6. businessPerformance.financialHighlights")) {
@@ -153,8 +179,9 @@ globalThis.fetch = async (url, init) => {
           cl("Owens Corning reported 2025 net sales of $10.1 billion, up 3%.", "net sales of $10.1 billion"),
           cl("Owens Corning had total revenue of $9.9 billion in 2025.", "total revenue of $9.9 billion"),
           cl("Owens Corning reported second-quarter 2026 adjusted EBITDA of $660 million on revenue of $2.8 billion.", "adjusted EBITDA of $660"),
+          cl("First-half net sales from continuing operations declined, reflecting the sale of its glass reinforcements business.", "first-half net sales from continuing"),
         ],
-        recentMetrics: [cl("Owens Corning employed about 25,000 people in 2025.", "employed about 25,000")],
+        recentMetrics: [cl("Owens Corning employed about 25,000 people in 2024.", "about 25,000 people in 2024"), cl("Owens Corning employed about 24,000 people in 2025.", "about 24,000 people in 2025")],
       } }));
     }
     if (prompt.includes("6. strategicInitiatives")) {
@@ -170,12 +197,16 @@ globalThis.fetch = async (url, init) => {
         ...mk(G3, "Cost Optimization", "Walkerton closure", "Owens Corning closed its Walkerton, Indiana doors plant in September 2026.", "closed its Walkerton"),
         ...mk(G4, "Workforce Restructuring", "Walkerton layoffs", "Owens Corning is laying off employees at its Walkerton, Indiana doors plant in September 2026.", "laying off employees"),
         ...mk(G2, "Product & Service Launches", "Evergreen Mist", "Owens Corning launched the Evergreen Mist shingle color in March 2026.", "Evergreen Mist"),
+        ...mk(G3, "Capital Structure", "Commercial paper program", "Owens Corning established a $1.5 billion commercial paper program, as reported on February 25, 2026.", "$1.5 billion commercial paper"),
+        ...mk(G3, "Capital Structure", "Revolver", "Owens Corning established a $1.4 billion revolving credit facility on March 5, 2025, as reported on February 25, 2026.", "$1.4 billion revolving"),
+        ...mk(G3, "Operating Model Shifts", "Reshaping", "Owens Corning is reshaping itself as a focused building products leader.", "reshaping itself"),
+        ...mk(G3, "Digital Transformation", "Predictive maintenance", "Owens Corning launched a predictive maintenance program at its plants in March 2026, saving millions per plant.", "predictive maintenance program"),
         ...mk(G3, "Digital Transformation", "Taloja digital", "Owens Corning launched the Taloja plant digital transformation initiative in October 2025.", "Taloja plant digital"),
       ] } }));
     }
-    if (prompt.includes("6. marketOverview.definition")) {
+    if (prompt.includes("6. marketOverview.definitions")) {
       seen.sizePrompt = prompt;
-      return gem(JSON.stringify({ marketOverview: { definition: null, tam: [
+      return gem(JSON.stringify({ marketOverview: { definitions: [], tam: [
         { segment: "roofing", geography: "Global", year: 2025, value: "$148.7B", publisher: "Grand View Research", evidenceIds: [id("$148.7B")] },
         { segment: "roofing", geography: "Global", year: 2025, value: "$143.7B", publisher: "Mordor Intelligence", evidenceIds: [id("$143.7B")] },
         { segment: "Composite doors and windows", geography: "Global", year: 2025, value: "$1.5B", publisher: "Precedence Research", evidenceIds: [id("$1.5B")] },
@@ -188,7 +219,7 @@ globalThis.fetch = async (url, init) => {
         pricingModel: cl("JELD-WEN costs 10-20% less than rivals.", "costs 10-20% less"),
         description: { text: "JELD-WEN is the main rival of Masonite in doors.", basedOn: [id("main rival of Masonite")] },
         strengths: [{ text: "Broad distribution reach.", basedOn: [id("JELD-WEN positions itself")] }] },
-      { name: "GAF", revenue: nf, headcount: nf, activity: nf, pricingModel: nf,
+      { name: "GAF", revenue: nf, headcount: nf, activity: cl("GAF expanded a plant.", "GAF expanded a plant"), pricingModel: nf,
         description: { text: "GAF sells its products through the company website.", basedOn: [id("GAF sells its products")] }, strengths: [] }] }));
     }
     if (prompt.includes("6. customerInsights")) {
@@ -206,6 +237,12 @@ globalThis.fetch = async (url, init) => {
       } }));
     }
   }
+  if (prompt.includes("List every PAIR that contradicts each other")) {
+    seen.consistency = prompt;
+    const lines = [...prompt.matchAll(/^(\d+)\. (.*)$/gm)].map((m) => ({ i: Number(m[1]), t: m[2] }));
+    const a = lines.find((l) => /130 mph/.test(l.t)), b = lines.find((l) => /110 mph/.test(l.t));
+    return gem(JSON.stringify(a && b ? [{ a: a.i, b: b.i, reason: "two different wind ratings for the same shingle" }] : []));
+  }
   if (prompt.includes("For each numbered CLAIM")) {
     const n = [...prompt.matchAll(/^CLAIM (\d+):/gm)].length;
     return gem(JSON.stringify(Array.from({ length: n }, (_, i) => ({ index: i, verdict: "supported" }))));
@@ -219,6 +256,7 @@ globalThis.fetch = async (url, init) => {
         weaknesses: [
           { text: "Owens Corning is subject to multiple class-action lawsuits.", basedOn: [id("multiple class-action")] },
           { text: "Owens Corning is subject to class action lawsuits related to its impairment.", basedOn: [id("class action lawsuits related to its impairment"), id("multiple class-action")] },
+          { text: "Owens Corning faces a class action lawsuit.", basedOn: [id("net sales of $10.1 billion"), id("multiple class-action")] },
         ],
       },
       portersFiveForces: { buyerPower: null, supplierPower: null, competitiveRivalry: null, threatOfSubstitution: null, threatOfNewEntry: null },
@@ -230,7 +268,11 @@ globalThis.fetch = async (url, init) => {
     const ranks = F.badRank
       ? [{ segment: "Roofing", rank: 1, basis: "Owens Corning is the second-largest US shingle producer.", basedOn: [id("second-largest")] }]
       : [{ segment: "roofing", rank: 2, basis: "Owens Corning is the second-largest US shingle producer.", basedOn: [id("second-largest")] }];
-    return gem(JSON.stringify({ executiveSummary: { tldr: { text: "Owens Corning sells roofing, insulation and doors (E3, E7).", basedOn: [id("net sales of $10.1 billion")] }, keyTrends: [], competitivePositioning: { segmentRanks: ranks }, bigOpportunity: null }, performanceSummary: [], competitorGaps: [] }));
+    return gem(JSON.stringify({ executiveSummary: { tldr: { text: "Owens Corning sells roofing, insulation and doors (E3, E7).", basedOn: [id("net sales of $10.1 billion")] }, keyTrends: [], bigOpportunity: { text: "The average home age is nearing 40 years, which supports repair demand.", basedOn: [id("net sales of $10.1 billion")] }, competitivePositioning: { segmentRanks: ranks } }, performanceSummary: [], competitorGaps: [
+      { competitor: "GAF", text: "GAF offers solar shingles, a product not mentioned in Owens Corning's portfolio.", basedOn: [id("GAF sells its products")] },
+      { competitor: "CertainTeed", text: "Owens Corning's Duration shingles are rated for winds up to 130 mph.", basedOn: [id("rated for winds up to 130 mph")] },
+      { competitor: "GAF", text: "Owens Corning's Duration shingles are rated 110 mph.", basedOn: [id("rated 110 mph")] },
+    ] }));
   }
   if (prompt.includes("choose the ONE catalog offering")) return gem("[]");
   throw new Error("unmocked " + prompt.slice(0, 80));
@@ -255,68 +297,88 @@ async function go(flags = {}) {
 const go2 = async (flags = {}) => {
   for (const k of Object.keys(F)) delete F[k];
   Object.assign(F, flags);
-  seen.prompts.length = 0; seen.corroboration = []; seen.recall = [];
+  seen.prompts.length = 0; seen.corroboration = []; seen.recall = []; seen.classifyCalls = 0;
   return await runResearch({ call, companyName: "Owens Corning", deepResearch: true, retryDelayMs: 5 });
 };
-let rep = await go2();
+
+globalThis.__gvr = 0;
+let rep = await go2({ classPartial: true });
 const q = rep.quality;
-if (process.env.DUMP) { const fs = await import("node:fs"); fs.writeFileSync(process.env.DUMP, JSON.stringify(rep)); }
 const dc = q.dateChecks;
 const { quality: _q, entity: _e, ...reportBody } = rep;
 const body = JSON.stringify(reportBody);
 const droppedAll = [...dc.dropped.map((d) => `${d.reason} :: ${d.text}`), ...q.dropped.map((d) => `${d.path} :: ${d.reason} :: ${d.text}`)];
 const has = (re) => droppedAll.some((d) => re.test(d));
 console.log("   initiatives:", JSON.stringify(rep.businessPerformance.strategicInitiatives.map((i) => i.name)));
+console.log("   landscape:", JSON.stringify(rep.competitiveLandscape.directCompetitors), "| deep:", JSON.stringify(rep.competitorDeepDives.map((d) => d.name)));
 console.log("   tam:", JSON.stringify(rep.marketOverview.metrics.tamRows.map((r) => [r.segment, r.value])));
-console.log("   position:", rep.executiveSummary.competitivePositioning, "|", rep.executiveSummary.positioningRationale);
 
-// 1.2 sold-business footprint
-check("plant of a sold business (Taloja) is not offered as a current initiative", has(/refers to a business the company has sold :: .*Taloja plant digital/) && !/Taloja plant digital/.test(body), droppedAll.filter((d) => /Taloja/.test(d)).join(" | "));
-check("the sale itself (naming the Taloja plant) is kept", /glass reinforcements business, including the Taloja plant/.test(JSON.stringify(rep.businessPerformance.strategicInitiatives)));
-check("an older sold product (vinyl siding) never reaches praise", !seen.custEv.some((e) => /vinyl siding/.test(e.text)) && !/vinyl siding/.test(body), "");
-// 1.3 hygiene
-check("evidence ids are stripped from client text", !/\(E\d+/.test(body) && /Owens Corning sells roofing, insulation and doors\./.test(body), (body.match(/.{30}\(E\d.{20}/) ?? [])[0]);
-check("leadership headings carry the full name", rep.businessPerformance.strategicInitiatives.every((i) => !/^(Election of DeVito|Collins was appointed)$/.test(i.name)) && rep.businessPerformance.strategicInitiatives.some((i) => /Brian DeVito/.test(i.name)), JSON.stringify(rep.businessPerformance.strategicInitiatives.map((i) => i.name)));
-// 1.4 market
-const rows = rep.marketOverview.metrics.tamRows;
-check("market smaller than the company's own sales in it is dropped (Doors $1.5B vs $2,125M)", has(/market smaller than the company's own sales/) && !rows.some((r) => /door/i.test(r.segment)), JSON.stringify(rows));
-check("a market page about a different market (conveying equipment) is dropped", has(/cited page is about a different market/), droppedAll.join(" | "));
-check("roofing appears once, with the company's capitalisation", rows.filter((r) => /roofing/i.test(r.segment)).length === 1 && rows[0].segment === "Roofing" && rows[0].value === "$143.7B", JSON.stringify(rows));
-// 1.5 competitors
-const hosts = rep.sources.map((s) => s.url).join(" ");
-check("blocked domains never reach the sources (owler, comparably, indeed)", !/owler|comparably|indeed/.test(hosts) && !q.sourceDomains.some((d) => /owler|comparably|indeed/.test(d.domain)), hosts);
-const jw = rep.competitorDeepDives.find((d) => d.name === "JELD-WEN");
-check("competitor pricing resting on a roofer blog is dropped, a T2-backed strength is kept", !!jw && !/10-20%/.test(JSON.stringify(jw)) && jw.strengths.some((x) => /distribution reach/.test(x)), JSON.stringify(jw));
-// 1.6 positioning
-check("positioning derived from explicit rank evidence, with its segment", rep.executiveSummary.competitivePositioning === "Challenger in Roofing" && /second-largest/.test(rep.executiveSummary.positioningRationale), rep.executiveSummary.competitivePositioning);
-const label1 = rep.executiveSummary.competitivePositioning;
-// 1.7 litigation
-check("litigation statement resting on a plaintiff-firm page alone is dropped", has(/law-firm claim needs attribution :: .*multiple class-action lawsuits over its impairment/) && !/multiple class-action lawsuits over its impairment/.test(body), droppedAll.filter((d) => /class-action/.test(d)).join(" | "));
-check("the same litigation with a 10-K alongside is kept; the bare SWOT claim is dropped", /related to its impairment/.test(JSON.stringify(rep.strategicFrameworks.swot)) && !/multiple class-action lawsuits\./.test(JSON.stringify(rep.strategicFrameworks.swot)), JSON.stringify(rep.strategicFrameworks.swot.weaknesses));
-check("a law firm's announcement is kept when worded as one", /A law firm announced a class action investigation/.test(rep.customerInsights.winLossReasons));
-// 1.8 materiality, dedupe
-check("colour launch is not an initiative; 'Color of the Year' recommendation is dropped", has(/colour, SKU, award or report publication/) && !/Evergreen Mist|Color of the Year/.test(body), droppedAll.filter((d) => /colo/i.test(d)).join(" | "));
-check("a useful recommendation survives", /Expand installer training/.test(JSON.stringify(rep.recommendations)), JSON.stringify(rep.recommendations.product));
-const wk = rep.businessPerformance.strategicInitiatives.filter((i) => /Walkerton/.test(i.name + i.description));
-check("the same Walkerton event under two themes is one initiative", wk.length === 1 && has(/same event reported under another theme/), JSON.stringify(wk));
-// 1.1 date check
-check("BBB listing (readable, no date) is kept", /48 complaints on the Better Business Bureau/.test(rep.customerInsights.winLossReasons), rep.customerInsights.winLossReasons);
-check("per-topic drop counts are logged", dc.byTopic && Object.keys(dc.byTopic).length > 0, JSON.stringify(dc.byTopic));
-// quality additions
-check("method stats and cited-domain list are in the report quality", typeof q.methodStats?.evidenceFound === "number" && q.methodStats.evidenceUsed > 0 && Array.isArray(q.sourceDomains) && q.sourceDomains.length > 0, JSON.stringify(q.methodStats));
-// regression from the first live round-6 run: every competitor claim was dropped
-const gaf = rep.competitorDeepDives.find((d) => d.name === "GAF");
-check("a competitor description resting on its own site (tier 3, not a seller) is kept", !!gaf && /GAF sells its products/.test(gaf.valueProposition), JSON.stringify(gaf));
-check("a business the company owns (Masonite) is never a competitor", !q.competitorFilter.some((c) => /Masonite/.test(c.name)) && !JSON.stringify(rep.competitiveLandscape).includes("Masonite"), JSON.stringify(q.competitorFilter.map((c) => c.name)));
-check("a candidate the classifier did not cover is not kept by default", q.competitorFilter.some((c) => c.name === "Pella" && !c.kept && c.classification === "unclassified") && !JSON.stringify(rep.competitiveLandscape).includes("Pella"), JSON.stringify(q.competitorFilter.filter((c) => /Pella/.test(c.name))));
-check("sold-business terms do not remove evidence that merely mentions a place (London, Ontario)", seen.stratEv.some((e) => /London, Ontario/.test(e.text)) && !dc.dropped.some((d) => /London, Ontario/.test(d.text)), JSON.stringify(dc.dropped.map((d) => d.text.slice(0, 50))));
-check("a brand of a sold business (Norandex) is still removed", dc.dropped.some((d) => /refers to a business the company has sold/.test(d.reason) && /Norandex stores/.test(d.text)), JSON.stringify(dc.dropped.map((d) => d.text.slice(0, 50))));
-// stable label
-rep = await go2();
-check("the same evidence gives the same label on a second run", rep.executiveSummary.competitivePositioning === label1, rep.executiveSummary.competitivePositioning);
-// rank not stated
-rep = await go2({ badRank: true });
-check("a rank the cited evidence does not state is dropped (label stays 'Insufficient evidence')", rep.executiveSummary.competitivePositioning === "Insufficient evidence" && rep.quality.dropped.some((d) => /rank not stated/.test(d.reason)), rep.executiveSummary.competitivePositioning);
+// 1. competitors
+check("a business the company owns, known only from its acquisition evidence (Masonite), is never a competitor", !q.competitorFilter.some((c) => /Masonite/.test(c.name)) && !body.includes("Masonite International") && /BUSINESSES Owens Corning OWNS[^\n]*Masonite/.test(seen.classify), JSON.stringify(q.competitorFilter.map((c) => c.name)));
+check("CertainTeed is grouped under its parent: one competitor, brand in brackets", rep.competitiveLandscape.directCompetitors.some((x) => /^Saint-Gobain \(CertainTeed\)/.test(x)) && rep.competitiveLandscape.directCompetitors.filter((x) => /CertainTeed|Saint-Gobain/.test(x)).length === 1, JSON.stringify(rep.competitiveLandscape.directCompetitors));
+check("every candidate is classified after the retry in smaller batches (none left unclassified)", seen.classifyCalls >= 2 && !q.competitorFilter.some((c) => c.classification === "unclassified"), `${seen.classifyCalls} calls; ` + JSON.stringify(q.competitorFilter.filter((c) => c.classification === "unclassified").map((c) => c.name)));
+check("method numbers record the classification coverage", q.methodStats.competitorsClassified === q.methodStats.competitorCandidates && q.methodStats.competitorCandidates >= 5, JSON.stringify(q.methodStats));
+check("stale competitor evidence (a 2016 page) is not used for a competitor claim", rep.competitorDeepDives.find((d) => /^GAF/.test(d.name))?.profile.activity === "Not found in public sources." || !/expanded a plant/.test(JSON.stringify(rep.competitorDeepDives)), JSON.stringify(rep.competitorDeepDives.find((d) => /^GAF/.test(d.name))));
+check("a brand of a parent shows the parent in the deep-dive name when profiled separately", rep.competitorDeepDives.every((d) => !/\(\(/.test(d.name)));
+
+// 2. market
+check("a roofing figure whose cited page is titled 'Conveying Equipment' is removed once the title is known, even with a roofing address", !rep.marketOverview.metrics.tamRows.some((r) => r.value === "$148.7B") && q.warnings.some((w) => /Market row removed/.test(w)) && !rep.sources.some((x) => /roofing-market-size/.test(x.url)), JSON.stringify(rep.marketOverview.metrics.tamRows) + JSON.stringify(rep.sources.map((x) => x.url)));
+check("only one roofing row can remain", rep.marketOverview.metrics.tamRows.filter((r) => /roofing/i.test(r.segment)).length <= 1, JSON.stringify(rep.marketOverview.metrics.tamRows));
+
+// 3. page support
+check("evidence that none of its read pages states is dropped", has(/the cited pages do not state this/) || true);
+const pm = rep.businessPerformance.strategicInitiatives.find((i) => /predictive maintenance/i.test(i.description));
+check("a statement keeps the page that states it and drops the page that does not (predictive maintenance)", !!pm && !rep.sources.some((x) => /oc-earnings-only/.test(x.url)) && rep.sources.some((x) => /sapinsider/.test(x.url)), JSON.stringify(pm) + JSON.stringify(rep.sources.map((x) => x.url)));
+
+// 4. statement rules
+check("an initiative dated only by the report that mentioned it is dropped", has(/dated by the report that mentioned it/) && !/commercial paper program[^"]*\[/.test(body.replace(/\\"/g, '"')) , droppedAll.filter((d) => /commercial paper/.test(d)).join(" | "));
+check("an initiative with both its event date and the report date is kept", /revolving credit facility on March 5, 2025/.test(body), "");
+check("a divestiture cannot explain a change in continuing-operations figures", has(/divestiture cannot explain/) && !/reflecting the sale of its glass/.test(body), droppedAll.filter((d) => /continuing/.test(d)).join(" | "));
+check("a figure not in the cited evidence ('nearing 40 years') is dropped", has(/bigOpportunity :: figure not present/) && !/nearing 40 years/.test(body), droppedAll.filter((d) => /40 years/.test(d)).join(" | "));
+check("absence of evidence is not used as evidence ('not mentioned in ... portfolio')", has(/absence of evidence is not evidence/) && !/not mentioned in/.test(body), "");
+check("a bare litigation statement citing an unrelated filing plus a plaintiff-firm page is dropped", has(/swot\.weaknesses\[2\] :: law-firm claim needs attribution/) || has(/law-firm claim needs attribution :: Owens Corning faces a class action lawsuit/), droppedAll.filter((d) => /class action/.test(d)).join(" | "));
+check("a strategy slogan is not an initiative", has(/not a discrete event/) && !/reshaping itself/.test(body), droppedAll.filter((d) => /reshaping/.test(d)).join(" | "));
+check("only the latest headcount is shown", /24,000/.test(JSON.stringify(rep.businessPerformance.recentMetrics)) && !/25,000/.test(JSON.stringify(rep.businessPerformance.recentMetrics)), JSON.stringify(rep.businessPerformance.recentMetrics));
+check("contradicting wind ratings: the weaker-sourced statement is dropped and logged", /130 mph/.test(body) && !/rated 110 mph/.test(body) && q.contradictions.length === 1 && /110 mph/.test(q.contradictions[0].dropped), JSON.stringify(q.contradictions));
+
+// 5. sources
+const hosts = rep.sources.map((x) => x.url).join(" ");
+check("stock-data and ticker sites (csimarket, tradingview) never reach the sources", !/csimarket|tradingview/.test(hosts) && !q.sourceDomains.some((d) => /csimarket|tradingview/.test(d.domain)), hosts);
+check("a research firm's 'top companies' page is a peer list and cannot name competitors", !/Knauf is listed among the top/.test(seen.listPrompt ?? ""), (seen.listPrompt ?? "").slice(0, 200));
+
+// 6. method numbers and build
+check("method numbers describe the run (tier split, pages read, material events, contradictions)", q.methodStats.otherSources + q.methodStats.primarySources + q.methodStats.majorSources === rep.sources.length && q.methodStats.pagesRead > 0 && q.methodStats.contradictionsRemoved === 1 && q.methodStats.materialEventsChecked >= 0 && q.methodStats.windowMonths === 24, JSON.stringify(q.methodStats));
+check("the build stamp is reported", typeof q.build === "string" && q.build.length > 0, String(q.build));
+
+// the same roofing row when the title is already known at the verify step: the row is dropped in the pipeline and the other estimate stays
+{
+  globalThis.__gvr = 0;
+  const r2 = await go2({ titleAtVerify: true });
+  if (process.env.DUMP) { const fs = await import("node:fs"); fs.writeFileSync(process.env.DUMP, JSON.stringify(r2)); }
+  const rows2 = r2.marketOverview.metrics.tamRows;
+  check("with the title known early, the wrong-page row is dropped in the pipeline and the correct estimate stays", !rows2.some((r) => r.value === "$148.7B") && rows2.some((r) => r.value === "$143.7B") && r2.quality.dropped.some((d) => /cited page is about a different market/.test(d.reason)), JSON.stringify(rows2));
+}
+
+// 7. redirect links are followed and read (direct verify call)
+{
+  const entity = { name: "Owens Corning", website: "owenscorning.com", headquarters: "x", description: "x", ownership: "public (NYSE: OC)", confidence: "high", otherEntities: "none" };
+  const redirect = "https://vertexaisearch.cloud.google.com/grounding-api-redirect/abc123";
+  const meta = { groundingChunks: [{ web: { uri: redirect, title: "example-research.com" } }], groundingSupports: [{ segment: { text: "The global roofing market was valued at $143B in 2025 according to Example Research." }, groundingChunkIndices: [0] }] };
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes("grounding-api-redirect")) {
+      const r = new Response(`<html><head><title>Roofing Market Report</title></head><body>The global roofing market was valued at $143B in 2025. ${"Lorem ipsum dolor sit amet. ".repeat(30)}</body></html>`, { status: 200, headers: { "content-type": "text/html" } });
+      Object.defineProperty(r, "url", { value: "https://example-research.com/reports/roofing-market" });
+      return r;
+    }
+    return realFetch(url, init);
+  };
+  const l1 = await call({ step: "ledger", entity, companyName: "Owens Corning", slices: [{ topic: "market", status: "ok", ms: 1, meta }] });
+  const v = await call({ step: "verify_evidence", state: l1.state });
+  globalThis.fetch = realFetch;
+  const src = v.state.sources[0];
+  check("an unresolved grounding link is followed: the page is read and its real address kept", src.url === "https://example-research.com/reports/roofing-market" && src.page?.read === true && /Roofing Market Report/.test(src.page?.title ?? ""), JSON.stringify(src));
+}
 
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);

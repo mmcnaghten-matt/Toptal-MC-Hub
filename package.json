@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "qc": "node scripts/qc/run-tests.mjs",
     "qc:report": "node scripts/qc/check-report.mjs",
+    "copy:client-insights": "scripts/copy-function.sh supabase/functions/gemini-research/index.ts",
     "docker:build": "docker build -t your-app-name .",
     "docker:run": "docker run -p 3000:8080 your-app-name",
     "docker:run-detached": "docker run -d -p 3000:8080 your-app-name",

@@ -41,8 +41,19 @@ at 2026-10-10 (`fixed-date.mjs`). Add a case here whenever a QC round finds a ne
 |---|---|
 | `release-a.test.mjs` | Stock-data and peer-list sources, public-company financials, competitor classification, segments and TAM ranges, balanced customer evidence, source hygiene |
 | `dates.test.mjs` | Dated evidence checked against the cited page (2007 article reported as 2026), corroboration of material events, expired forecasts, law-firm sources, asbestos misfiled as customer themes, unreadable pages kept as unverified, forecast edge cases, sold-business list |
+| `round7.test.mjs` | Round 7: owned businesses (Masonite) from acquisition evidence, parent grouping, classification retry and coverage, market title check (late and early), page support for citations, report-dated events, continuing-operations logic, uncited figures, absence as evidence, slogan initiatives, one headcount, stale competitor evidence, blocked stock-data and peer-list pages, contradiction pass, method numbers, build stamp, redirect links |
 | `round6.test.mjs` | Sold-business footprint, market sanity checks, competitor name merging, rank-based positioning, litigation and materiality rules, evidence-id stripping, per-topic drop counts |
 | `faults.test.mjs` | Failed scans, sections and analysis parts degrade without failing the report; gateway errors are retried; unknown company stops with a 422 |
 | `tiers.test.mjs` | Source tiers, excluded domains, three-citation cap, financial-statement rules |
 | `industry.test.mjs` | Industry Insights: stock-data sites blocked; dated regulation, deal and program items checked against the cited page (2007 page contradicted, undated page dropped, unreadable page kept as unverified, old undated page dropped); market statistics not date-checked; evidence ids stripped; awards not initiatives; directional parts still free to interpret; refresh completes if the date check cannot run |
 | `industry-interpretive.test.mjs` | Industry Insights: unsupported figures are rewritten instead of dropped, thin lists get one top-up, events must be inside the 24-month window, the verifier removes unsupported statements |
+
+## Deploying and confirming the build
+
+```bash
+npm run copy:client-insights     # copies the function with the current git commit stamped into BUILD
+npm run qc:report -- report.json --expect-build=<that commit>
+```
+
+The Research log shows "Function build: <commit>" for every report, and the checker fails when the report came from a different
+build than the one you expected, so you can tell a deployment problem from a code problem.

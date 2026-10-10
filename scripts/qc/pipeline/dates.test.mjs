@@ -62,6 +62,8 @@ const SCAN = {
     ["Owens Corning Fiberglas agreed to a $2.38 million asbestos class action settlement covering shipyard workers.", "www.classlawdc.com"],
   ],
 };
+// Pages repeat the evidence sentences that cite them, as real pages do (the support check looks for the claim on the page).
+const echoFor = (url) => [...Object.values(SCAN).flat().filter(([, h]) => url.includes(h.split("/")[0])).map(([t]) => t), ...(globalThis.__extraPage ?? [])].join(" ");
 const askKey = (p) =>
   p.includes("Revenue and revenue growth") ? "performance"
   : p.includes("M&A Activity") ? "strategy_1"
@@ -79,17 +81,18 @@ globalThis.fetch = async (url, init) => {
   if (!url.includes("generativelanguage")) {
     // page titles
     const pg = (title, { pub, body = "", footer = "" } = {}) => new Response(`<html><head><title>${title}</title>${pub ? `<meta property="article:published_time" content="${pub}">` : ""}</head><body><nav>menu</nav><main>${body} ${"Lorem ipsum dolor sit amet. ".repeat(30)}</main><footer>${footer}</footer></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
+    const pgu = (title, o = {}) => pg(title, { ...o, body: (o.body ?? "") + " " + echoFor(url) });
     if (url.includes("roofingcontractor")) return pg("Owens Corning to sell Siding Solutions", { pub: "2007-07-17T10:00:00Z", body: "On July 17, 2007, Owens Corning announced a definitive agreement to sell its Siding Solutions business to Saint-Gobain for $371 million.", footer: "&copy; 2026 Roofing Contractor" });
-    if (url.includes("businesswire.com")) return pg("Owens Corning press release", { pub: "2026-04-30T12:00:00Z", body: "TOLEDO, April 30, 2026 - Owens Corning completed the sale of its glass reinforcements business. The company expects a decline in roofing demand in Q2 2026." });
-    if (url.includes("tradesite.example")) return pg("Trade news", { pub: "2026-03-12T09:00:00Z", body: "March 12, 2026: Owens Corning acquired Acme Roofing. It also launched the Duration Flex shingle." });
-    if (url.includes("oldtrade.example")) return pg("Trade ranking", { pub: "2023-01-15T09:00:00Z", body: "Owens Corning is the second-largest US shingle producer." });
+    if (url.includes("businesswire.com")) return pgu("Owens Corning press release", { pub: "2026-04-30T12:00:00Z", body: "TOLEDO, April 30, 2026 - Owens Corning completed the sale of its glass reinforcements business. The company expects a decline in roofing demand in Q2 2026." });
+    if (url.includes("tradesite.example")) return pgu("Trade news", { pub: "2026-03-12T09:00:00Z", body: "March 12, 2026: Owens Corning acquired Acme Roofing. It also launched the Duration Flex shingle." });
+    if (url.includes("oldtrade.example")) return pgu("Trade ranking", { pub: "2023-01-15T09:00:00Z", body: "Owens Corning is the second-largest US shingle producer." });
     if (url.includes("bbb.org")) return new Response("blocked", { status: 403, headers: { "content-type": "text/html" } });
-    if (url.includes("classlawdc")) return pg("Class action investigation", { body: "Attorney advertising. We are investigating claims. No dates are shown on this page." });
-    if (url.includes("owenscorning.com")) return pg("Owens Corning sustainability", { body: "Our 2025 sustainability report. We set a goal of 100% renewable electricity by 2025." });
+    if (url.includes("classlawdc")) return pg("Class action investigation", { body: "Attorney advertising. We announce an investigation into Duration shingle failures and a class action. No dates are shown on this page." });
+    if (url.includes("owenscorning.com")) return pgu("Owens Corning sustainability", { body: "Our 2025 sustainability report. We set a goal of 100% renewable electricity by 2025." });
     if (url.includes("someblog.example") || url.includes("reuters.com")) return new Response("blocked", { status: 403, headers: { "content-type": "text/html" } });
     if (url.includes("consumerreports")) return new Response("<html><title>Human verification</title>", { status: 200, headers: { "content-type": "text/html" } });
     if (url.includes("sec.gov")) return new Response("<html><title>Owens Corning &ldquo;10-K&rdquo; &amp; results — 2025</title>", { status: 200, headers: { "content-type": "text/html" } });
-    return new Response("<title>Some Page</title>", { status: 200, headers: { "content-type": "text/html" } });
+    return new Response(`<title>${(url.split("/").filter(Boolean).pop() ?? "").replace(/-/g, " ")}</title>`, { status: 200, headers: { "content-type": "text/html" } });
   }
   const body = JSON.parse(init.body);
   const prompt = body.contents[0].parts[0].text;
@@ -311,6 +314,7 @@ check("BBB complaint (page unreadable) is kept", /BBB complaints concern warrant
     ["Owens Corning anticipates third-quarter 2026 revenue of about $2.6 billion, as noted on April 30, 2026, according to Business Wire.", "www.businesswire.com"],
     ["Owens Corning expects a decline in roofing demand in Q2 2026, according to Business Wire.", "www.businesswire.com"],
   ];
+  globalThis.__extraPage = rows.map((r) => r[0]);
   const l1 = await call({ step: "ledger", entity, companyName: "Owens Corning", slices: [{ topic: "strategy_2", status: "ok", ms: 1, meta: metaOf(rows) }] });
   const v = await call({ step: "verify_evidence", state: l1.state });
   const droppedTexts = v.state.dateChecks.dropped.map((d) => d.text);

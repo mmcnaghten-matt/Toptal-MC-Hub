@@ -2,7 +2,7 @@
 // Checks a finished Client Insights report (the JSON from "Copy report JSON" in the Research log) against the assertions
 // that came out of the QC rounds. Run it after every function change:
 //
-//   node scripts/qc/check-report.mjs report.json [--today=2026-10-10] [--forbid="Siding Solutions,Taloja"]
+//   node scripts/qc/check-report.mjs report.json [--today=2026-10-10] [--forbid="Siding Solutions,Taloja"] [--expect-build=<git hash>]
 //   pbpaste | node scripts/qc/check-report.mjs
 //
 // Exit code 1 when any assertion fails. README.md lists each assertion and the QC finding it comes from.
@@ -116,7 +116,9 @@ export function checkReport(report, opts = {}) {
     return !cited.some((s) => {
       let slug = "";
       try { slug = decodeURIComponent(new URL(s.url).pathname).replace(/[-_/.]+/g, " "); } catch { return true; }
-      const hay = segWords(`${slug} ${s.title ?? ""}`);
+      // A fetched title ("Title - host") wins over the address.
+      const titled = / - [^ ]+$/.test(s.title ?? "");
+      const hay = segWords(titled ? (s.title ?? "").replace(/ - [^ ]+$/, "") : `${slug} ${s.title ?? ""}`);
       return words.some((w) => hay.includes(w));
     });
   });
@@ -143,6 +145,23 @@ export function checkReport(report, opts = {}) {
   const unattributed = sentences(texts).filter((s) =>
     /\b(lawsuits?|class[- ]actions?|securities (?:fraud|litigation)|investigations?)\b/i.test(s) && !/\b(law firms?|plaintiff|attorneys?|alleg\w+)\b/i.test(s) && !backed(s));
   check("litigation statements cite a filing or major press, or are worded as a law firm's claim", unattributed.length === 0, unattributed.slice(0, 3).join(" || "));
+
+  // 7b. Owned businesses, parents, uncited items, absence
+  const ownedKeys = (entity.owned ?? []).map((o) => competitorKey(o.name)).filter((k) => k.length >= 4);
+  const ownedCompetitors = names.filter((n) => { const k = competitorKey(n.replace(/\s*\(.*\)$/, "")); return ownedKeys.some((o) => k === o || k.startsWith(o + " ")); });
+  check("no competitor is a business the company owns (entity.owned)", ownedCompetitors.length === 0, ownedCompetitors.join(", "));
+  const listed = Object.values(report.competitiveLandscape ?? {}).flat().filter((x) => typeof x === "string").map((x) => x.replace(/\s*\[\d+\]/g, "").trim());
+  const parents = listed.flatMap((x) => { const m = x.match(/^(.*?)\s*\((.*)\)$/); return m ? [[competitorKey(m[1]), m[2].split(",").map((b) => competitorKey(b.trim()))]] : []; });
+  const dupParent = listed.filter((x) => parents.some(([, brands]) => brands.includes(competitorKey(x.replace(/\s*\(.*\)$/, "")))) && !/\(/.test(x));
+  check("a brand listed under its parent is not also listed on its own", dupParent.length === 0, dupParent.join(", "));
+  const listItems = [...(report.competitorDeepDives ?? []).flatMap((d) => d.strengths ?? []), ...Object.values(report.strategicFrameworks?.swot ?? {}).flat()].filter((t) => typeof t === "string" && !/^not (found|generated)/i.test(t));
+  const uncited = listItems.filter((t) => !/\[\d+\]/.test(t));
+  check("every competitor strength and SWOT item carries a citation", uncited.length === 0, uncited.slice(0, 3).join(" || "));
+  check("no conclusion drawn from absence ('not mentioned in ...')", !sentences(texts).some((t) => /\b(not mentioned (?:in|by)|no mention of|absent from)\b/i.test(t)), sentences(texts).find((t) => /\bnot mentioned (?:in|by)\b/i.test(t)) ?? "");
+  const rankSources = [...String(report.executiveSummary?.positioningRationale ?? "").matchAll(/\[(\d+)\]/g)].map((m) => sources[Number(m[1]) - 1]).filter(Boolean);
+  check("positioning rests on a primary or major-press source", rankSources.length === 0 || rankSources.some((x) => (x.tier ?? 3) <= 2), rankSources.map((x) => x.url).join(" "));
+  check("method numbers add up to the cited sources", q.methodStats && q.methodStats.primarySources + q.methodStats.majorSources + q.methodStats.otherSources === sources.length, JSON.stringify(q.methodStats ?? {}));
+  if (opts.expectBuild) check(`the running function is build ${opts.expectBuild}`, q.build === opts.expectBuild, `report says ${q.build ?? "no build stamp (older function)"}`);
 
   // 8. Positioning
   const label = report.executiveSummary?.competitivePositioning ?? "";
@@ -171,7 +190,7 @@ if (isMain) {
     console.error("Could not read the report: paste the JSON from 'Copy report JSON' into a file, or pipe it in.");
     process.exit(2);
   }
-  const results = checkReport(report, { today: opt("today"), forbid: (opt("forbid") ?? "").split(",").map((x) => x.trim()) });
+  const results = checkReport(report, { today: opt("today"), forbid: (opt("forbid") ?? "").split(",").map((x) => x.trim()), expectBuild: opt("expect-build") });
   for (const r of results) console.log(`${r.ok ? "PASS" : "FAIL"}  ${r.name}${r.ok ? "" : "\n      " + r.detail}`);
   const failed = results.filter((r) => !r.ok).length;
   console.log(failed ? `\n${failed} of ${results.length} checks FAILED for ${report.companyName ?? "report"}` : `\nAll ${results.length} checks passed for ${report.companyName ?? "report"}`);

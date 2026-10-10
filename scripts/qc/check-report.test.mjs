@@ -23,12 +23,20 @@ const cases = [
   ["an unbacked litigation statement", (r) => { r.customerInsights.unmetNeeds = "Owens Corning faces a class action lawsuit."; }, /litigation statements/],
   ["a free-text positioning label", (r) => { r.executiveSummary.competitivePositioning = "Leader"; }, /positioning/],
   ["a report from an older function (no method numbers)", (r) => { delete r.quality.methodStats; }, /method numbers/],
+  ["a competitor that is a business the company owns", (r) => { r.entity.owned = [{ name: "JELD-WEN", what: "doors" }]; }, /owned/],
+  ["a brand listed on its own and under its parent", (r) => { r.competitiveLandscape.directCompetitors.push("CertainTeed [1]"); }, /not also listed on its own/],
+  ["an uncited SWOT item", (r) => { r.strategicFrameworks.swot.weaknesses.push("An uncited weakness."); }, /carries a citation/],
+  ["a conclusion drawn from absence", (r) => { r.executiveSummary.tldr += " A product not mentioned in the portfolio."; }, /absence/],
 ];
 for (const [name, mutate, expect] of cases) {
   const r = clone();
   mutate(r);
   const failed = failedNames(r);
   check(`fails for: ${name}`, failed.some((n) => expect.test(n)), failed.join(" | ") || "nothing failed");
+}
+{
+  const failedBuild = checkReport(good, { ...opts, expectBuild: "abc1234" }).filter((x) => !x.ok).map((x) => x.name);
+  check("a report from another build fails when a build is expected", failedBuild.some((n) => /running function is build/.test(n)), failedBuild.join(" | "));
 }
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);

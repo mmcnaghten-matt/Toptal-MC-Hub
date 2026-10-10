@@ -50,6 +50,7 @@ const SCAN = {
   ],
   customer_praise: [
     ["Reviewers on Consumer Reports rate Owens Corning shingles highly for durability.", "www.consumerreports.org"],
+    ["Reviewers on Trustpilot praise Owens Corning shingles for durability.", "www.trustpilot.com"],
     ["Preferred contractor Smith Roofing says Owens Corning shingles are the best on the market.", "smithroofingcontractors.com"],
   ],
   customer_complaints: [
@@ -76,7 +77,7 @@ globalThis.fetch = async (url, init) => {
     if (url.includes("owenscorningroofing-pros")) return new Response(`<html><head><title>Duration Flex</title><meta property="article:published_time" content="2026-03-10T00:00:00Z"></head><body><main>March 2026: launched the Duration Flex shingle. ${"Lorem ipsum dolor sit amet. ".repeat(30)}</main></body></html>`, { status: 200, headers: { "content-type": "text/html" } });
     if (url.includes("consumerreports")) return new Response("<html><title>Human verification</title>", { status: 200, headers: { "content-type": "text/html" } });
     if (url.includes("sec.gov")) return new Response("<html><title>Owens Corning &ldquo;10-K&rdquo; &amp; results — 2025</title>", { status: 200, headers: { "content-type": "text/html" } });
-    return new Response("<title>Some Page</title>", { status: 200, headers: { "content-type": "text/html" } });
+    return new Response(`<title>${(url.split("/").filter(Boolean).pop() ?? "").replace(/-/g, " ")}</title>`, { status: 200, headers: { "content-type": "text/html" } });
   }
   const body = JSON.parse(init.body);
   const prompt = body.contents[0].parts[0].text;
@@ -163,9 +164,9 @@ globalThis.fetch = async (url, init) => {
     if (prompt.includes("6. customerInsights")) {
       seen.custEv = ev;
       return gem(JSON.stringify({ customerInsights: {
-        sentiment: cl("Reviewers on Consumer Reports rate Owens Corning shingles highly for durability.", "Consumer Reports"),
+        sentiment: cl("Reviewers on Trustpilot praise Owens Corning shingles for durability.", "Trustpilot"),
         sentimentThemes: [],
-        winReasons: [cl("**Durability:** Consumer Reports reviewers praise durability.", "Consumer Reports")].filter((c) => c.evidenceIds[0]),
+        winReasons: [cl("**Durability:** Trustpilot reviewers praise durability.", "Trustpilot")].filter((c) => c.evidenceIds[0]),
         lossReasons: [cl("**Warranty claims:** BBB complaints concern warranty claims.", "BBB lists")].filter((c) => c.evidenceIds[0]),
         unmetNeeds: [],
       } }));
@@ -269,7 +270,7 @@ check("source titles are plain ASCII punctuation, entities decoded", !/[–—�
 check("bot-check source ('Human verification') removed and not cited", !rep.sources.some((s) => /consumerreports/.test(s.url)) && !/Human verification/.test(srcTitles));
 check("citations stay consecutive after removal", (() => { const nums = [...JSON.stringify(rep.businessPerformance).matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])); return nums.every((n) => n >= 1 && n <= rep.sources.length); })());
 check("look-alike domain flagged in the research log", (q.sourceFlags ?? []).some((f) => /owenscorningroofing-pros/.test(f.url) && f.flags.includes("lookalike")), JSON.stringify(q.sourceFlags));
-check("bot-check warning recorded", q.warnings.some((w) => /bot-check/.test(w)), q.warnings.join(" | "));
+check("bot-check evidence is removed in the date check and logged", q.dateChecks.dropped.some((d) => /bot-check page/.test(d.reason)), JSON.stringify(q.dateChecks.dropped.map((d) => d.reason)));
 
 // ---------- B: complaints come back empty -> one-sided ----------
 rep = await go({ noComplaints: true });
