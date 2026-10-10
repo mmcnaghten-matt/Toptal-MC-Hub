@@ -106,7 +106,7 @@ import { jsPDF } from "jspdf";
 import { performResearch, type ProgressChip, type ResearchResult } from "@/services/geminiService";
 import ToptalLogo from "@/components/ToptalLogo";
 import { cn } from "@/lib/utils";
-import { collectAtomicIntervals, planPageCuts, sliceImageToDataUrl } from "@/lib/pdfPagination";
+import { planCutsFromImage, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
 const SECTIONS = [
   { id: "executive", label: "Executive Summary", icon: FileText },
@@ -172,33 +172,31 @@ export default function AccountMarketIntel() {
         pdf.line(margin, 10, pdfWidth - margin, 10);
       };
 
-      // Draws a captured element starting at (margin, y). A section taller than the page continues on new pages,
-      // cut between paragraphs/cards where possible. Returns the y position after the last slice.
+      // Draws a captured section starting at (margin, y). A section taller than the page continues on new pages,
+      // cut in a blank gap between paragraphs/cards (found in the image itself). Returns the y position after the last slice.
       const placeCaptured = (
-        element: HTMLElement,
         cap: Awaited<ReturnType<typeof captureElement>>,
         y: number,
         continuationLabel: string,
       ): number => {
-        const cssHeight = cap.img.height / PIXEL_RATIO;
-        const mmPerCss = contentWidth / (cap.img.width / PIXEL_RATIO);
-        const firstPx = (pdfHeight - margin - y) / mmPerCss;
-        const nextPx = (pdfHeight - margin - CONTENT_TOP) / mmPerCss;
-        if (cssHeight <= firstPx) {
+        const mmPerPx = contentWidth / cap.img.width;
+        const firstPx = (pdfHeight - margin - y) / mmPerPx;
+        const nextPx = (pdfHeight - margin - CONTENT_TOP) / mmPerPx;
+        if (cap.img.height <= firstPx) {
           pdf.addImage(cap.dataUrl, "PNG", margin, y, contentWidth, cap.scaledHeight);
           return y + cap.scaledHeight;
         }
-        const cuts = planPageCuts(cssHeight, firstPx, nextPx, collectAtomicIntervals(element, nextPx * 0.45));
+        const cuts = planCutsFromImage(cap.img, firstPx, nextPx);
         let endY = y;
         cuts.forEach((start, i) => {
-          const end = i + 1 < cuts.length ? cuts[i + 1] : cssHeight;
+          const end = i + 1 < cuts.length ? cuts[i + 1] : cap.img.height;
           if (i > 0) {
             pdf.addPage();
             sectionHeader(continuationLabel);
           }
           const top = i === 0 ? y : CONTENT_TOP;
-          const heightMm = (end - start) * mmPerCss;
-          pdf.addImage(sliceImageToDataUrl(cap.img, start, end, PIXEL_RATIO), "PNG", margin, top, contentWidth, heightMm);
+          const heightMm = (end - start) * mmPerPx;
+          pdf.addImage(sliceImageToDataUrl(cap.img, start, end), "PNG", margin, top, contentWidth, heightMm);
           endY = top + heightMm;
         });
         return endY;
@@ -220,7 +218,7 @@ export default function AccountMarketIntel() {
           pdf.addPage();
           currentY = margin;
         }
-        placeCaptured(firstEl, first, currentY, `${result.companyName} - ${firstSection.label} (cont.)`);
+        placeCaptured(first, currentY, `${result.companyName} - ${firstSection.label} (cont.)`);
       }
 
       // Remaining sections: each starts on its own page and rolls onto further pages when longer than one page
@@ -231,7 +229,7 @@ export default function AccountMarketIntel() {
         pdf.addPage();
         sectionHeader(`${result.companyName} - ${section.label}`);
         const sec = await captureElement(element);
-        placeCaptured(element, sec, CONTENT_TOP, `${result.companyName} - ${section.label} (cont.)`);
+        placeCaptured(sec, CONTENT_TOP, `${result.companyName} - ${section.label} (cont.)`);
       }
 
       // Sources: the numbered list the [n] citations point to (continues across pages when long)
@@ -240,7 +238,7 @@ export default function AccountMarketIntel() {
         pdf.addPage();
         sectionHeader(`${result.companyName} - Sources`);
         const src = await captureElement(sourcesEl);
-        placeCaptured(sourcesEl, src, CONTENT_TOP, `${result.companyName} - Sources (cont.)`);
+        placeCaptured(src, CONTENT_TOP, `${result.companyName} - Sources (cont.)`);
       }
       pdf.save(`${result.companyName.replace(/\s+/g, "_")}_Market_Intelligence_Report.pdf`);
     } catch (err) {
