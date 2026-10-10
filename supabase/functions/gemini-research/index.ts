@@ -33,8 +33,9 @@ const FLASH_MODEL = Deno.env.get("GEMINI_FLASH_MODEL") ?? "gemini-2.5-flash";
 // Supabase returns 504 if no response is sent within 150s, so the whole pipeline is budgeted below that.
 const TIME_BUDGET_MS = Number(Deno.env.get("REPORT_TIME_BUDGET_MS") ?? "140000");
 const MIN_EVIDENCE_WARN = 10;
-const MAX_EVIDENCE = 300;
-const MAX_PER_TOPIC = 45; // per research topic, so big companies don't fill the ledger with the first topics
+const MAX_EVIDENCE = 500;
+// Per research topic, so big companies don't fill the ledger with the first topics.
+const topicCap = (topic: string) => (topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
 const MAX_VERIFY = 120;
 const NF = "Not found in public sources.";
 const NOT_GENERATED = "Not generated: this analysis step failed or timed out. Try again.";
@@ -339,7 +340,7 @@ const TOPICS = [
   {
     key: "competitors",
     label: "Competitors",
-    ask: "Companies named as competitors or alternatives to this company by analysts, comparison or review sites, press coverage, or the company itself. For up to 5 of the most frequently named: revenue, headcount, recent activity (last 24 months), value proposition, and pricing model, each with source and date.",
+    ask: "Companies named as competitors or alternatives to this company by analysts, comparison or review sites, press coverage, or the company itself. List the most frequently named, who named them, and the market or segment in which they compete.",
   },
   {
     key: "customer",
@@ -391,14 +392,19 @@ function normUrl(url: string): string {
   }
 }
 
-function buildLedger(results: { topic: string; r: GeminiResult }[], urlMap: Map<string, string>) {
-  const sources: Source[] = [];
-  const srcIndex = new Map<string, number>();
-  const evidence: Evidence[] = [];
-  const seen = new Set<string>();
+function buildLedger(
+  results: { topic: string; r: GeminiResult }[],
+  urlMap: Map<string, string>,
+  existing?: { sources: Source[]; evidence: Evidence[] },
+) {
+  const sources: Source[] = [...(existing?.sources ?? [])];
+  const srcIndex = new Map<string, number>(sources.map((x) => [normUrl(x.url), x.id]));
+  const evidence: Evidence[] = [...(existing?.evidence ?? [])];
+  const seen = new Set<string>(evidence.map((e) => `${e.topic}|${e.text.toLowerCase()}`));
   const searchSuggestions: string[] = [];
   const queries: string[] = [];
   const perTopic = new Map<string, number>();
+  for (const e of evidence) perTopic.set(e.topic, (perTopic.get(e.topic) ?? 0) + 1);
 
   for (const { topic, r } of results) {
     const meta = r.meta;
@@ -426,7 +432,7 @@ function buildLedger(results: { topic: string; r: GeminiResult }[], urlMap: Map<
       const k = `${topic}|${text.toLowerCase()}`;
       if (seen.has(k)) continue;
       seen.add(k);
-      if (evidence.length >= MAX_EVIDENCE || (perTopic.get(topic) ?? 0) >= MAX_PER_TOPIC) break;
+      if (evidence.length >= MAX_EVIDENCE || (perTopic.get(topic) ?? 0) >= topicCap(topic)) break; // this topic is full (later topics still get their share)
       perTopic.set(topic, (perTopic.get(topic) ?? 0) + 1);
       evidence.push({ id: evidence.length + 1, topic, text, sourceIds: ids });
     }
@@ -474,9 +480,9 @@ const FACTS_SCHEMA = obj({
       revenue: CLAIM,
       headcount: CLAIM,
       activity: CLAIM,
-      valueProposition: CLAIM,
       pricingModel: CLAIM,
-      strengths: arr(CLAIM),
+      description: OPT_ITEM,
+      strengths: arr(ITEM),
     }),
   ),
   customerInsights: obj({ sentiment: CLAIM, sentimentThemes: arr(CLAIM), winReasons: arr(CLAIM), lossReasons: arr(CLAIM), unmetNeeds: arr(CLAIM) }),
@@ -526,7 +532,7 @@ const RECS_SCHEMA = obj({
 
 const evidenceBlock = (ev: Evidence[]) => ev.map((e) => `E${e.id} [${e.topic}] ${e.text}`).join("\n");
 
-const factsPrompt = (e: Entity, ev: Evidence[], today: string) => `You are building the fact base of a market-intelligence report. Today is ${today}.
+const factsPrompt = (e: Entity, ev: Evidence[], today: string, competitors?: string[]) => `You are building the fact base of a market-intelligence report. Today is ${today}.
 ${entityBlock(e)}
 
 EVIDENCE (format: E<id> [topic] text). This is the ONLY information you may use:
@@ -539,7 +545,9 @@ Rules:
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
 5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
 6. tam / sam are lists with ONE entry per published market-size estimate that appears in the evidence. Each entry starts with the market, segment, product line or business unit it covers, then geography and year, then the figure and publisher (e.g. "Cloud security (global, 2024): $48B, Grand View Research."). Never merge several estimates into one entry and never derive an estimate. If the only estimate is the company's own, say so. Empty list if there is none.
-7. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: at most 5, chosen from those.
+7. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
+  competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
+} For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.
 8. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are reasons customers choose the company; lossReasons are reasons customers leave or choose a competitor.
 9. strategicInitiatives: only SIGNIFICANT initiatives the evidence shows the company announced or started in the last ${INITIATIVE_WINDOW_MONTHS} months. For each, set subgroup to exactly one of these sub-categories and group to the group it belongs to, give a short name, and a one-sentence description that includes the month and year from the evidence. At most 3 per sub-category, most recent first. A sub-category with nothing significant gets no entries.
 
@@ -638,7 +646,7 @@ function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
 
 const list = (a: unknown): Any[] => (Array.isArray(a) ? a : []);
 
-function validateFacts(raw: Any, ctx: Ctx) {
+function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
   const f = raw ?? {};
   const claims = (a: unknown, p: string, topics?: string[]) =>
     list(a).map((c, i) => checkClaim(c, `${p}[${i}]`, ctx, topics)).filter((c) => c.status === "sourced");
@@ -712,19 +720,52 @@ function validateFacts(raw: Any, ctx: Ctx) {
     },
     competitorDeepDives: list(f.competitorDeepDives)
       .slice(0, 5)
-      .map((d, i) => {
+      .flatMap((d, i) => {
         const p = `competitorDeepDives[${i}]`;
-        return {
-          name: typeof d?.name === "string" ? d.name.trim() : "",
+        let name = typeof d?.name === "string" ? d.name.trim() : "";
+        if (!name) return [];
+        if (competitorNames?.length) {
+          // Only the competitors identified in the competitors step (keeps results stable between runs).
+          const lc = name.toLowerCase();
+          const match = competitorNames.find((c) => c.toLowerCase() === lc) ??
+            competitorNames.find((c) => c.toLowerCase().includes(lc) || lc.includes(c.toLowerCase()));
+          if (!match) {
+            ctx.dropped.push({ path: p, reason: "competitor not in the identified list", text: name });
+            return [];
+          }
+          name = match;
+        } else if (!mentioned(name)) {
+          return [];
+        }
+        // description / strengths: evidence-backed summaries about THIS competitor (no hedging or verifier test).
+        const topic = `competitor:${name}`.toLowerCase();
+        const about = (it: Any, path: string): Item | null => {
+          const text = typeof it?.text === "string" ? it.text.trim() : "";
+          if (!text) return null;
+          const ev = validEvidence(it.basedOn, ctx).filter(
+            (e) => e.topic.toLowerCase() === topic || e.text.toLowerCase().includes(name.toLowerCase()),
+          );
+          const reason = !ev.length
+            ? "no evidence about this competitor cited"
+            : !figuresSupported(text, ev, true)
+            ? "figure not present in cited evidence"
+            : null;
+          if (reason) {
+            ctx.dropped.push({ path, reason, text });
+            return null;
+          }
+          return { text, basedOn: ev.map((e) => e.id) };
+        };
+        return [{
+          name,
           revenue: checkClaim(d?.revenue, `${p}.revenue`, ctx),
           headcount: checkClaim(d?.headcount, `${p}.headcount`, ctx),
           activity: checkClaim(d?.activity, `${p}.activity`, ctx),
-          valueProposition: checkClaim(d?.valueProposition, `${p}.valueProposition`, ctx),
           pricingModel: checkClaim(d?.pricingModel, `${p}.pricingModel`, ctx),
-          strengths: claims(d?.strengths, `${p}.strengths`),
-        };
-      })
-      .filter((d) => d.name && mentioned(d.name)),
+          description: about(d?.description, `${p}.description`),
+          strengths: list(d?.strengths).slice(0, 5).map((x, si) => about(x, `${p}.strengths[${si}]`)).filter((x): x is Item => !!x),
+        }];
+      }),
     customerInsights: {
       sentiment: checkClaim(ci.sentiment, "customerInsights.sentiment", ctx, CUSTOMER),
       sentimentThemes: claims(ci.sentimentThemes, "customerInsights.sentimentThemes", CUSTOMER).slice(0, 5),
@@ -859,9 +900,9 @@ function pruneFacts(f: Facts): Facts {
       inhibitors: f.marketOverview.inhibitors.filter(ok),
     },
     competitiveLandscape: f.competitiveLandscape,
-    competitorDeepDives: f.competitorDeepDives
-      .map((d) => ({ ...d, strengths: d.strengths.filter(ok) }))
-      .filter((d) => [d.revenue, d.headcount, d.activity, d.valueProposition, d.pricingModel].some(ok) || d.strengths.length > 0),
+    competitorDeepDives: f.competitorDeepDives.filter(
+      (d) => [d.revenue, d.headcount, d.activity, d.pricingModel].some(ok) || !!d.description || d.strengths.length > 0,
+    ),
     customerInsights: {
       sentiment: f.customerInsights.sentiment,
       sentimentThemes: f.customerInsights.sentimentThemes.filter(ok),
@@ -973,8 +1014,8 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
     competitorDeepDives: f.competitorDeepDives.map((d) => ({
       name: d.name,
       profile: { revenue: fc(d.revenue), headcount: fc(d.headcount), activity: fc(d.activity) },
-      strengths: fcs(d.strengths),
-      valueProposition: fc(d.valueProposition),
+      strengths: d.strengths.length ? d.strengths.map((x) => fi(x)) : [ph.facts],
+      valueProposition: d.description ? fi(d.description) : ph.facts,
       gapAnalysis: gapFor(d.name),
       pricingModel: fc(d.pricingModel),
     })),
@@ -1061,6 +1102,8 @@ type State = {
   warnings: string[];
   timings: Record<string, number>;
   researchModel: string;
+  // set by the competitors step
+  competitors?: Competitor[];
   // set by the facts step
   facts?: Facts;
   factsOk?: boolean;
@@ -1068,6 +1111,7 @@ type State = {
   verifier?: string;
   sourcedClaims?: number;
 };
+type Competitor = { name: string; kind: "direct" | "indirect" };
 type StepResult = { ok: true; state: State } | { ok: false; status: number; body: Any };
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
@@ -1127,7 +1171,7 @@ async function stepResearch(
   const researchTimeout = clock.timeout(p.deepResearch ? 90_000 : 60_000, 30_000);
   const settled = await Promise.allSettled(
     TOPICS.map((tp) =>
-      callGemini(apiKey, { model: researchModel, prompt: researchPrompt(tp.ask, entity, today), grounded: true, timeoutMs: researchTimeout, attempts: 2 })
+      callGemini(apiKey, { model: researchModel, prompt: researchPrompt(tp.ask, entity, today), grounded: true, timeoutMs: researchTimeout, attempts: 2, temperature: 0 })
     ),
   );
   tick("research", t0);
@@ -1157,21 +1201,173 @@ async function stepResearch(
   };
 }
 
-// Step 2: extract the facts from the ledger, validate them, and have the verifier check each one.
+// Step 2: identify the main competitors, then research each one with its own focused search.
+// One broad search for all competitors gave shallow, inconsistent coverage, especially for very large companies.
+async function identifyCompetitors(apiKey: string, state: State, today: string, clock: ReturnType<typeof makeClock>) {
+  const company = state.entity.name;
+  const clean = (names: unknown, evText: string) => {
+    const seen = new Set<string>([company.toLowerCase()]);
+    return list(names).flatMap((n) => {
+      const name = typeof n === "string" ? n.replace(/\*+/g, "").trim() : "";
+      const key = name.toLowerCase();
+      if (name.length < 2 || name.length > 80 || seen.has(key) || !evText.includes(key)) return [];
+      seen.add(key);
+      return [name];
+    });
+  };
+  const ev = state.evidence.filter((e) => e.topic === "competitors" || e.topic === "profile");
+  const evText = ev.map((e) => e.text.toLowerCase()).join("\n");
+  let direct: string[] = [];
+  let indirect: string[] = [];
+  const extra: { topic: string; r: GeminiResult }[] = [];
+
+  if (ev.length) {
+    const prompt = `${entityBlock(state.entity)}
+
+From the evidence below, list the companies it names as DIRECT competitors of ${company} (same market, same customers), most prominent first (at most 5), and up to 3 INDIRECT competitors or alternatives. Use ONLY company names that appear in the evidence, exactly as written. Company names, not products. Exclude ${company} and its subsidiaries.
+
+EVIDENCE:
+${evidenceBlock(ev)}`;
+    const schema = obj({ direct: arr(STR), indirect: arr(STR) });
+    try {
+      const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, temperature: 0, thinkingBudget: 0, attempts: 1, timeoutMs: clock.timeout(25_000, 100_000) });
+      const j = safeJson(r.text);
+      direct = clean(j?.direct, evText).slice(0, 5);
+      indirect = clean(j?.indirect, evText).slice(0, 3);
+    } catch (e) {
+      console.error("Competitor identification (evidence) failed:", e);
+    }
+  }
+  if (direct.length < 3) {
+    // Not enough named in the evidence: ask a grounded search directly.
+    try {
+      const prompt = `Today is ${today}.
+${entityBlock(state.entity)}
+Use Google Search. Name the 5 companies most frequently cited by analysts, comparison sites or press as DIRECT competitors of ${company}, then up to 3 INDIRECT competitors or alternatives. Company names only. Answer one per line in exactly this format:
+DIRECT: <company name>
+INDIRECT: <company name>`;
+      const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, temperature: 0, timeoutMs: clock.timeout(30_000, 90_000), attempts: 1 });
+      const lines = r.text.split("\n");
+      const pick = (tag: string) => lines.map((l) => l.match(new RegExp(`^[\\s*_-]*${tag}[\\s*_]*:\\s*(.+)$`, "i"))?.[1]).filter((x): x is string => !!x);
+      const seen = new Set([...direct, ...indirect].map((n) => n.toLowerCase()).concat(company.toLowerCase()));
+      const add = (names: string[], into: string[], max: number) => {
+        for (const n0 of names) {
+          const n = n0.replace(/\*+/g, "").trim();
+          if (n.length >= 2 && n.length <= 80 && !seen.has(n.toLowerCase()) && into.length < max) {
+            seen.add(n.toLowerCase());
+            into.push(n);
+          }
+        }
+      };
+      add(pick("DIRECT"), direct, 5);
+      add(pick("INDIRECT"), indirect, 3);
+      extra.push({ topic: "competitors", r });
+    } catch (e) {
+      console.error("Competitor identification (search) failed:", e);
+    }
+  }
+  const competitors: Competitor[] = [
+    ...direct.map((name) => ({ name, kind: "direct" as const })),
+    ...indirect.map((name) => ({ name, kind: "indirect" as const })),
+  ].slice(0, 5);
+  return { competitors, extra };
+}
+
+const competitorPrompt = (e: Entity, name: string, today: string) => `Today is ${today}.
+${entityBlock(e)}
+${name} is a competitor of ${e.name}. Every fact must be about ${name}, not a similarly named organisation.
+
+RESEARCH TASK: Profile ${name} using Google Search:
+- What it sells, to whom, and how it positions itself against competitors such as ${e.name}.
+- Its key strengths and advantages as stated by analysts, press, reviews or the company itself (say who says so).
+- Revenue (with fiscal period) and employee headcount.
+- Notable activity in the last 24 months: products, acquisitions, partnerships, strategy shifts.
+- Its pricing model.
+
+Rules:
+- Report only facts stated in the search results. Never estimate or fill gaps from memory.
+- Write short, self-contained sentences with ONE fact each. Name ${name} in each sentence, and for any figure give its date or period and who reported it.
+- If you cannot find something, write one line "NOT FOUND: <item>". Incomplete answers are expected and fine.
+- No recommendations or opinions of your own.`;
+
+async function profileCompetitor(apiKey: string, e: Entity, name: string, today: string, model: string, totalMs: number): Promise<GeminiResult> {
+  const deadline = Date.now() + totalMs;
+  const run = (ms: number) =>
+    callGemini(apiKey, { model, prompt: competitorPrompt(e, name, today), grounded: true, temperature: 0, timeoutMs: ms, attempts: 2 });
+  const first = await run(Math.min(40_000, totalMs));
+  // Thin result: try once more and keep whichever came back with more cited segments.
+  if ((first.meta?.groundingSupports?.length ?? 0) < 3 && deadline - Date.now() > 15_000) {
+    try {
+      const second = await run(deadline - Date.now());
+      if ((second.meta?.groundingSupports?.length ?? 0) > (first.meta?.groundingSupports?.length ?? 0)) return second;
+    } catch {
+      // keep the first result
+    }
+  }
+  return first;
+}
+
+async function stepCompetitors(apiKey: string, state: State, deepResearch: boolean, clock: ReturnType<typeof makeClock>): Promise<StepResult> {
+  const warnings = [...state.warnings];
+  const timings = { ...state.timings };
+  const today = todayStr();
+
+  let t0 = Date.now();
+  const { competitors, extra } = await identifyCompetitors(apiKey, state, today, clock);
+  timings.competitorsIdentify = Date.now() - t0;
+  if (!competitors.length) {
+    warnings.push("No competitors could be identified, so competitor deep dives rely on general research only.");
+    return { ok: true, state: { ...state, warnings, timings, competitors: [] } };
+  }
+
+  t0 = Date.now();
+  const model = deepResearch && clock.remaining() > 100_000 ? PRO_MODEL : FLASH_MODEL;
+  const budget = clock.timeout(70_000, 25_000);
+  const settled = await Promise.allSettled(competitors.map((c) => profileCompetitor(apiKey, state.entity, c.name, today, model, budget)));
+  timings.competitorsResearch = Date.now() - t0;
+  const results: { topic: string; r: GeminiResult }[] = [...extra];
+  settled.forEach((r, i) => {
+    if (r.status === "fulfilled") results.push({ topic: `competitor:${competitors[i].name}`, r: r.value });
+    else warnings.push(`Research on competitor "${competitors[i].name}" failed (${(r.reason as Error)?.message ?? r.reason}).`);
+  });
+
+  t0 = Date.now();
+  const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
+  const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 20_000)));
+  const ledger = buildLedger(results, urlMap, { sources: state.sources, evidence: state.evidence });
+  timings.competitorsLedger = Date.now() - t0;
+
+  return {
+    ok: true,
+    state: {
+      ...state,
+      sources: ledger.sources,
+      evidence: ledger.evidence,
+      queries: [...new Set([...state.queries, ...ledger.queries])],
+      searchSuggestions: [...state.searchSuggestions, ...ledger.searchSuggestions],
+      warnings,
+      timings,
+      competitors,
+    },
+  };
+}
+
+// Step 3: extract the facts from the ledger, validate them, and have the verifier check each one.
 async function stepFacts(apiKey: string, state: State, clock: ReturnType<typeof makeClock>): Promise<StepResult> {
   const warnings = [...state.warnings];
   const timings = { ...state.timings };
   const ctx = makeCtx(state.evidence);
+  const competitorNames = state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
 
   let t0 = Date.now();
   let rawFacts: Any = null;
   try {
-    rawFacts = await structured(apiKey, clock, warnings, "Fact extraction", factsPrompt(state.entity, state.evidence, todayStr()), FACTS_SCHEMA, false, 0.1, 50_000);
+    rawFacts = await structured(apiKey, clock, warnings, "Fact extraction", factsPrompt(state.entity, state.evidence, todayStr(), competitorNames), FACTS_SCHEMA, false, 0, 50_000);
   } catch (e) {
     warnings.push(`Fact extraction failed (${(e as Error)?.message ?? e}); its sections show "${NOT_GENERATED}"`);
   }
   timings.facts = Date.now() - t0;
-  const factsValidated = validateFacts(rawFacts, ctx);
+  const factsValidated = validateFacts(rawFacts, ctx, competitorNames);
 
   t0 = Date.now();
   const left = clock.remaining();
@@ -1195,7 +1391,7 @@ async function stepFacts(apiKey: string, state: State, clock: ReturnType<typeof 
   };
 }
 
-// Step 3: analysis + recommendations + MC opportunities, then assemble the final report.
+// Step 4: analysis + recommendations + MC opportunities, then assemble the final report.
 async function stepAnalysis(apiKey: string, state: State, deepResearch: boolean, clock: ReturnType<typeof makeClock>) {
   const facts = state.facts!;
   const warnings = [...state.warnings];
@@ -1248,6 +1444,18 @@ async function stepAnalysis(apiKey: string, state: State, deepResearch: boolean,
     quality: {
       steps: { facts: !!state.factsOk, analysis: !!rawCore, recommendations: !!rawRecs },
       evidenceByTopic: Object.fromEntries(TOPICS.map((tp) => [tp.key, state.evidence.filter((e) => e.topic === tp.key).length])),
+      competitors: (state.competitors ?? []).map((c) => {
+        const d = facts.competitorDeepDives.find((x) => x.name === c.name);
+        const has = (cl: Claim) => cl.status === "sourced";
+        return {
+          name: c.name,
+          kind: c.kind,
+          evidenceCount: state.evidence.filter((e) => e.topic === `competitor:${c.name}`).length,
+          fieldsFound: d
+            ? [has(d.revenue), has(d.headcount), has(d.activity), has(d.pricingModel), !!d.description, d.strengths.length > 0].filter(Boolean).length
+            : 0,
+        };
+      }),
       coverage: cov.coverage,
       sectionsPopulated: cov.populated,
       sections: cov.sections,
@@ -1292,6 +1500,13 @@ function readState(raw: Any): State | null {
     warnings: list(raw.warnings).map(String),
     timings: raw.timings && typeof raw.timings === "object" ? raw.timings : {},
     researchModel: String(raw.researchModel ?? FLASH_MODEL),
+    competitors: Array.isArray(raw.competitors)
+      ? list(raw.competitors).flatMap((c): Competitor[] =>
+        typeof c?.name === "string" && c.name.trim()
+          ? [{ name: c.name.trim().slice(0, 80), kind: c.kind === "indirect" ? "indirect" : "direct" }]
+          : []
+      ).slice(0, 5)
+      : undefined,
   };
 }
 
@@ -1342,9 +1557,13 @@ Deno.serve(async (req) => {
   const clock = makeClock(TIME_BUDGET_MS);
 
   try {
-    if (step === "facts" || step === "analysis") {
+    if (step === "competitors" || step === "facts" || step === "analysis") {
       const state = readState(body?.state);
       if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
+      if (step === "competitors") {
+        const r = await stepCompetitors(apiKey, state, deepResearch, clock);
+        return r.ok ? json({ state: r.state }) : json(r.body, r.status);
+      }
       if (step === "facts") {
         const r = await stepFacts(apiKey, state, clock);
         return r.ok ? json({ state: r.state }) : json(r.body, r.status);
