@@ -35,7 +35,7 @@ const TIME_BUDGET_MS = Number(Deno.env.get("REPORT_TIME_BUDGET_MS") ?? "140000")
 const MIN_EVIDENCE_WARN = 10;
 const MAX_EVIDENCE = 500;
 // Per research topic, so big companies don't fill the ledger with the first topics.
-const topicCap = (topic: string) => (topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
+const topicCap = (topic: string) => (topic === "market" ? 60 : topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
 const MAX_VERIFY = 120;
 const NF = "Not found in public sources.";
 const NOT_GENERATED = "Not generated: this analysis step failed or timed out. Try again.";
@@ -335,7 +335,7 @@ const TOPICS = [
   {
     key: "market",
     label: "Market",
-    ask: "The market(s) the company competes in: how analysts define it, published market-size estimates (figure, year, geography, publisher), growth-rate forecasts, segments, and drivers and headwinds named by analysts or industry publications.",
+    ask: "The markets the company competes in. For EACH of the company's major product or business segments (for example smartphones, PCs, wearables and services for a consumer electronics company): how analysts define the market, the latest published market-size estimate (figure, year, geography, publisher), its growth, and the drivers and headwinds analysts or industry publications name for that market. Also cover industry-wide drivers and headwinds.",
   },
   {
     key: "competitors",
@@ -469,7 +469,6 @@ const FACTS_SCHEMA = obj({
   marketOverview: obj({
     definition: CLAIM,
     tam: arr(MARKET),
-    sam: arr(MARKET),
     segmentation: arr(CLAIM),
     drivers: arr(CLAIM),
     inhibitors: arr(CLAIM),
@@ -500,7 +499,6 @@ const ANALYSIS_SCHEMA = obj({
     bigOpportunity: OPT_ITEM,
   }),
   performanceSummary: arr(ITEM),
-  somEstimate: OPT_ITEM,
   competitorGaps: arr(obj({ competitor: STR, text: STR, basedOn: INTS })),
   swot: obj({ strengths: arr(ITEM), weaknesses: arr(ITEM), opportunities: arr(ITEM), threats: arr(ITEM) }),
   portersFiveForces: obj({
@@ -529,7 +527,6 @@ const CORE_SCHEMA = obj(
 const CORE1_SCHEMA = obj({
   executiveSummary: ANALYSIS_SCHEMA.properties.executiveSummary,
   performanceSummary: ANALYSIS_SCHEMA.properties.performanceSummary,
-  somEstimate: ANALYSIS_SCHEMA.properties.somEstimate,
   competitorGaps: ANALYSIS_SCHEMA.properties.competitorGaps,
 });
 const FRAMEWORKS_SCHEMA = obj({
@@ -556,7 +553,7 @@ Rules:
 3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
 5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
-6. tam / sam are lists of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. If the only estimate is the company's own, name the company as publisher. Empty list if there is none.
+6. tam is a list of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. If the only estimate is the company's own, name the company as publisher. Empty list if there is none.
 7. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
   competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
 } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.
@@ -580,9 +577,8 @@ Rules:
     return `${head}
 3. executiveSummary.tldr: 3-4 sentences for leadership on the company's position, recent performance and priorities.
 4. competitivePositioning.label is "Insufficient evidence" unless evidence about market position (scale, share, rankings, comparisons) supports a label; give the rationale.
-5. somEstimate: only if the evidence contains a published market size AND evidence on the company's scale. Call it an estimate and show the reasoning. Otherwise null.
-6. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.
-7. performanceSummary: 2-3 short paragraphs (at most 130 words in total), each its own array item with basedOn. Paragraph 1: scale and growth (revenue and revenue growth, with fiscal period). Paragraph 2: profitability (net income or margins). Paragraph 3: valuation and funding (market capitalization, valuation, funding). Weave in one clause on what this implies for the company's position. Write flowing prose, not a list, and omit a paragraph the evidence cannot support. Use only figures present in the cited evidence, with their periods; never compute totals or ratios.`;
+5. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.
+6. performanceSummary: 2-3 short paragraphs (at most 130 words in total), each its own array item with basedOn. Paragraph 1: scale and growth (revenue and revenue growth, with fiscal period). Paragraph 2: profitability (net income or margins). Paragraph 3: valuation and funding (market capitalization, valuation, funding). Weave in one clause on what this implies for the company's position. Write flowing prose, not a list, and omit a paragraph the evidence cannot support. Use only figures present in the cited evidence, with their periods; never compute totals or ratios.`;
   }
   if (part === "frameworks") {
     return `${head}
@@ -754,6 +750,22 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
     });
   };
 
+  // Descriptive market text (definition, drivers, inhibitors, segmentation): evidence-backed summaries. Hedged wording is
+  // fine, but each needs valid cited evidence and any financial figure must appear in it. Not sent to the verifier.
+  const summaryClaim = (it: Any, path: string): Claim => {
+    const text = typeof it?.text === "string" ? it.text.trim() : "";
+    if (!text) return notFound();
+    const ev = validEvidence(it?.basedOn ?? it?.evidenceIds, ctx);
+    const reason = !ev.length ? "no valid evidence cited" : !figuresSupported(text, ev, true) ? "figure not present in cited evidence" : null;
+    if (reason) {
+      ctx.dropped.push({ path, reason, text });
+      return notFound();
+    }
+    return { text, status: "sourced", evidenceIds: ev.map((e) => e.id), verification: "unchecked" };
+  };
+  const summaries = (a: unknown, p: string) =>
+    list(a).map((c, i) => summaryClaim(c, `${p}[${i}]`)).filter((c) => c.status === "sourced").slice(0, 6);
+
   const thisYear = new Date().getFullYear();
   const marketEntries = (a: unknown, p: string): MarketEntry[] =>
     list(a).flatMap((m, i) => {
@@ -791,12 +803,11 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
       strategicInitiatives: initiatives(bp.strategicInitiatives),
     },
     marketOverview: {
-      definition: checkClaim(mo.definition, "marketOverview.definition", ctx),
+      definition: summaryClaim(mo.definition, "marketOverview.definition"),
       tam: marketEntries(mo.tam, "marketOverview.tam"),
-      sam: marketEntries(mo.sam, "marketOverview.sam"),
-      segmentation: claims(mo.segmentation, "marketOverview.segmentation"),
-      drivers: claims(mo.drivers, "marketOverview.drivers"),
-      inhibitors: claims(mo.inhibitors, "marketOverview.inhibitors"),
+      segmentation: summaries(mo.segmentation, "marketOverview.segmentation"),
+      drivers: summaries(mo.drivers, "marketOverview.drivers"),
+      inhibitors: summaries(mo.inhibitors, "marketOverview.inhibitors"),
     },
     competitiveLandscape: {
       directCompetitors: named(cl.directCompetitors, "competitiveLandscape.directCompetitors"),
@@ -883,7 +894,6 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
       bigOpportunity: one(es.bigOpportunity, "executiveSummary.bigOpportunity"),
     },
     performanceSummary: many(a.performanceSummary, "performanceSummary").slice(0, 3),
-    somEstimate: one(a.somEstimate, "somEstimate"),
     competitorGaps: list(a.competitorGaps).flatMap((g, i) => {
       const item = one(g, `competitorGaps[${i}]`);
       const competitor = typeof g?.competitor === "string" ? g.competitor.trim() : "";
@@ -979,7 +989,6 @@ function pruneFacts(f: Facts): Facts {
     marketOverview: {
       ...f.marketOverview,
       tam: latestPerSegment(f.marketOverview.tam.filter((e) => ok(e.claim))),
-      sam: latestPerSegment(f.marketOverview.sam.filter((e) => ok(e.claim))),
       segmentation: f.marketOverview.segmentation.filter(ok),
       drivers: f.marketOverview.drivers.filter(ok),
       inhibitors: f.marketOverview.inhibitors.filter(ok),
@@ -1088,10 +1097,7 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
       definition: fc(f.marketOverview.definition),
       metrics: {
         tam: f.marketOverview.tam.length ? bullets(f.marketOverview.tam.map(marketLine)) : ph.facts,
-        sam: f.marketOverview.sam.length ? bullets(f.marketOverview.sam.map(marketLine)) : ph.facts,
-        som: a.somEstimate ? bullets([fi(a.somEstimate)]) : ph.core,
         tamRows: f.marketOverview.tam.map(marketRow),
-        samRows: f.marketOverview.sam.map(marketRow),
       },
       segmentation: fcs(f.marketOverview.segmentation),
       drivers: fcs(f.marketOverview.drivers),
@@ -1570,14 +1576,16 @@ async function stepAnalysis(apiKey: string, state: State, deepResearch: boolean,
 // entity -> scan (one per topic) -> ledger -> [identify -> competitor scans -> ledger] -> facts_section (one per
 // section) -> analysis_part (core / frameworks / recs) -> report. Each request has its own 150s budget and the page
 // retries only the piece that failed. The older research/competitors/facts/analysis steps remain for older pages.
-type Section = "performance" | "strategy" | "market" | "competitors" | "customer";
-const SECTIONS: Section[] = ["performance", "strategy", "market", "competitors", "customer"];
+type Section = "performance" | "strategy" | "market_size" | "market_dynamics" | "competitors" | "customer";
+const SECTIONS: Section[] = ["performance", "strategy", "market_size", "market_dynamics", "competitors", "customer"];
 type Slice = { topic: string; status: "ok" | "thin" | "failed"; ms: number; error?: string; meta: GroundingMeta | null };
 
 const SECTION_TOPICS: Record<Section, (t: string) => boolean> = {
   performance: (t) => t === "profile" || t === "performance",
   strategy: (t) => t === "profile" || t.startsWith("strategy_"),
-  market: (t) => t === "profile" || t === "market",
+  // Market sections use market evidence only, so company descriptions cannot leak in as "market" facts.
+  market_size: (t) => t === "market",
+  market_dynamics: (t) => t === "market",
   competitors: (t) => t === "competitors" || t.startsWith("competitor:"),
   customer: (t) => t === "customer",
 };
@@ -1585,7 +1593,8 @@ const FP = FACTS_SCHEMA.properties;
 const SECTION_SCHEMAS: Record<Section, Any> = {
   performance: obj({ businessPerformance: obj({ financialHighlights: FP.businessPerformance.properties.financialHighlights, recentMetrics: FP.businessPerformance.properties.recentMetrics }) }),
   strategy: obj({ businessPerformance: obj({ strategicInitiatives: FP.businessPerformance.properties.strategicInitiatives }) }),
-  market: obj({ marketOverview: FP.marketOverview }),
+  market_size: obj({ marketOverview: obj({ definition: OPT_ITEM, tam: FP.marketOverview.properties.tam }) }),
+  market_dynamics: obj({ marketOverview: obj({ segmentation: arr(ITEM), drivers: arr(ITEM), inhibitors: arr(ITEM) }) }),
   competitors: obj({ competitiveLandscape: FP.competitiveLandscape, competitorDeepDives: FP.competitorDeepDives }),
   customer: obj({ customerInsights: FP.customerInsights }),
 };
@@ -1605,9 +1614,12 @@ const FACT_SECTION_RULES: Record<Section, (competitors?: string[]) => string> = 
 
 SUB-CATEGORIES
 ${groupsPrompt([0, 1, 2, 3, 4, 5])}`,
-  market: () =>
-    `6. definition: one sentence on how analysts define the market(s) the company competes in. segmentation, drivers, inhibitors: short claims named by analysts or industry publications.
-7. tam / sam are lists of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. If the only estimate is the company's own, name the company as publisher. Empty list if there is none.`,
+  market_size: () =>
+    `6. marketOverview.definition: ONE sentence on how analysts define the market(s) the company competes in, with basedOn listing the E numbers it rests on.
+7. tam is a list of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. Empty list if there is none.`,
+  market_dynamics: () =>
+    `6. drivers: factors that increase demand across the MARKET or industry (technology shifts, customer behaviour, regulation, economics) as stated by analysts or industry publications. inhibitors: factors that restrain growth of the market (saturation, regulation, supply constraints, competition, macro conditions). segmentation: how the market is divided (by product, customer type or geography).
+7. These describe the market, never the company's own strengths, products, partnerships or customers. Each list has at most 5 items; one idea per item, at most 25 words. They are summaries of the evidence, so hedged wording is fine, but cite in basedOn the E numbers each item rests on and add no figures that are not in the cited evidence. Empty list if the evidence has none.`,
   competitors: (competitors) =>
     `6. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
       competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
@@ -1754,25 +1766,55 @@ async function v2Identify(apiKey: string, body: Any, clock: ReturnType<typeof ma
   return json({ competitors, slices });
 }
 
+// How much a section's validated facts contain (used to decide whether to retry an empty-looking result).
+function sectionScore(section: Section, f: Facts): number {
+  const sourced = (c: Claim) => (c.status === "sourced" ? 1 : 0);
+  switch (section) {
+    case "performance": return f.businessPerformance.financialHighlights.length + f.businessPerformance.recentMetrics.length;
+    case "strategy": return f.businessPerformance.strategicInitiatives.length;
+    case "market_size": return sourced(f.marketOverview.definition) + f.marketOverview.tam.length;
+    case "market_dynamics": return f.marketOverview.segmentation.length + f.marketOverview.drivers.length + f.marketOverview.inhibitors.length;
+    case "competitors": return f.competitorDeepDives.length + f.competitiveLandscape.directCompetitors.length + f.competitiveLandscape.indirectCompetitors.length;
+    case "customer": {
+      const c = f.customerInsights;
+      return sourced(c.sentiment) + c.sentimentThemes.length + c.winReasons.length + c.lossReasons.length + c.unmetNeeds.length;
+    }
+  }
+}
+
 // Request 5: facts for ONE section, from only that section's evidence, validated and verified.
+// If the result is empty although the section has plenty of evidence, extract once more and keep the richer result.
 async function v2FactsSection(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
   const state = readState(body?.state);
   const section = body?.section as Section;
   if (!state || !SECTIONS.includes(section)) return json({ error: "Missing or invalid research state or section." }, 400);
   const ev = state.evidence.filter((e) => SECTION_TOPICS[section](e.topic));
-  const ctx = makeCtx(ev);
   const warnings: string[] = [];
   const competitorNames = section === "competitors" && state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
   if (!ev.length) {
-    return json({ section, ok: true, empty: true, facts: pruneFacts(validateFacts({}, ctx)), dropped: [], verifier: "no evidence", sourcedClaims: 0, warnings });
+    return json({ section, ok: true, empty: true, facts: pruneFacts(validateFacts({}, makeCtx(ev))), dropped: [], verifier: "no evidence", sourcedClaims: 0, warnings });
   }
-  let raw: Any = null;
-  try {
-    raw = await structured(apiKey, clock, warnings, `Fact extraction (${section})`, factsSectionPrompt(state.entity, ev, todayStr(), section, competitorNames), SECTION_SCHEMAS[section], false, 0, 50_000);
-  } catch (e) {
-    warnings.push(`Fact extraction (${section}) failed (${(e as Error)?.message ?? e}).`);
+  const prompt = factsSectionPrompt(state.entity, ev, todayStr(), section, competitorNames);
+  const attempt = async (temperature: number) => {
+    const ctx = makeCtx(ev);
+    const w: string[] = [];
+    let raw: Any = null;
+    try {
+      raw = await structured(apiKey, clock, w, `Fact extraction (${section})`, prompt, SECTION_SCHEMAS[section], false, temperature, 50_000);
+    } catch (e) {
+      w.push(`Fact extraction (${section}) failed (${(e as Error)?.message ?? e}).`);
+    }
+    const validated = validateFacts(raw, ctx, competitorNames);
+    return { ctx, raw, validated, w, score: sectionScore(section, pruneFacts(validated)) };
+  };
+  let best = await attempt(0);
+  if (best.score === 0 && ev.length >= 12 && clock.remaining() > 70_000) {
+    const second = await attempt(0.2);
+    warnings.push(`Fact extraction (${section}) came back empty with ${ev.length} evidence items; retried.`);
+    if (second.score > best.score || (!best.raw && second.raw)) best = second;
   }
-  const validated = validateFacts(raw, ctx, competitorNames);
+  warnings.push(...best.w);
+  const { ctx, raw, validated } = best;
   const left = clock.remaining();
   let verifier: string;
   try {
@@ -1820,13 +1862,21 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   // Merge the per-section facts into one Facts object.
   const facts: Facts = validateFacts({}, makeCtx([]));
   const take = (sec: Section) => parts.find((x) => x?.section === sec && x?.ok === true && x?.facts)?.facts;
-  const perf = take("performance"), strat = take("strategy"), mkt = take("market"), comp = take("competitors"), cust = take("customer");
+  const perf = take("performance"), strat = take("strategy"), msize = take("market_size"), mdyn = take("market_dynamics"), comp = take("competitors"), cust = take("customer");
   if (perf) {
     facts.businessPerformance.financialHighlights = list(perf.businessPerformance?.financialHighlights);
     facts.businessPerformance.recentMetrics = list(perf.businessPerformance?.recentMetrics);
   }
   if (strat) facts.businessPerformance.strategicInitiatives = list(strat.businessPerformance?.strategicInitiatives);
-  if (mkt?.marketOverview) facts.marketOverview = { ...facts.marketOverview, ...mkt.marketOverview };
+  if (msize?.marketOverview) {
+    facts.marketOverview.definition = msize.marketOverview.definition ?? facts.marketOverview.definition;
+    facts.marketOverview.tam = list(msize.marketOverview.tam);
+  }
+  if (mdyn?.marketOverview) {
+    facts.marketOverview.segmentation = list(mdyn.marketOverview.segmentation);
+    facts.marketOverview.drivers = list(mdyn.marketOverview.drivers);
+    facts.marketOverview.inhibitors = list(mdyn.marketOverview.inhibitors);
+  }
   if (comp) {
     facts.competitiveLandscape = { ...facts.competitiveLandscape, ...comp.competitiveLandscape };
     facts.competitorDeepDives = list(comp.competitorDeepDives);
@@ -1901,7 +1951,11 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
     if (!analysis.performanceSummary.length) swap(report.businessPerformance, ["financialHighlights"]);
   }
   if (!okSection("strategy")) swap(report.businessPerformance, ["strategicInitiatives", "strategicInitiativeGroups"]);
-  if (!okSection("market")) swap(report, ["marketOverview"]);
+  if (!okSection("market_size")) {
+    report.marketOverview.definition = swapPlaceholder(report.marketOverview.definition);
+    report.marketOverview.metrics = swapPlaceholder(report.marketOverview.metrics);
+  }
+  if (!okSection("market_dynamics")) swap(report.marketOverview, ["segmentation", "drivers", "inhibitors"]);
   if (!okSection("competitors")) {
     swap(report, ["competitiveLandscape"]);
     report.competitorDeepDives = swapPlaceholder(report.competitorDeepDives);
@@ -1910,7 +1964,6 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   if (!rawCore) {
     swap(report, ["executiveSummary"]);
     if (analysis.performanceSummary.length === 0 && okSection("performance")) swap(report.businessPerformance, ["financialHighlights"]);
-    report.marketOverview.metrics.som = swapPlaceholder(report.marketOverview.metrics.som);
     report.competitorDeepDives.forEach((d: Any) => { d.gapAnalysis = swapPlaceholder(d.gapAnalysis); });
   }
   if (!rawFrameworks) swap(report, ["strategicFrameworks"]);
