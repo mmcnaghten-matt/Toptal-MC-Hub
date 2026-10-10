@@ -105,6 +105,67 @@ const CATALOG_PROMPT = L2_ORDER.map(
     CATALOG.filter((c) => c.l2 === l2).map((c) => `- "${offerKey(c)}": ${c.description}`).join("\n"),
 ).join("\n\n");
 
+// ---------- Strategic initiative taxonomy (fixed groups so reports are consistent) ----------
+const INITIATIVE_GROUPS: { group: string; subs: { name: string; description: string }[] }[] = [
+  {
+    group: "Mergers, Acquisitions & Partnerships (Inorganic Growth)",
+    subs: [
+      { name: "M&A Activity", description: "acquisitions of competitors or tech tuck-ins" },
+      { name: "Divestitures & Spinoffs", description: "selling non-core business units or spinning out subsidiaries" },
+      { name: "Joint Ventures & Strategic Alliances", description: "major partnerships, co-development agreements, or exclusive distribution rights" },
+    ],
+  },
+  {
+    group: "Market Strategy, Growth & Innovation (Organic Growth)",
+    subs: [
+      { name: "Product & Service Launches", description: "major new product lines, software releases, or subscription models" },
+      { name: "Market Expansion", description: "entering new geographic regions or targeting new customer segments" },
+      { name: "R&D and Innovation", description: "significant investments in emerging technologies (e.g. generative AI integration, patent acquisitions)" },
+      { name: "Go-to-Market (GTM) Shifts", description: "moving from B2B to direct-to-consumer, or overhauling pricing and packaging" },
+    ],
+  },
+  {
+    group: "Operational Transformation & Technology",
+    subs: [
+      { name: "Supply Chain & Manufacturing", description: "nearshoring, new manufacturing facilities, or supplier diversification" },
+      { name: "Digital Transformation", description: "cloud migrations, ERP implementations, or automating core processes" },
+      { name: "Cost Optimization", description: "facility closures, vendor consolidation, or lean management rollouts (distinct from financial engineering)" },
+      { name: "Operating Model Shifts", description: "e.g. from a decentralized regional model to a centralized global service model" },
+    ],
+  },
+  {
+    group: "Organizational & Leadership Dynamics",
+    subs: [
+      { name: "C-Suite & Board Transitions", description: "a new CEO or CFO, or activist investors appointed to the board" },
+      { name: "Workforce Restructuring", description: "significant headcount reductions, hiring freezes, or large talent drives in specific skill sets" },
+      { name: "Culture & Design", description: "moving to a matrix organization, permanent remote/hybrid models, or major unionization events" },
+    ],
+  },
+  {
+    group: "Financial Strategy & Capital Allocation",
+    subs: [
+      { name: "Shareholder Returns", description: "initiating or cutting dividends, or authorizing large share buyback programs" },
+      { name: "Capital Structure", description: "issuing new debt, debt refinancing, or secondary equity offerings" },
+      { name: "Resource Allocation", description: "significant shifts in capital expenditure budgets, e.g. cutting marketing spend to fund real estate" },
+    ],
+  },
+  {
+    group: "ESG, Regulatory & Corporate Governance",
+    subs: [
+      { name: "Environmental Initiatives", description: "carbon neutral commitments, transition to renewable energy, or sustainable packaging rollouts" },
+      { name: "Governance & Compliance", description: "responses to regulatory investigations (DOJ, SEC, FTC), settling major lawsuits, or new ethical oversight committees" },
+    ],
+  },
+];
+const SUBGROUP_NAMES = INITIATIVE_GROUPS.flatMap((g) => g.subs.map((x) => x.name));
+const SUBGROUP_TO_GROUP = new Map(INITIATIVE_GROUPS.flatMap((g) => g.subs.map((x) => [x.name, g.group] as const)));
+const INITIATIVE_WINDOW_MONTHS = 24;
+const groupsPrompt = (idx: number[]) =>
+  idx.map((i) => {
+    const g = INITIATIVE_GROUPS[i];
+    return `${g.group}\n` + g.subs.map((x) => `- ${x.name}: ${x.description}`).join("\n");
+  }).join("\n\n");
+
 // ---------- Types ----------
 // deno-lint-ignore no-explicit-any
 type Any = any;
@@ -265,11 +326,11 @@ const TOPICS = [
     label: "Financial performance & funding",
     ask: "Revenue and revenue growth (with fiscal period), profitability or margins, funding rounds (date, amount, round type, lead investors), total funding, valuation, employee headcount, and growth rankings or awards that state growth figures. If the company is public, the last two fiscal years of reported results.",
   },
-  {
-    key: "strategy",
+  ...[[0, 1], [2, 3], [4, 5]].map((idx, n) => ({
+    key: `strategy_${n + 1}`,
     label: "Strategic initiatives",
-    ask: "Strategic priorities and initiatives announced or underway in the last 24 months: new products, market or geographic expansion, acquisitions, partnerships, AI or technology programs, restructuring, leadership changes, and executives' public statements about priorities.",
-  },
+    ask: `Significant strategic initiatives announced or started in the last ${INITIATIVE_WINDOW_MONTHS} months, organised by the categories below. For each sub-category list the significant initiatives: what happened, when (month and year), and who reported it. Skip minor items. If a sub-category has nothing significant, write one line "NOT FOUND: <sub-category>".\n\n${groupsPrompt(idx)}`,
+  })),
   {
     key: "market",
     label: "Market",
@@ -391,12 +452,17 @@ const FACTS_SCHEMA = obj({
   businessPerformance: obj({
     financialHighlights: arr(CLAIM),
     recentMetrics: arr(CLAIM),
-    strategicInitiatives: arr(obj({ name: STR, description: CLAIM })),
+    strategicInitiatives: arr(obj({
+      group: { type: "STRING", format: "enum", enum: INITIATIVE_GROUPS.map((g) => g.group) },
+      subgroup: { type: "STRING", format: "enum", enum: SUBGROUP_NAMES },
+      name: STR,
+      description: CLAIM,
+    })),
   }),
   marketOverview: obj({
     definition: CLAIM,
-    tam: CLAIM,
-    sam: CLAIM,
+    tam: arr(CLAIM),
+    sam: arr(CLAIM),
     segmentation: arr(CLAIM),
     drivers: arr(CLAIM),
     inhibitors: arr(CLAIM),
@@ -413,7 +479,7 @@ const FACTS_SCHEMA = obj({
       strengths: arr(CLAIM),
     }),
   ),
-  customerInsights: obj({ sentiment: CLAIM, winLossReasons: arr(CLAIM), unmetNeeds: arr(CLAIM) }),
+  customerInsights: obj({ sentiment: CLAIM, sentimentThemes: arr(CLAIM), winReasons: arr(CLAIM), lossReasons: arr(CLAIM), unmetNeeds: arr(CLAIM) }),
 });
 
 const ANALYSIS_SCHEMA = obj({
@@ -426,6 +492,7 @@ const ANALYSIS_SCHEMA = obj({
     }),
     bigOpportunity: OPT_ITEM,
   }),
+  performanceSummary: arr(ITEM),
   somEstimate: OPT_ITEM,
   competitorGaps: arr(obj({ competitor: STR, text: STR, basedOn: INTS })),
   swot: obj({ strengths: arr(ITEM), weaknesses: arr(ITEM), opportunities: arr(ITEM), threats: arr(ITEM) }),
@@ -471,10 +538,13 @@ Rules:
 3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
 5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
-6. tam / sam: only market-size estimates that appear in the evidence, with publisher, year and geography in the text. Never derive one. If the only estimate is the company's own, say so.
+6. tam / sam are lists with ONE entry per published market-size estimate that appears in the evidence. Each entry starts with the market, segment, product line or business unit it covers, then geography and year, then the figure and publisher (e.g. "Cloud security (global, 2024): $48B, Grand View Research."). Never merge several estimates into one entry and never derive an estimate. If the only estimate is the company's own, say so. Empty list if there is none.
 7. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: at most 5, chosen from those.
-8. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found. Never infer sentiment.
-9. strategicInitiatives: only initiatives the evidence shows the company announced or is executing; short name plus a one-sentence description.`;
+8. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are reasons customers choose the company; lossReasons are reasons customers leave or choose a competitor.
+9. strategicInitiatives: only SIGNIFICANT initiatives the evidence shows the company announced or started in the last ${INITIATIVE_WINDOW_MONTHS} months. For each, set subgroup to exactly one of these sub-categories and group to the group it belongs to, give a short name, and a one-sentence description that includes the month and year from the evidence. At most 3 per sub-category, most recent first. A sub-category with nothing significant gets no entries.
+
+SUB-CATEGORIES
+${groupsPrompt([0, 1, 2, 3, 4, 5])}`;
 
 const analysisPrompt = (e: Entity, ev: Evidence[], today: string, part: "core" | "recs") => {
   const head = `You are a management consultant writing the analytical sections of a market-intelligence report. Today is ${today}.
@@ -491,7 +561,8 @@ Rules:
 3. executiveSummary.tldr: 3-4 sentences for leadership on the company's position, recent performance and priorities.
 4. competitivePositioning.label is "Insufficient evidence" unless evidence about market position (scale, share, rankings, comparisons) supports a label; give the rationale.
 5. somEstimate: only if the evidence contains a published market size AND evidence on the company's scale. Call it an estimate and show the reasoning. Otherwise null.
-6. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.`;
+6. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.
+7. performanceSummary: 2-3 short paragraphs (at most 130 words in total), each its own array item with basedOn. Paragraph 1: scale and growth (revenue and revenue growth, with fiscal period). Paragraph 2: profitability (net income or margins). Paragraph 3: valuation and funding (market capitalization, valuation, funding). Weave in one clause on what this implies for the company's position. Write flowing prose, not a list, and omit a paragraph the evidence cannot support. Use only figures present in the cited evidence, with their periods; never compute totals or ratios.`;
   }
   return `${head}
 3. recommendations: product, marketing and resource-allocation recommendations for ${e.name}, each tied to evidence. No numeric budgets, splits or targets.
@@ -584,6 +655,36 @@ function validateFacts(raw: Any, ctx: Ctx) {
       return [{ name, evidenceIds: ev.map((e) => e.id) }];
     });
 
+  // Initiatives: valid sub-category, inside the time window, at most 3 per sub-category.
+  const cutoffYear = new Date(Date.now() - INITIATIVE_WINDOW_MONTHS * 30.44 * 86_400_000).getFullYear();
+  const initiatives = (a: unknown) => {
+    const perSub = new Map<string, number>();
+    return list(a).flatMap((s, i) => {
+      const path = `businessPerformance.strategicInitiatives[${i}]`;
+      const name = typeof s?.name === "string" ? s.name.trim() : "";
+      const subgroup = typeof s?.subgroup === "string" ? s.subgroup : "";
+      const group = SUBGROUP_TO_GROUP.get(subgroup);
+      if (!name) return [];
+      if (!group) {
+        ctx.dropped.push({ path, reason: "unknown initiative category", text: name });
+        return [];
+      }
+      const description = checkClaim(s?.description, path, ctx);
+      if (description.status !== "sourced") return [];
+      const years = (description.text!.match(/\b20\d\d\b/g) ?? []).map(Number);
+      if (years.length && Math.max(...years) < cutoffYear) {
+        ctx.dropped.push({ path, reason: `older than ${INITIATIVE_WINDOW_MONTHS} months`, text: description.text! });
+        Object.assign(description, notFound());
+        delete description.verification;
+        return [];
+      }
+      const n = perSub.get(subgroup) ?? 0;
+      if (n >= 3) return [];
+      perSub.set(subgroup, n + 1);
+      return [{ group, subgroup, name, description }];
+    });
+  };
+
   const bp = f.businessPerformance ?? {};
   const mo = f.marketOverview ?? {};
   const cl = f.competitiveLandscape ?? {};
@@ -594,17 +695,12 @@ function validateFacts(raw: Any, ctx: Ctx) {
     businessPerformance: {
       financialHighlights: claims(bp.financialHighlights, "businessPerformance.financialHighlights"),
       recentMetrics: claims(bp.recentMetrics, "businessPerformance.recentMetrics"),
-      strategicInitiatives: list(bp.strategicInitiatives)
-        .map((s, i) => ({
-          name: typeof s?.name === "string" ? s.name.trim() : "",
-          description: checkClaim(s?.description, `businessPerformance.strategicInitiatives[${i}]`, ctx),
-        }))
-        .filter((s) => s.name && s.description.status === "sourced"),
+      strategicInitiatives: initiatives(bp.strategicInitiatives),
     },
     marketOverview: {
       definition: checkClaim(mo.definition, "marketOverview.definition", ctx),
-      tam: checkClaim(mo.tam, "marketOverview.tam", ctx),
-      sam: checkClaim(mo.sam, "marketOverview.sam", ctx),
+      tam: claims(mo.tam, "marketOverview.tam"),
+      sam: claims(mo.sam, "marketOverview.sam"),
       segmentation: claims(mo.segmentation, "marketOverview.segmentation"),
       drivers: claims(mo.drivers, "marketOverview.drivers"),
       inhibitors: claims(mo.inhibitors, "marketOverview.inhibitors"),
@@ -631,8 +727,10 @@ function validateFacts(raw: Any, ctx: Ctx) {
       .filter((d) => d.name && mentioned(d.name)),
     customerInsights: {
       sentiment: checkClaim(ci.sentiment, "customerInsights.sentiment", ctx, CUSTOMER),
-      winLossReasons: claims(ci.winLossReasons, "customerInsights.winLossReasons", CUSTOMER),
-      unmetNeeds: claims(ci.unmetNeeds, "customerInsights.unmetNeeds", CUSTOMER),
+      sentimentThemes: claims(ci.sentimentThemes, "customerInsights.sentimentThemes", CUSTOMER).slice(0, 5),
+      winReasons: claims(ci.winReasons, "customerInsights.winReasons", CUSTOMER).slice(0, 5),
+      lossReasons: claims(ci.lossReasons, "customerInsights.lossReasons", CUSTOMER).slice(0, 5),
+      unmetNeeds: claims(ci.unmetNeeds, "customerInsights.unmetNeeds", CUSTOMER).slice(0, 5),
     },
   };
 }
@@ -658,6 +756,7 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
       competitivePositioning: { label, rationale },
       bigOpportunity: one(es.bigOpportunity, "executiveSummary.bigOpportunity"),
     },
+    performanceSummary: many(a.performanceSummary, "performanceSummary").slice(0, 3),
     somEstimate: one(a.somEstimate, "somEstimate"),
     competitorGaps: list(a.competitorGaps).flatMap((g, i) => {
       const item = one(g, `competitorGaps[${i}]`);
@@ -753,6 +852,8 @@ function pruneFacts(f: Facts): Facts {
     },
     marketOverview: {
       ...f.marketOverview,
+      tam: f.marketOverview.tam.filter(ok),
+      sam: f.marketOverview.sam.filter(ok),
       segmentation: f.marketOverview.segmentation.filter(ok),
       drivers: f.marketOverview.drivers.filter(ok),
       inhibitors: f.marketOverview.inhibitors.filter(ok),
@@ -763,7 +864,9 @@ function pruneFacts(f: Facts): Facts {
       .filter((d) => [d.revenue, d.headcount, d.activity, d.valueProposition, d.pricingModel].some(ok) || d.strengths.length > 0),
     customerInsights: {
       sentiment: f.customerInsights.sentiment,
-      winLossReasons: f.customerInsights.winLossReasons.filter(ok),
+      sentimentThemes: f.customerInsights.sentimentThemes.filter(ok),
+      winReasons: f.customerInsights.winReasons.filter(ok),
+      lossReasons: f.customerInsights.lossReasons.filter(ok),
       unmetNeeds: f.customerInsights.unmetNeeds.filter(ok),
     },
   };
@@ -814,7 +917,8 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
       ? c.text + cite(c.evidenceIds) + (c.verification === "partial" ? " (partially verified)" : "")
       : ph.facts;
   const fcs = (xs: Claim[]) => (xs.length ? xs.map(fc) : [ph.facts]);
-  const fcj = (xs: Claim[]) => (xs.length ? xs.map(fc).join(" ") : ph.facts);
+  const bullets = (xs: string[]) => xs.map((x) => `- ${x}`).join("\n");
+  const fcj = (xs: Claim[]) => (xs.length ? bullets(xs.map(fc)) : ph.facts);
   const fi = (i: Item | null, empty = ph.core) => (i ? i.text + cite(i.basedOn) : empty);
   const fis = (xs: Item[], empty = ph.core) => (xs.length ? xs.map((x) => fi(x)) : [empty]);
   const names = (xs: Named[]) => (xs.length ? xs.map((n) => n.name + cite(n.evidenceIds)) : [ph.facts]);
@@ -833,13 +937,30 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
       bigOpportunity: fi(a.executiveSummary.bigOpportunity),
     },
     businessPerformance: {
-      financialHighlights: fcj(f.businessPerformance.financialHighlights),
+      financialHighlights: a.performanceSummary.length
+        ? a.performanceSummary.map((p) => fi(p)).join("\n\n")
+        : fcj(f.businessPerformance.financialHighlights),
       recentMetrics: fcs(f.businessPerformance.recentMetrics),
       strategicInitiatives: f.businessPerformance.strategicInitiatives.map((s) => ({ name: s.name, description: fc(s.description) })),
+      strategicInitiativeGroups: INITIATIVE_GROUPS.map((g) => ({
+        group: g.group,
+        subgroups: g.subs
+          .map((sub) => ({
+            name: sub.name,
+            items: f.businessPerformance.strategicInitiatives
+              .filter((s) => s.subgroup === sub.name)
+              .map((s) => ({ name: s.name, description: fc(s.description) })),
+          }))
+          .filter((sg) => sg.items.length),
+      })).filter((g) => g.subgroups.length),
     },
     marketOverview: {
       definition: fc(f.marketOverview.definition),
-      metrics: { tam: fc(f.marketOverview.tam), sam: fc(f.marketOverview.sam), som: fi(a.somEstimate) },
+      metrics: {
+        tam: f.marketOverview.tam.length ? bullets(f.marketOverview.tam.map(fc)) : ph.facts,
+        sam: f.marketOverview.sam.length ? bullets(f.marketOverview.sam.map(fc)) : ph.facts,
+        som: a.somEstimate ? bullets([fi(a.somEstimate)]) : ph.core,
+      },
       segmentation: fcs(f.marketOverview.segmentation),
       drivers: fcs(f.marketOverview.drivers),
       inhibitors: fcs(f.marketOverview.inhibitors),
@@ -881,8 +1002,15 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
       },
     },
     customerInsights: {
-      sentiment: fc(f.customerInsights.sentiment),
-      winLossReasons: fcj(f.customerInsights.winLossReasons),
+      sentiment: (() => {
+        const head = f.customerInsights.sentiment.status === "sourced" ? fc(f.customerInsights.sentiment) : "";
+        const themes = f.customerInsights.sentimentThemes.length ? bullets(f.customerInsights.sentimentThemes.map(fc)) : "";
+        return [head, themes].filter(Boolean).join("\n\n") || ph.facts;
+      })(),
+      // JSON string; the page's WinLossColumns renders it as two columns.
+      winLossReasons: f.customerInsights.winReasons.length || f.customerInsights.lossReasons.length
+        ? JSON.stringify({ wins: f.customerInsights.winReasons.map(fc), losses: f.customerInsights.lossReasons.map(fc) })
+        : ph.facts,
       unmetNeeds: fcj(f.customerInsights.unmetNeeds),
     },
     recommendations: {
@@ -905,12 +1033,14 @@ function sectionCoverage(f: Facts, a: Analysis, mc: Opportunity[]) {
   const sections: Record<string, boolean> = {
     executiveSummary: !!(a.executiveSummary.tldr || a.executiveSummary.bigOpportunity || a.executiveSummary.keyTrends.length),
     businessPerformance: f.businessPerformance.financialHighlights.length + f.businessPerformance.recentMetrics.length +
-        f.businessPerformance.strategicInitiatives.length > 0,
-    marketOverview: s(f.marketOverview.definition) || s(f.marketOverview.tam) || f.marketOverview.drivers.length > 0,
+        f.businessPerformance.strategicInitiatives.length + a.performanceSummary.length > 0,
+    marketOverview: s(f.marketOverview.definition) || f.marketOverview.tam.length > 0 || f.marketOverview.drivers.length > 0,
     competitiveLandscape: f.competitiveLandscape.directCompetitors.length + f.competitiveLandscape.indirectCompetitors.length > 0,
     competitorDeepDives: f.competitorDeepDives.length > 0,
     strategicFrameworks: Object.values(a.swot).some((x) => x.length > 0),
-    customerInsights: s(f.customerInsights.sentiment) || f.customerInsights.winLossReasons.length + f.customerInsights.unmetNeeds.length > 0,
+    customerInsights: s(f.customerInsights.sentiment) ||
+        f.customerInsights.sentimentThemes.length + f.customerInsights.winReasons.length + f.customerInsights.lossReasons.length +
+            f.customerInsights.unmetNeeds.length > 0,
     recommendations: a.recommendations.product.length + a.recommendations.marketing.length > 0,
     mcOpportunities: mc.length > 0,
   };
