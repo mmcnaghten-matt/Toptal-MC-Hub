@@ -1,7 +1,7 @@
-# Client Insights QC suite
+# QC suite (Client Insights and Industry Insights)
 
-Everything the QC rounds found, as checks you can run after any change to `supabase/functions/gemini-research/index.ts`
-or `src/services/researchPipeline.ts`.
+Everything the QC rounds found, as checks you can run after any change to `supabase/functions/gemini-research/index.ts`,
+`supabase/functions/refresh-industry-insights/index.ts` or the two pipeline files in `src/services/`.
 
 ```bash
 npm run qc                                   # pipeline tests (mocked Gemini, no network) + checker tests
@@ -44,3 +44,5 @@ at 2026-10-10 (`fixed-date.mjs`). Add a case here whenever a QC round finds a ne
 | `round6.test.mjs` | Sold-business footprint, market sanity checks, competitor name merging, rank-based positioning, litigation and materiality rules, evidence-id stripping, per-topic drop counts |
 | `faults.test.mjs` | Failed scans, sections and analysis parts degrade without failing the report; gateway errors are retried; unknown company stops with a 422 |
 | `tiers.test.mjs` | Source tiers, excluded domains, three-citation cap, financial-statement rules |
+| `industry.test.mjs` | Industry Insights: stock-data sites blocked; dated regulation, deal and program items checked against the cited page (2007 page contradicted, undated page dropped, unreadable page kept as unverified, old undated page dropped); market statistics not date-checked; evidence ids stripped; awards not initiatives; directional parts still free to interpret; refresh completes if the date check cannot run |
+| `industry-interpretive.test.mjs` | Industry Insights: unsupported figures are rewritten instead of dropped, thin lists get one top-up, events must be inside the 24-month window, the verifier removes unsupported statements |
