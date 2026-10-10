@@ -44,6 +44,9 @@ export interface IndustryResearchResult {
     dropped?: { path: string; reason: string; text: string }[];
     evidenceCount?: number;
     sourceCount?: number;
+    sourcesDroppedByType?: number;
+    sourceTiers?: { primary: number; major: number; other: number };
+    verifier?: string;
   };
 }
 

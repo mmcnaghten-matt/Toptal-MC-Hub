@@ -72,6 +72,13 @@ export function RefreshPreview({ content, applying, onApply, onDiscard }: Props)
             Research log ({q.droppedCount ?? 0} dropped · {q.warnings?.length ?? 0} warnings)
           </summary>
           <div className="space-y-4 border-t border-border p-4 text-xs">
+            {q.sourceTiers && (
+              <p className="text-muted-foreground">
+                Cited sources: {q.sourceTiers.primary} primary · {q.sourceTiers.major} major press or analyst · {q.sourceTiers.other} other
+                {q.sourcesDroppedByType ? ` · ${q.sourcesDroppedByType} facts dropped because their sources were social media, forums or similar` : ""}
+                {q.verifier ? ` · verifier: ${q.verifier}` : ""}
+              </p>
+            )}
             {q.scans && q.scans.length > 0 && (
               <table className="w-full text-left">
                 <thead>
