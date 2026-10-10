@@ -178,9 +178,11 @@ type GroundingMeta = {
 };
 type GeminiResult = { text: string; meta: GroundingMeta | null };
 // kinds: what sort of site a source is (peer_list, seller, review, lookalike); flags on evidence = kinds shared by ALL of its sources.
-type Source = { id: number; title: string; url: string; tier?: number; kinds?: string[] };
+// page: what the source page itself says about dates (filled by the verify_evidence step).
+type PageInfo = { read: boolean; title?: string; pub?: string; my?: string[]; years?: number[] };
+type Source = { id: number; title: string; url: string; tier?: number; kinds?: string[]; page?: PageInfo };
 // tier: 1 primary (filings, regulators, company releases), 2 major press/analysts, 3 everything else. srcTiers aligns with sourceIds.
-type Evidence = { id: number; topic: string; text: string; sourceIds: number[]; tier?: number; srcTiers?: number[]; flags?: string[] };
+type Evidence = { id: number; topic: string; text: string; sourceIds: number[]; tier?: number; srcTiers?: number[]; flags?: string[]; dateChecked?: boolean };
 type Claim = {
   text: string | null;
   status: "sourced" | "not_found";
@@ -407,6 +409,7 @@ Rules:
 - Write short, self-contained sentences with ONE fact each. Name the company in each sentence, and for any figure give its date or period and who reported it (e.g. "Acme raised $12M in a Series A in March 2024, according to TechCrunch.").
 - Prefer primary sources (SEC filings, the company's investor-relations pages and press releases, regulators), then major news outlets and analyst firms. Avoid social media, stock-forum or stock-data aggregator pages, vendor marketing blogs and law-firm sites.
 - Prefer sources from the last 24 months for metrics and news.
+- Give the date of every event exactly as the source states it. If a source does not state the year of an event, write "date not stated" for that event. Never assume the current year, and never turn an undated or old item into a recent one.
 - Distinguish company claims ("the company says...") from independent reporting.
 - If you cannot find something, write one line "NOT FOUND: <item>". Incomplete answers are expected and fine.
 - No recommendations, opinions, or analysis.`;
@@ -501,9 +504,18 @@ const DOMAINS_REVIEW = [
   "g2.com", "capterra.com", "trustradius.com", "softwareadvice.com", "gartner.com", "consumerreports.org", "courtlistener.com",
   "classaction.org", "cpsc.gov", "ftc.gov", "justia.com", "angi.com", "homeadvisor.com", "reviews.com",
 ];
+// Plaintiff-firm and securities-investigation marketing: it can support "a law firm announced an investigation", not
+// "an investigation was opened" or "a lawsuit was filed".
+const DOMAINS_LEGAL_MARKETING = [
+  "zlk.com", "classaction.org", "rosenlegal.com", "pomerantzlaw.com", "glancylaw.com", "bragarlaw.com", "bernlieb.com", "kahnswick.com",
+  "faruqilaw.com", "ktmc.com", "hagens.com", "rgrdlaw.com", "johnsonfistel.com", "gainsbenjamin.com", "levilaw.com", "schallfirm.com",
+];
+const LEGAL_HOST_RE = /(lawfirm|lawyers?|attorneys?|llp|litigation|classaction|classlaw|[a-z]law\.(com|net|org)|law(group|offices?|firm|yers))/i;
+const LEGAL_TITLE_RE = /(investigation|class action|investors? (alert|notice)|you may be entitled|contact (us|an attorney)|lawsuit)/i;
 // Pages that sell or install the product (dealers, contractors, distributors): marketing, not customer evidence.
 const SELLER_RE = /(preferred[ -]contractor|certified[ -]contractor|authori[sz]ed (dealer|distributor|installer)|roofing (company|contractor|services?|co\b)|\broofers?\b|\bcontractors?\b|\binstallers?\b|\bdealers?\b|distribut(or|ion)\b|\bsupply\b|\bexteriors?\b|home ?improvement)/i;
 // Host names run words together ("smithroofingcontractors.com"), so they are matched without word boundaries.
+const NOT_CUSTOMER_RE = /(asbestos|mesothelioma|securities (class action|fraud|litigation)|shareholder|investor (alert|lawsuit)|bankruptcy trust|personal[- ]injury|shipyard)/i;
 const SELLER_HOST_RE = /(contractor|roofer|roofing|installer|dealer|distribut|supply(?!chain)|exterior|reseller|homeimprovement)/i;
 const sellerLike = (host: string, title?: string) => SELLER_HOST_RE.test(host.replace(/[-.]/g, "")) || SELLER_RE.test(title ?? "");
 // Bot-check and error pages: nobody can audit what they say.
@@ -573,6 +585,7 @@ function sourceKinds(url: string, title: string | undefined, companyRoot: string
   const kinds: string[] = [];
   if (matchesDomain(host, DOMAINS_PEER_LISTS)) kinds.push("peer_list");
   if (matchesDomain(host, DOMAINS_REVIEW)) kinds.push("review");
+  if (matchesDomain(host, DOMAINS_LEGAL_MARKETING) || (LEGAL_HOST_RE.test(host) || LEGAL_HOST_RE.test(host.replace(/-/g, ""))) || (LEGAL_TITLE_RE.test(title ?? "") && !matchesDomain(host, DOMAINS_T1) && !matchesDomain(host, DOMAINS_T2))) kinds.push("legal_marketing");
   const ownSite = companyRoot && matchesDomain(host, [companyRoot]);
   if (!ownSite && !matchesDomain(host, DOMAINS_T1) && !matchesDomain(host, DOMAINS_T2) && sellerLike(host, title)) kinds.push("seller");
   const token = brandToken(brand ?? "");
@@ -603,6 +616,8 @@ function buildLedger(
   const queries: string[] = [];
   const perTopic = new Map<string, number>();
   for (const e of evidence) perTopic.set(e.topic, (perTopic.get(e.topic) ?? 0) + 1);
+  // Ids never repeat, even after the verify step has removed rows.
+  let nextId = evidence.reduce((m, e) => Math.max(m, e.id), 0) + 1;
 
   for (const { topic, r } of results) {
     const meta = r.meta;
@@ -634,6 +649,8 @@ function buildLedger(
     for (const s of meta.groundingSupports ?? []) {
       const text = cleanText(s.segment?.text ?? "").replace(/^[\s*-]+/, "").trim();
       if (text.length < 15 || /NOT FOUND/i.test(text) || /^(CONFIDENCE|OTHER_ENTITIES)\b/.test(text)) continue;
+      // Customer themes are about product or service experience; legacy liabilities and investor litigation are not.
+      if (topic.startsWith("customer") && NOT_CUSTOMER_RE.test(text)) continue;
       const ids = [...new Set((s.groundingChunkIndices ?? []).map((i) => chunkSrc[i]).filter((x): x is number => x != null))];
       if (!ids.length) {
         if ((s.groundingChunkIndices ?? []).some((i) => excludedChunks.has(i))) droppedByTier++;
@@ -647,7 +664,7 @@ function buildLedger(
       const srcTiers = ids.map((id) => tierOfSource.get(id) ?? 3);
       // A flag applies only when every source behind the fact has it (one good source rescues the fact).
       const flags = (kindsOfSource.get(ids[0]) ?? []).filter((k) => ids.every((id) => (kindsOfSource.get(id) ?? []).includes(k)));
-      evidence.push({ id: evidence.length + 1, topic, text, sourceIds: ids, tier: Math.min(...srcTiers), srcTiers, ...(flags.length ? { flags } : {}) });
+      evidence.push({ id: nextId++, topic, text, sourceIds: ids, tier: Math.min(...srcTiers), srcTiers, ...(flags.length ? { flags } : {}) });
     }
   }
   return { sources, evidence, searchSuggestions, queries: [...new Set(queries)], droppedByTier };
@@ -752,7 +769,8 @@ const RECS_SCHEMA = obj({
   mcOpportunities: ANALYSIS_SCHEMA.properties.mcOpportunities,
 });
 
-const evidenceBlock = (ev: Evidence[]) => ev.map((e) => `E${e.id} [${e.topic}|T${e.tier ?? 2}] ${e.text}`).join("\n");
+const evidenceBlock = (ev: Evidence[]) =>
+  ev.map((e) => `E${e.id} [${e.topic}|T${e.tier ?? 2}${e.flags?.includes("stale") ? "|OLD" : ""}] ${e.text}`).join("\n");
 
 const factsPrompt = (e: Entity, ev: Evidence[], today: string, competitors?: string[]) => `You are building the fact base of a market-intelligence report. Today is ${today}.
 ${entityBlock(e)}
@@ -787,7 +805,8 @@ Rules:
 1. Every item must list in basedOn the E numbers (integers) it rests on. If you cannot point to evidence for an item, leave it out: null for single fields, [] for lists. Fewer, well-grounded items beat filling every slot, but do use the evidence you have: a well-documented company should get a full analysis.
 2. Judgement and synthesis are expected, but introduce no new facts: no figures, percentages, budgets, targets, dates, names, customers or events that are not in the cited evidence.
 2a. Evidence lines carry a source tier (T1 primary, T2 major press and analysts, T3 other). Rest conclusions on T1 and T2 evidence. Do not draw a trend or conclusion from a single aggregator figure, or from figures reported on different bases (original versus restated, total versus continuing operations). Write a company's own marketing claims as that company's claim. Investment commentary ("undervalued", price targets) is not a strength. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.
-2b. Financial interpretation. (i) When revenue, headcount or margins changed because of an acquisition or divestiture that the evidence mentions, say so and name the deal and date; never present acquired growth as organic, and never call a deal-driven jump or fall a trend or a weakness. (ii) Never compare or combine adjusted and reported (GAAP) figures, or figures from different periods or bases; name the basis of every margin or earnings figure. (iii) Do not use margins or ratios computed by third-party websites; use only figures the company itself reported. (iv) Describe only the company's current businesses (the CURRENT SEGMENTS in the company block); a business listed as sold is history, not a current strength, opportunity or market.`;
+2b. Financial interpretation. (i) When revenue, headcount or margins changed because of an acquisition or divestiture that the evidence mentions, say so and name the deal and date; never present acquired growth as organic, and never call a deal-driven jump or fall a trend or a weakness. (ii) Never compare or combine adjusted and reported (GAAP) figures, or figures from different periods or bases; name the basis of every margin or earnings figure. (iii) Do not use margins or ratios computed by third-party websites; use only figures the company itself reported. (iv) Describe only the company's current businesses (the CURRENT SEGMENTS in the company block); a business listed as sold is history, not a current strength, opportunity or market.
+2c. Dates and sources. Use an event's date only as the cited evidence states it, never infer a year, and do not turn an undated item into a current one. Evidence tagged OLD (source published more than 18 months ago) cannot support statements about the company's current position, threats or ESG goals. Do not describe an expectation or target whose period has already ended as upcoming. A statement resting on a law firm's or plaintiff firm's page must say that the firm announced or alleged it ("a law firm announced an investigation into...").`;
   if (part === "core") {
     return `${head}
 3. executiveSummary.tldr: 3-4 sentences for leadership on the company's position, recent performance and priorities.
@@ -853,6 +872,10 @@ const validEvidence = (ids: unknown, ctx: Ctx, topics?: string[]) =>
     .map((id) => ctx.byId.get(Number(id)))
     .filter((e): e is Evidence => !!e && (!topics || topics.some((t) => e.topic === t || (t.endsWith("*") && e.topic.startsWith(t.slice(0, -1))))));
 
+// A statement resting only on plaintiff-firm marketing must say a firm announced or alleged it.
+const ATTRIBUTION_RE = /\b(law firm|plaintiff firm|attorneys?|class[- ]action (complaint|filing)|alleg(es|ed|ations?)|announced an investigation)\b/i;
+const onlyLegalMarketing = (ev: Evidence[]) => ev.length > 0 && ev.every((e) => e.flags?.includes("legal_marketing"));
+
 const notFound = (): Claim => ({ text: null, status: "not_found", evidenceIds: [] });
 
 function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { allowHedge?: boolean; primaryOnly?: boolean }): Claim {
@@ -871,6 +894,8 @@ function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { 
     ? "hedged language in a factual field"
     : !figuresSupported(text, ev, false)
     ? "figure not present in cited evidence"
+    : onlyLegalMarketing(ev) && !ATTRIBUTION_RE.test(text)
+    ? "law-firm claim needs attribution"
     : null;
   if (reason) {
     ctx.dropped.push({ path, reason, text });
@@ -915,6 +940,8 @@ function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
       ((text.match(FIN_FIGURE) ?? []).length > 0 || FIN_TERMS.test(text)) && ev.some((e) => e.topic === "performance") &&
         !ev.some((e) => (e.tier ?? 2) <= ctx.finMaxTier)
     ? ctx.finMaxTier === 1 ? "financial statement needs a primary source (filing, investor page or company release)" : "financial statement needs a primary or major-press source"
+    : onlyLegalMarketing(ev) && !ATTRIBUTION_RE.test(text)
+    ? "law-firm claim needs attribution"
     : null;
   if (reason) {
     ctx.dropped.push({ path, reason, text });
@@ -1471,6 +1498,257 @@ async function fetchTitles(sources: Source[], budgetMs: number): Promise<void> {
   }));
 }
 
+// ---------- Date integrity ----------
+// The evidence ledger holds the research model's SUMMARY of a page, and a model summarising an undated or old article tends
+// to write the current year. Every downstream check then passes. So a statement that carries a recent date is checked against
+// the cited page itself: the page must show that date, or be a primary source that dates itself.
+const MONTH_RE = "(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+const monthNo = (m: string) => ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"].indexOf(m.slice(0, 3).toLowerCase()) + 1;
+const ymKey = (y: number, m: number) => `${y}-${String(m).padStart(2, "0")}`;
+const monthsOf = (ym: string) => Number(ym.slice(0, 4)) * 12 + Number(ym.slice(5, 7));
+
+/** "July 17, 2026", "17 July 2026", "2026-07-17", "07/17/2026" -> "2026-07" (deduplicated). */
+function monthYears(text: string): string[] {
+  const out = new Set<string>();
+  for (const m of text.matchAll(new RegExp(`\\b${MONTH_RE}\\.?\\s+(?:\\d{1,2}(?:st|nd|rd|th)?,?\\s+)?((?:19|20)\\d\\d)\\b`, "gi"))) out.add(ymKey(Number(m[2]), monthNo(m[1])));
+  for (const m of text.matchAll(new RegExp(`\\b\\d{1,2}(?:st|nd|rd|th)?\\s+${MONTH_RE}\\.?,?\\s+((?:19|20)\\d\\d)\\b`, "gi"))) out.add(ymKey(Number(m[2]), monthNo(m[1])));
+  for (const m of text.matchAll(/\b((?:19|20)\d\d)-(0[1-9]|1[0-2])-\d\d\b/g)) out.add(ymKey(Number(m[1]), Number(m[2])));
+  for (const m of text.matchAll(/\b(0?[1-9]|1[0-2])\/\d{1,2}\/((?:19|20)\d\d)\b/g)) out.add(ymKey(Number(m[2]), Number(m[1])));
+  return [...out];
+}
+
+/** The recent dates (last 3 years, up to next year) a statement asserts. */
+function claimDates(text: string, curYear: number): { my: string[]; years: number[] } {
+  const my = monthYears(text).filter((x) => Number(x.slice(0, 4)) >= curYear - 3 && Number(x.slice(0, 4)) <= curYear + 1);
+  const years = [...new Set((text.match(/\b(?:19|20)\d\d\b/g) ?? []).map(Number))].filter((y) => y >= curYear - 3 && y <= curYear + 1);
+  return { my, years };
+}
+
+const toYm = (v: string): string | undefined => {
+  const iso = v.match(/^(\d{4})-(\d{2})/);
+  if (iso) return ymKey(Number(iso[1]), Number(iso[2]));
+  const t = Date.parse(v);
+  return Number.isFinite(t) ? ymKey(new Date(t).getUTCFullYear(), new Date(t).getUTCMonth() + 1) : undefined;
+};
+
+/** What a page says about its own date: publication date, dates in the body, years in the body (outside copyright and footers). */
+function parsePage(html: string, url: string): PageInfo {
+  const title = plainTitle(html.match(/<title[^>]*>([\s\S]{1,300}?)<\/title>/i)?.[1] ?? "").slice(0, 200);
+  const PUB_NAMES = new Set(["article:published_time", "og:published_time", "datepublished", "pubdate", "publishdate", "publish-date", "date", "dc.date", "dc.date.issued", "parsely-pub-date", "sailthru.date"]);
+  let pub: string | undefined;
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+    const name = tag.match(/(?:property|name|itemprop)=["']([^"']+)["']/i)?.[1]?.toLowerCase();
+    const content = tag.match(/content=["']([^"']+)["']/i)?.[1];
+    if (name && content && PUB_NAMES.has(name)) {
+      pub = toYm(content);
+      if (pub) break;
+    }
+  }
+  pub ??= toYm(html.match(/"datePublished"\s*:\s*"([^"]+)"/)?.[1] ?? "");
+  pub ??= toYm(html.match(/<time\b[^>]*datetime=["']([^"']+)["']/i)?.[1] ?? "");
+  const urlDate = url.match(/\/((?:19|20)\d\d)\/(0[1-9]|1[0-2])(?:\/|$)/);
+  if (!pub && urlDate) pub = ymKey(Number(urlDate[1]), Number(urlDate[2]));
+  const text = cleanText(
+    html.slice(0, 400_000)
+      .replace(/<(script|style|noscript|nav|footer|header|aside|svg|form)\b[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/<[^>]+>/g, " "),
+  ).replace(/\s+/g, " ").replace(/(?:©|copyright)\s*(?:\(c\)\s*)?(?:19|20)\d\d(?:\s*[-–]\s*(?:19|20)\d\d)?/gi, " ");
+  return {
+    read: text.length >= 400,
+    title: title || undefined,
+    pub,
+    my: monthYears(text).slice(0, 60),
+    years: [...new Set((text.match(/\b(?:19|20)\d\d\b/g) ?? []).map(Number))].filter((y) => y >= 1990).slice(0, 40),
+  };
+}
+
+async function readPage(url: string, timeoutMs: number): Promise<PageInfo> {
+  if (!/^https?:/.test(url) || /\.pdf($|\?)/i.test(url) || url.includes("grounding-api-redirect") || timeoutMs < 500) return { read: false };
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(timeoutMs), redirect: "follow",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MCHubBot/1.0)", Accept: "text/html" },
+    });
+    if (!res.ok || !/html/.test(res.headers.get("content-type") ?? "") || !res.body) {
+      await res.body?.cancel();
+      return { read: false };
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let html = "";
+    while (html.length < 300_000) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      html += dec.decode(value, { stream: true });
+    }
+    await reader.cancel();
+    return parsePage(html, url);
+  } catch {
+    return { read: false };
+  }
+}
+
+type DateVerdict = "confirmed" | "contradicted" | "not_shown" | "unreadable";
+function dateVerdict(claim: { my: string[]; years: number[] }, pages: PageInfo[]): DateVerdict {
+  const read = pages.filter((p) => p.read);
+  const confirms = (pg: PageInfo) =>
+    claim.my.length
+      ? !!pg.my?.some((m) => claim.my.includes(m)) || (!!pg.pub && claim.my.some((m) => Math.abs(monthsOf(pg.pub!) - monthsOf(m)) <= 6))
+      : claim.years.some((y) => !!pg.years?.includes(y) || (!!pg.pub && Number(pg.pub.slice(0, 4)) === y));
+  const minYear = Math.min(...claim.years);
+  // An article published two or more years before the date it is said to report cannot be reporting it.
+  const contradicts = (pg: PageInfo) => !!pg.pub && Number(pg.pub.slice(0, 4)) <= minYear - 2;
+  if (read.some(confirms)) return "confirmed";
+  if (read.some(contradicts)) return "contradicted";
+  return read.length ? "not_shown" : "unreadable";
+}
+
+// Expectations and targets whose period has already ended read as news but are stale.
+const FORECAST_RE = /\b(expected to|expects?|expected|projected|projects?|forecast(?:s|ed)?|guidance|anticipat\w+|outlook)\b/i;
+const NOT_FORECAST_RE = /(than expected|in line with (?:its |the )?(?:expectations|guidance)|\bbeat\b|exceeded|exceeding|surpass\w*)/i;
+const TARGET_RE = /\b(target|goal|aim|commit\w*|pledge\w*|ambition)\b[^.]{0,80}\bby (?:the end of )?((?:19|20)\d\d)\b/i;
+const ACHIEVED_RE = /\b(achieved|met|reached|exceeded|delivered|completed)\b/i;
+function periodEnds(text: string, curYear: number): Date[] {
+  const ends: Date[] = [];
+  const eom = (y: number, m: number) => new Date(Date.UTC(y, m, 0, 23, 59, 59));
+  for (const m of text.matchAll(/\bQ([1-4])\s*(?:of\s*)?((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), Number(m[1]) * 3));
+  const ORD: Record<string, number> = { first: 1, second: 2, third: 3, fourth: 4 };
+  for (const m of text.matchAll(/\b(first|second|third|fourth) quarter(?: of)?\s*((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), ORD[m[1].toLowerCase()] * 3));
+  for (const m of text.matchAll(/\bH([12])\s*((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), Number(m[1]) * 6));
+  for (const m of text.matchAll(/\b(first|second) half(?: of)?\s*((?:19|20)\d\d)\b/gi)) ends.push(eom(Number(m[2]), m[1].toLowerCase() === "first" ? 6 : 12));
+  for (const ymv of monthYears(text)) ends.push(eom(Number(ymv.slice(0, 4)), Number(ymv.slice(5, 7))));
+  // A bare year ("in 2026") means the whole year, but only when no quarter, half or month is named ("Q2 2026" is not all of 2026).
+  if (!ends.length) {
+    for (const m of text.matchAll(/\b((?:19|20)\d\d)\b/g)) {
+      const y = Number(m[1]);
+      if (y >= curYear - 3 && y <= curYear + 3) ends.push(eom(y, 12));
+    }
+  }
+  return ends;
+}
+function expiredForecast(text: string, now: Date): string | null {
+  const curYear = now.getUTCFullYear();
+  if (FORECAST_RE.test(text) && !NOT_FORECAST_RE.test(text)) {
+    const ends = periodEnds(text, curYear);
+    if (ends.length && Math.max(...ends.map((d) => d.getTime())) < now.getTime()) return "forecast whose period has passed";
+  }
+  const t = text.match(TARGET_RE);
+  if (t && !ACHIEVED_RE.test(text) && new Date(Date.UTC(Number(t[2]), 11, 31, 23, 59, 59)).getTime() < now.getTime()) return "target date has passed";
+  return null;
+}
+
+// Events that matter enough to need a primary-source confirmation when only secondary pages report them.
+const MATERIAL_RE = /\b(acqui\w+|sale of|sell|sold|divest\w*|merger|merge[sd]?|settle\w*|appoint\w*|named (?:as )?(?:ceo|cfo|coo|president|chair)|steps? down|resign\w*|clos(?:e|es|ed|ure|ing) (?:of )?(?:its |the |a )?(?:plant|facility|factory|mill|site)|plant closure|restructur\w*|layoffs?|lawsuit|class action|recall\w*|investigation)\b/i;
+
+async function corroborate(apiKey: string, state: State, text: string, maxTier: 1 | 2, claim: { my: string[]; years: number[] }, ms: number): Promise<boolean> {
+  const prompt = `Today is ${todayStr()}.
+${entityBlock(state.entity)}
+Use Google Search. Find the company's own newsroom or press-release page, or an SEC filing${maxTier === 2 ? ", or a major news outlet (Reuters, Bloomberg, AP, WSJ, FT)" : ""}, that confirms this statement:
+"${text.slice(0, 400)}"
+Answer on one line, exactly: CONFIRMED | <date as the source states it> | <site name>
+or, if you cannot find such a source: NOT CONFIRMED`;
+  const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, temperature: 0, thinkingBudget: 0, attempts: 1, timeoutMs: ms });
+  const line = r.text.split("\n").find((l) => /^\W*(NOT )?CONFIRMED/i.test(l.trim())) ?? "";
+  if (!/^\W*CONFIRMED/i.test(line.trim())) return false;
+  const root = rootDomainOf(state.entity.website);
+  const good = (r.meta?.groundingChunks ?? []).some((c) => {
+    const t = sourceTier(c.web?.uri ?? "", c.web?.title, root);
+    return t >= 1 && t <= maxTier;
+  });
+  const years = (line.match(/\b(?:19|20)\d\d\b/g) ?? []).map(Number);
+  return good && (!claim.years.length || years.some((y) => claim.years.includes(y)));
+}
+
+type DateLog = NonNullable<State["dateChecks"]>;
+async function runPool<T>(items: T[], n: number, fn: (x: T) => Promise<void>): Promise<void> {
+  let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (i < items.length) await fn(items[i++]);
+  }));
+}
+
+// Request: check the dates in the evidence against the cited pages, drop what the pages contradict or cannot support, and
+// ask for primary-source confirmation of material events that only secondary pages report. Never fails the run.
+async function v2VerifyEvidence(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const state = readState(body?.state);
+  if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
+  const now = new Date();
+  const cy = now.getUTCFullYear();
+  const maxTier: 1 | 2 = isPublicCompany(state.entity) ? 1 : 2;
+  const log: DateLog = state.dateChecks ?? { confirmed: 0, unverified: 0, corroborated: 0, dropped: [] };
+  const drop = new Map<number, string>();
+  const todo = state.evidence.filter((e) => !e.dateChecked);
+  const srcById = new Map(state.sources.map((x) => [x.id, x]));
+  const bestTier = (e: Evidence) => Math.min(...(e.srcTiers?.length ? e.srcTiers : [e.tier ?? 3]));
+
+  // 1. Read the pages behind every statement that carries a recent date.
+  const dated = todo.map((e) => ({ e, c: claimDates(e.text, cy) })).filter((x) => x.c.years.length > 0);
+  // Pages behind dated statements first, then the other non-primary pages of the company's own topics (publication dates
+  // show which evidence is old). Capped so the step stays quick.
+  const others = todo.filter((e) => !e.topic.startsWith("competitor:") && !claimDates(e.text, cy).years.length && bestTier(e) > 1);
+  const toRead = [...new Set([...dated.flatMap((x) => x.e.sourceIds), ...others.flatMap((e) => e.sourceIds)])]
+    .map((id) => srcById.get(id)).filter((x): x is Source => !!x && !x.page).slice(0, 100);
+  const deadline = Date.now() + Math.max(8_000, Math.min(50_000, clock.remaining() - 70_000));
+  await runPool(toRead, 12, async (src) => {
+    src.page = await readPage(src.url, Math.min(6_000, deadline - Date.now()));
+  });
+
+  for (const { e, c } of dated) {
+    const pages = e.sourceIds.map((id) => srcById.get(id)?.page).filter((p): p is PageInfo => !!p);
+    const verdict = dateVerdict(c, pages);
+    const best = bestTier(e);
+    if (verdict === "confirmed") log.confirmed++;
+    else if (verdict === "contradicted") drop.set(e.id, "date contradicts the cited page");
+    else if (verdict === "not_shown") {
+      if (best > 1) drop.set(e.id, "the cited page does not show this date");
+      else log.unverified++;
+    } else if (best > 2) drop.set(e.id, "date could not be verified (page unreadable, source not primary or major press)");
+    else log.unverified++;
+  }
+
+  // 2. Statements that are stale by their own words, undated strategy items, evidence from old pages.
+  for (const e of todo) {
+    if (drop.has(e.id)) continue;
+    const expired = expiredForecast(e.text, now);
+    if (expired) drop.set(e.id, expired);
+    else if (e.topic.startsWith("strategy_") && /date not stated|\bundated\b/i.test(e.text)) drop.set(e.id, "event has no stated date");
+    else {
+      const pubs = e.sourceIds.map((id) => srcById.get(id)?.page?.pub).filter((x): x is string => !!x);
+      const isOld = pubs.length > 0 && pubs.length === e.sourceIds.length && pubs.every((pb) => monthsOf(pb) < cy * 12 + now.getUTCMonth() + 1 - 18);
+      if (isOld && !claimDates(e.text, cy).years.length) e.flags = [...new Set([...(e.flags ?? []), "stale"])];
+    }
+  }
+
+  // 3. Material events about the company that only secondary pages report need a primary-source confirmation.
+  const warnings: string[] = [];
+  const needs = dated.filter(({ e }) =>
+    !drop.has(e.id) && !e.topic.startsWith("competitor:") && MATERIAL_RE.test(e.text) && bestTier(e) > maxTier
+  ).slice(0, 12);
+  if (needs.length && clock.remaining() > 25_000) {
+    await runPool(needs, 4, async ({ e, c }) => {
+      try {
+        const ok = await corroborate(apiKey, state, e.text, maxTier, c, Math.min(30_000, clock.remaining() - 10_000));
+        if (ok) log.corroborated++;
+        else drop.set(e.id, "no primary-source confirmation of this event");
+      } catch (err) {
+        warnings.push(`Could not corroborate evidence E${e.id} (${(err as Error)?.message ?? err}).`);
+      }
+    });
+  } else if (needs.length) {
+    warnings.push(`${needs.length} material event(s) were not corroborated (time budget).`);
+  }
+
+  const kept = state.evidence.filter((e) => !drop.has(e.id)).map((e) => ({ ...e, dateChecked: true }));
+  for (const e of state.evidence) {
+    if (drop.has(e.id) && log.dropped.length < 120) log.dropped.push({ id: e.id, reason: drop.get(e.id)!, text: e.text.slice(0, 240) });
+  }
+  return json({
+    state: { ...state, evidence: kept, sources: state.sources, dateChecks: log, warnings: [...state.warnings, ...warnings] },
+    summary: { checked: todo.length, dated: dated.length, dropped: drop.size, pagesRead: toRead.length },
+  });
+}
+
 // ---------- Legacy (previous UI) shape, with [n] citations into `sources` ----------
 type Placeholders = { facts: string; core: string; recs: string };
 // Is the customer evidence two-sided? Praise and complaints are researched separately, so an empty side means the
@@ -1673,6 +1951,8 @@ type State = {
   researchModel: string;
   /** Supports dropped because every source was an excluded type (social media, stock forums, ...). */
   droppedByTier?: number;
+  /** What the verify_evidence step did: dates confirmed against pages, evidence dropped and why. */
+  dateChecks?: { confirmed: number; unverified: number; corroborated: number; dropped: { id: number; reason: string; text: string }[] };
   // set by the competitors step: the competitors that get their own research, and the full validated list (max 10)
   competitors?: Competitor[];
   validatedCompetitors?: Competitor[];
@@ -1783,7 +2063,7 @@ async function stepResearch(
 // Candidates come from the evidence and from a per-segment search of the rivals named in annual reports and trade press.
 // A classification pass then keeps only real competitors: peer-list sites pair companies by name or industry code, and
 // customers, sales channels and suppliers show up in competitor lists too.
-const COMPETITOR_UNUSABLE_FLAGS = ["peer_list", "lookalike"];
+const COMPETITOR_UNUSABLE_FLAGS = ["peer_list", "lookalike", "legal_marketing"];
 const usableForCompetitors = (e: Evidence) => !(e.flags ?? []).some((f) => COMPETITOR_UNUSABLE_FLAGS.includes(f));
 const MAX_COMPETITORS = 10;
 const MAX_DEEP_DIVES = 5;
@@ -1943,7 +2223,7 @@ RESEARCH TASK: Profile ${name} using Google Search:
 
 Rules:
 - Report only facts stated in the search results. Never estimate or fill gaps from memory.
-- Write short, self-contained sentences with ONE fact each. Name ${name} in each sentence, and for any figure give its date or period and who reported it.
+- Write short, self-contained sentences with ONE fact each. Name ${name} in each sentence, and for any figure give its date or period and who reported it. If a source does not state the year of an event, write "date not stated"; never assume the current year.
 - If you cannot find something, write one line "NOT FOUND: <item>". Incomplete answers are expected and fine.
 - No recommendations or opinions of your own.`;
 
@@ -2167,7 +2447,8 @@ const FACT_BASE_RULES = `Rules:
 3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
 5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
-5a. Evidence lines carry a source tier: T1 primary (filings, regulators, company releases), T2 major press and analysts, T3 everything else. Prefer T1 and T2. Financial results (revenue, income, margins, cash returned, market capitalization, headcount, funding) must come from T1 evidence for a public company (T1 or T2 for a private one). A fact whose only support is a company's own marketing is written as that company's claim ("GAF says..."). Never present investment commentary (valuation opinions, "undervalued", price targets) as a fact or a strength. Never combine figures reported on different bases (for example original versus restated, or total versus continuing operations) into one statement or range: use the most recent restated figure and say which basis it is.`;
+5a. Evidence lines carry a source tier: T1 primary (filings, regulators, company releases), T2 major press and analysts, T3 everything else. Prefer T1 and T2. Financial results (revenue, income, margins, cash returned, market capitalization, headcount, funding) must come from T1 evidence for a public company (T1 or T2 for a private one). A fact whose only support is a company's own marketing is written as that company's claim ("GAF says..."). Never present investment commentary (valuation opinions, "undervalued", price targets) as a fact or a strength. Never combine figures reported on different bases (for example original versus restated, or total versus continuing operations) into one statement or range: use the most recent restated figure and say which basis it is.
+5b. Dates. State an event's date only as the evidence states it; never infer a year. Skip any event whose evidence says the date is not stated. Evidence tagged OLD comes from a page published more than 18 months ago and cannot support a statement about the company's current position. Evidence from a law firm or plaintiff-firm page (a law firm's investigation notice or class-action solicitation) is a claim by that firm: write "a law firm announced an investigation into...", never "an investigation was opened" or "a lawsuit was filed".`;
 
 const FACT_SECTION_RULES: Record<Section, (competitors?: string[], landscape?: boolean) => string> = {
   performance: () =>
@@ -2194,7 +2475,7 @@ ${groupsPrompt([0, 1, 2, 3, 4, 5])}`,
       competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
     } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.`,
   customer: () =>
-    `6. customerInsights: cite only [customer_praise] and [customer_complaints] evidence (reviews, complaints, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words that reports what the sources say, and it may only describe overall sentiment as positive or negative if BOTH praise and complaint evidence exist; with only one side, say plainly that only praise (or only complaints) was found. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are things customers praise about the company, drawn from [customer_praise] evidence; lossReasons are things customers criticise or complain about, drawn from [customer_complaints] evidence (warranty disputes, defects, class actions and court filings count). A seller's own marketing is a claim by the seller, never customer evidence. These are review themes from review and complaint sites, NOT win/loss data: never claim they explain why deals were won or lost.`,
+    `6. customerInsights: cite only [customer_praise] and [customer_complaints] evidence (reviews, complaints, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words that reports what the sources say, and it may only describe overall sentiment as positive or negative if BOTH praise and complaint evidence exist; with only one side, say plainly that only praise (or only complaints) was found. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are things customers praise about the company, drawn from [customer_praise] evidence; lossReasons are things customers criticise or complain about, drawn from [customer_complaints] evidence (warranty disputes, defects, class actions and court filings count). A seller's own marketing is a claim by the seller, never customer evidence. Customer themes are about product or service experience only: never asbestos or other legacy liabilities, securities or shareholder litigation, or lawsuits about the company's finances. Evidence from a law firm or plaintiff-firm page must be written as that firm's announcement or allegation. These are review themes from review and complaint sites, NOT win/loss data: never claim they explain why deals were won or lost.`,
 };
 
 const factsSectionPrompt = (e: Entity, ev: Evidence[], today: string, section: Section, competitors?: string[], landscape?: boolean) =>
@@ -2351,6 +2632,7 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
     droppedByTier: (base?.droppedByTier ?? 0) + ledger.droppedByTier,
     competitors: base?.competitors,
     validatedCompetitors: base?.validatedCompetitors,
+    dateChecks: base?.dateChecks,
   };
   return json({ state });
 }
@@ -2387,7 +2669,11 @@ async function v2FactsSection(apiKey: string, body: Any, clock: ReturnType<typeo
   const section = body?.section as Section;
   if (!state || !SECTIONS.includes(section)) return json({ error: "Missing or invalid research state or section." }, 400);
   // Evidence that only peer-list or look-alike sites support cannot show who competes with whom.
-  const ev = state.evidence.filter((e) => SECTION_TOPICS[section](e.topic) && (section !== "competitors" || usableForCompetitors(e)));
+  // Plaintiff-firm marketing can only support attributed customer-complaint statements, never facts about the business.
+  const ev = state.evidence.filter((e) =>
+    SECTION_TOPICS[section](e.topic) && (section !== "competitors" || usableForCompetitors(e)) &&
+    (section === "customer" || !e.flags?.includes("legal_marketing"))
+  );
   const warnings: string[] = [];
   const competitorNames = section === "competitors" && state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
   // Evidence ids are looked up now: rivals found by the annual-report search only reach the ledger after identification.
@@ -2597,8 +2883,9 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
     report = renumberCitations(stripCitations(report, unauditable), (report.sources as Source[]).map((x, i) => ({ ...x, id: i + 1 })));
     report.quality.warnings = [...(report.quality.warnings ?? []), `${removed.length} source(s) showed a bot-check page instead of content, so their citations were removed.`];
   }
+  report.quality.dateChecks = state.dateChecks ?? { confirmed: 0, unverified: 0, corroborated: 0, dropped: [] };
   report.quality.sourceFlags = (report.sources as Source[])
-    .filter((x) => (x.kinds ?? []).some((k) => k === "lookalike" || k === "unauditable" || k === "peer_list" || k === "seller"))
+    .filter((x) => (x.kinds ?? []).some((k) => k === "lookalike" || k === "unauditable" || k === "peer_list" || k === "seller" || k === "legal_marketing"))
     .map((x) => ({ title: x.title.slice(0, 150), url: x.url, flags: (x.kinds ?? []).filter((k) => k !== "review") }));
   report.quality.competitorFilter = list(body?.competitorFilter).slice(0, 40).map((x) => ({
     name: String(x?.name ?? "").slice(0, 80), classification: String(x?.classification ?? "").slice(0, 30), kept: !!x?.kept, reason: String(x?.reason ?? "").slice(0, 200),
@@ -2610,6 +2897,26 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
 
   console.log(JSON.stringify({ company: state.entity.name, evidence: state.evidence.length, scans: scanLog.length, sourcedClaims, dropped: dropped.length, sources: report.sources.length }));
   return json(report);
+}
+
+function readPageInfo(p: Any): PageInfo {
+  const ym = (v: unknown) => (typeof v === "string" && /^\d{4}-\d{2}$/.test(v) ? v : undefined);
+  return {
+    read: p?.read === true,
+    ...(typeof p?.title === "string" ? { title: p.title.slice(0, 200) } : {}),
+    ...(ym(p?.pub) ? { pub: ym(p.pub) } : {}),
+    my: list(p?.my).map(ym).filter((x): x is string => !!x).slice(0, 60),
+    years: list(p?.years).filter((n) => Number.isInteger(n)).slice(0, 40),
+  };
+}
+
+function readDateChecks(raw: Any): State["dateChecks"] {
+  if (!raw || typeof raw !== "object") return undefined;
+  const n = (v: unknown) => Math.max(0, Math.min(100000, Number(v) || 0));
+  return {
+    confirmed: n(raw.confirmed), unverified: n(raw.unverified), corroborated: n(raw.corroborated),
+    dropped: list(raw.dropped).slice(0, 120).map((d) => ({ id: Number(d?.id) || 0, reason: String(d?.reason ?? "").slice(0, 120), text: String(d?.text ?? "").slice(0, 240) })),
+  };
 }
 
 function readCompetitors(raw: Any[], max: number): Competitor[] {
@@ -2632,7 +2939,8 @@ function readState(raw: Any, allowEmpty = false): State | null {
       ? [{
         id: e.id, topic: String(e.topic ?? ""), text: e.text.slice(0, 2000), sourceIds: list(e.sourceIds).filter((n) => Number.isInteger(n)),
         tier: [1, 2, 3].includes(e.tier) ? e.tier : 2, srcTiers: list(e.srcTiers).map((n) => ([1, 2, 3].includes(n) ? n : 3)),
-        ...(Array.isArray(e.flags) ? { flags: list(e.flags).map((f) => String(f).slice(0, 20)).slice(0, 4) } : {}),
+        ...(Array.isArray(e.flags) ? { flags: list(e.flags).map((f) => String(f).slice(0, 20)).slice(0, 5) } : {}),
+        ...(e.dateChecked === true ? { dateChecked: true } : {}),
       }]
       : []
   );
@@ -2651,7 +2959,8 @@ function readState(raw: Any, allowEmpty = false): State | null {
       Number.isInteger(x?.id)
         ? [{
           id: x.id, title: String(x.title ?? "").slice(0, 300), url: String(x.url ?? "").slice(0, 2000), tier: [1, 2, 3].includes(x.tier) ? x.tier : 3,
-          ...(Array.isArray(x.kinds) ? { kinds: list(x.kinds).map((k) => String(k).slice(0, 20)).slice(0, 4) } : {}),
+          ...(Array.isArray(x.kinds) ? { kinds: list(x.kinds).map((k) => String(k).slice(0, 20)).slice(0, 5) } : {}),
+          ...(x.page && typeof x.page === "object" ? { page: readPageInfo(x.page) } : {}),
         }]
         : []
     ),
@@ -2663,6 +2972,7 @@ function readState(raw: Any, allowEmpty = false): State | null {
     researchModel: String(raw.researchModel ?? FLASH_MODEL),
     competitors: Array.isArray(raw.competitors) ? readCompetitors(raw.competitors, MAX_DEEP_DIVES) : undefined,
     validatedCompetitors: Array.isArray(raw.validatedCompetitors) ? readCompetitors(raw.validatedCompetitors, MAX_COMPETITORS) : undefined,
+    dateChecks: readDateChecks(raw.dateChecks),
   };
 }
 
@@ -2716,6 +3026,7 @@ Deno.serve(async (req) => {
     if (step === "entity") return await v2Entity(apiKey, body, clock);
     if (step === "scan") return await v2Scan(apiKey, body, clock);
     if (step === "ledger") return await v2Ledger(body, clock);
+    if (step === "verify_evidence") return await v2VerifyEvidence(apiKey, body, clock);
     if (step === "identify") return await v2Identify(apiKey, body, clock);
     if (step === "facts_section") return await v2FactsSection(apiKey, body, clock);
     if (step === "analysis_part") return await v2AnalysisPart(apiKey, body, clock);
