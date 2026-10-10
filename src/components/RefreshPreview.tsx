@@ -1,6 +1,6 @@
 import { Eye, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Rich, SourcesList } from "@/components/Cited";
+import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 import type { IndustryResearchResult } from "@/services/industryResearchPipeline";
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
 export function RefreshPreview({ content, applying, onApply, onDiscard }: Props) {
   const q = content.quality;
   return (
+    <SourcesProvider sources={content.sources}>
     <div className="rounded-lg border-2 border-primary bg-primary/5 p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -114,5 +115,6 @@ export function RefreshPreview({ content, applying, onApply, onDiscard }: Props)
         </details>
       )}
     </div>
+    </SourcesProvider>
   );
 }

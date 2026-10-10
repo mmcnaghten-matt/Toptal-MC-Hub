@@ -1,6 +1,6 @@
 import { SubIndustry, Need } from "@/data/industryData";
 import { AlertTriangle, Rocket, ArrowRight, Target } from "lucide-react";
-import { Rich, SourcesList } from "@/components/Cited";
+import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 
 interface Props {
   subIndustry: SubIndustry & { updatedAt?: string };
@@ -32,6 +32,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
     : null;
 
   return (
+    <SourcesProvider sources={subIndustry.sources}>
     <div className="fade-in space-y-8">
       {formattedDate && (
         <p className="text-xs text-muted-foreground">
@@ -137,5 +138,6 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
 
       <SourcesList sources={subIndustry.sources} />
     </div>
+    </SourcesProvider>
   );
 }

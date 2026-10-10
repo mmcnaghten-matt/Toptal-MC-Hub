@@ -1,3 +1,4 @@
+import { createContext, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import type { SourceRef } from "@/data/industryData";
 
@@ -11,14 +12,29 @@ export const toStr = (v: unknown): string => {
 
 // Citations like [3] render as small superscript links to the numbered Sources list (ids "source-3").
 const citationize = (text: string) => text.replace(/\[(\d+)\]/g, "[\\[$1\\]](#source-$1)");
-const CitationLink = ({ href, children, node: _node, ...rest }: React.ComponentProps<"a"> & { node?: unknown }) =>
-  href?.startsWith("#source-") ? (
-    <sup className="ml-px text-[9px] font-medium leading-none text-muted-foreground/80 hover:text-primary">
-      <a href={href} className="no-underline text-inherit">{children}</a>
+// Pages provide the numbered sources so a citation can open the source itself.
+const SourcesContext = createContext<SourceRef[] | undefined>(undefined);
+export function SourcesProvider({ sources, children }: { sources?: SourceRef[]; children: React.ReactNode }) {
+  return <SourcesContext.Provider value={sources}>{children}</SourcesContext.Provider>;
+}
+
+const CitationLink = ({ href, children, node: _node, ...rest }: React.ComponentProps<"a"> & { node?: unknown }) => {
+  const sources = useContext(SourcesContext);
+  if (!href?.startsWith("#source-")) return <a href={href} {...rest}>{children}</a>;
+  const source = sources?.find((s) => s.id === Number(href.slice("#source-".length)));
+  const cls = "text-primary/70 hover:text-primary hover:underline px-px";
+  return (
+    <sup className="ml-px text-[9px] font-medium leading-none">
+      {source?.url ? (
+        // Open the source itself in a new tab; hovering shows its title.
+        <a href={source.url} target="_blank" rel="noopener noreferrer" title={source.title} className={cls}>{children}</a>
+      ) : (
+        // No URL known: jump to the numbered Sources list instead.
+        <a href={href} className={cls}>{children}</a>
+      )}
     </sup>
-  ) : (
-    <a href={href} {...rest}>{children}</a>
   );
+};
 
 // The Tailwind typography plugin is not enabled, so style the basic blocks explicitly.
 const mdComponents = {

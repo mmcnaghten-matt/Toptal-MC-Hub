@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -23,7 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { Markdown, Rich, toStr } from "@/components/Cited";
+import { Markdown, Rich, SourcesProvider, toStr } from "@/components/Cited";
 
 // MC taxonomy practice colors (match the Services page cards). serviceOffering arrives as "L2 > L3".
 const L2_COLORS: Record<string, { text: string; bg: string }> = {
@@ -128,6 +128,8 @@ export default function AccountMarketIntel() {
   const [logCopied, setLogCopied] = useState(false);
   const [deepResearch, setDeepResearch] = useState(true);
   const [result, setResult] = useState<ResearchResult | null>(null);
+  // The report's sources are numbered by position ([1] is the first), so citations can open them.
+  const numberedSources = useMemo(() => (result?.sources ?? []).map((s, i) => ({ id: i + 1, title: s.title, url: s.url })), [result]);
   const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("executive");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -275,6 +277,7 @@ export default function AccountMarketIntel() {
   };
 
   return (
+    <SourcesProvider sources={numberedSources}>
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-primary sticky top-0 z-10">
@@ -1199,5 +1202,6 @@ export default function AccountMarketIntel() {
         </AnimatePresence>
       </main>
     </div>
+    </SourcesProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { Need, SourceRef } from "@/data/industryData";
-import { Rich, SourcesList } from "@/components/Cited";
+import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 import { ChevronLeft, Radio, Briefcase, MessageSquareText } from "lucide-react";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
 
 export function NeedDetail({ need, onBack, sources }: Props) {
   return (
+    <SourcesProvider sources={sources}>
     <div className="fade-in space-y-6">
       {/* Header */}
       <div className="flex items-start gap-4">
@@ -89,5 +90,6 @@ export function NeedDetail({ need, onBack, sources }: Props) {
 
       <SourcesList sources={sources} />
     </div>
+    </SourcesProvider>
   );
 }
