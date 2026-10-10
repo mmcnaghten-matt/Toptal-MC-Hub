@@ -80,9 +80,9 @@ export interface ResearchResult {
   sources: { title: string; url: string }[];
 }
 
-export const RESEARCH_STAGES = ["Researching sources", "Extracting and verifying facts", "Writing analysis"] as const;
+export const RESEARCH_STAGES = ["Researching sources", "Researching competitors", "Extracting and verifying facts", "Writing analysis"] as const;
 
-// The report is built in three chained calls so each stays under Supabase's 150s request limit.
+// The report is built in four chained calls so each stays under Supabase's 150s request limit.
 // Each step returns `state`, which the next step needs.
 async function callStep(body: Record<string, unknown>) {
   if (!supabase) {
@@ -113,8 +113,16 @@ export async function performResearch(
   onStage?.(0);
   const research = await callStep({ step: "research", companyName, deepResearch });
   onStage?.(1);
-  const facts = await callStep({ step: "facts", state: research.state });
+  // Per-competitor research is an enrichment: if it fails, carry on with the research state we already have.
+  let state = research.state;
+  try {
+    state = (await callStep({ step: "competitors", state, deepResearch })).state;
+  } catch (err) {
+    console.error("Competitor research step failed; continuing without it:", err);
+  }
   onStage?.(2);
+  const facts = await callStep({ step: "facts", state });
+  onStage?.(3);
   return (await callStep({ step: "analysis", state: facts.state, deepResearch })) as ResearchResult;
 }
 // Testing pipeline automation fix

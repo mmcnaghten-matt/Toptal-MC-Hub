@@ -92,6 +92,9 @@ function OfferingPill({ value }: { value: string }) {
   );
 }
 
+// Placeholder text the research function uses when it has no evidence for a field.
+const isEmptyText = (v?: string) => !v || /^\s*(not found in public sources|not generated)/i.test(v);
+
 function WinLossColumns({ raw }: { raw: string }) {
   try {
     const parsed = JSON.parse(raw);
@@ -791,31 +794,44 @@ export default function AccountMarketIntel() {
                     </h3>
                   </div>
                   <div className="divide-y divide-border">
-                    {result.competitorDeepDives.map((c, i) => (
+                    {result.competitorDeepDives
+                      .map((c) => ({ ...c, strengths: c.strengths.filter((x) => !isEmptyText(x)) }))
+                      .filter((c) => !isEmptyText(c.valueProposition) || c.strengths.length > 0 || !isEmptyText(c.pricingModel) || !isEmptyText(c.gapAnalysis))
+                      .map((c, i) => (
                       <div key={i} className="p-8 space-y-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <h4 className="text-2xl font-bold text-foreground">{c.name}</h4>
-                          <span className="px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase rounded tracking-widest">
-                            <Rich>{c.pricingModel}</Rich>
-                          </span>
+                          {!isEmptyText(c.pricingModel) && (
+                            <span className="px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase rounded tracking-widest">
+                              <Rich>{c.pricingModel}</Rich>
+                            </span>
+                          )}
                         </div>
-                        <p className="text-foreground leading-relaxed"><Rich>{c.valueProposition}</Rich></p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-3">
-                            <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Key Strengths</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {c.strengths.map((s, si) => (
-                                <span key={si} className="text-xs font-semibold bg-accent/10 text-accent px-3 py-1 rounded-full border border-accent/20">
-                                  <Rich>{s}</Rich>
-                                </span>
-                              ))}
-                            </div>
+                        {!isEmptyText(c.valueProposition) && (
+                          <p className="text-foreground leading-relaxed"><Rich>{c.valueProposition}</Rich></p>
+                        )}
+                        {(c.strengths.length > 0 || !isEmptyText(c.gapAnalysis)) && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {c.strengths.length > 0 && (
+                              <div className="space-y-3">
+                                <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Key Strengths</h5>
+                                <div className="flex flex-wrap gap-2">
+                                  {c.strengths.map((s, si) => (
+                                    <span key={si} className="text-xs font-semibold bg-accent/10 text-accent px-3 py-1 rounded-full border border-accent/20">
+                                      <Rich>{s}</Rich>
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {!isEmptyText(c.gapAnalysis) && (
+                              <div className="space-y-3">
+                                <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Gap Analysis</h5>
+                                <p className="text-sm text-foreground italic">"<Rich>{c.gapAnalysis}</Rich>"</p>
+                              </div>
+                            )}
                           </div>
-                          <div className="space-y-3">
-                            <h5 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Gap Analysis</h5>
-                            <p className="text-sm text-foreground italic">"<Rich>{c.gapAnalysis}</Rich>"</p>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>
