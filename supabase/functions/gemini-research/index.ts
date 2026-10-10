@@ -453,6 +453,7 @@ const CLAIM = obj({
 const ITEM = obj({ text: STR, basedOn: INTS });
 const OPT_ITEM = { ...ITEM, nullable: true };
 const NAMED = obj({ name: STR, evidenceIds: INTS });
+const MARKET = obj({ segment: STR, geography: STR, year: { type: "INTEGER", nullable: true }, value: STR, publisher: STR, evidenceIds: INTS });
 
 const FACTS_SCHEMA = obj({
   businessPerformance: obj({
@@ -467,8 +468,8 @@ const FACTS_SCHEMA = obj({
   }),
   marketOverview: obj({
     definition: CLAIM,
-    tam: arr(CLAIM),
-    sam: arr(CLAIM),
+    tam: arr(MARKET),
+    sam: arr(MARKET),
     segmentation: arr(CLAIM),
     drivers: arr(CLAIM),
     inhibitors: arr(CLAIM),
@@ -544,7 +545,7 @@ Rules:
 3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
 5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
-6. tam / sam are lists with ONE entry per published market-size estimate that appears in the evidence. Each entry starts with the market, segment, product line or business unit it covers, then geography and year, then the figure and publisher (e.g. "Cloud security (global, 2024): $48B, Grand View Research."). Never merge several estimates into one entry and never derive an estimate. If the only estimate is the company's own, say so. Empty list if there is none.
+6. tam / sam are lists of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. If the only estimate is the company's own, name the company as publisher. Empty list if there is none.
 7. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
   competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
 } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.
@@ -646,6 +647,49 @@ function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
 
 const list = (a: unknown): Any[] => (Array.isArray(a) ? a : []);
 
+type MarketEntry = { segment: string; geography: string; year: number; value: string; publisher: string; claim: Claim };
+
+// Display-only tidy: abbreviate unit words without touching any digit, so number validation stays valid.
+const tidyValue = (v: string) =>
+  v.replace(/\bUS\$|\bUSD\s*/gi, "$").replace(/(\d)\s*(trillion|billion|million)\b/gi, (_m, d, u) => d + u[0].toUpperCase()).trim();
+
+// For sorting only: the first number in a value with its magnitude suffix.
+function magnitude(v: string): number {
+  const m = v.match(/(\d[\d,]*(?:\.\d+)?)\s*(trillion|billion|million|thousand|tn|bn|mn|[tbmk])?/i);
+  if (!m) return -Infinity;
+  const mult: Record<string, number> = { t: 1e12, tn: 1e12, trillion: 1e12, b: 1e9, bn: 1e9, billion: 1e9, m: 1e6, mn: 1e6, million: 1e6, k: 1e3, thousand: 1e3 };
+  return Number(m[1].replace(/,/g, "")) * (mult[(m[2] ?? "").toLowerCase()] ?? 1);
+}
+
+const PUBLISHER_RANK = ["gartner", "idc", "forrester", "mckinsey", "statista", "grand view research", "marketsandmarkets", "mordor", "fortune business insights", "precedence research"];
+const SEGMENT_FILLER = new Set(["market", "markets", "global", "worldwide", "industry", "industries", "size", "the", "of"]);
+const segmentKey = (name: string) =>
+  name.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
+    .filter((w) => w && !SEGMENT_FILLER.has(w)).map((w) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w)).join(" ");
+
+// One row per segment: latest year, then global over regional, then better-known publisher, then first seen.
+// Largest segments first, at most 5.
+function latestPerSegment(entries: MarketEntry[]): MarketEntry[] {
+  const geoRank = (g: string) => (/global|worldwide|world/i.test(g) ? 0 : 1);
+  const pubRank = (p: string) => {
+    const i = PUBLISHER_RANK.findIndex((x) => p.toLowerCase().includes(x));
+    return i < 0 ? 99 : i;
+  };
+  const best = new Map<string, { e: MarketEntry; i: number }>();
+  entries.forEach((e, i) => {
+    const key = segmentKey(e.segment) || e.segment.toLowerCase();
+    const cur = best.get(key);
+    const better = !cur || e.year > cur.e.year ||
+      (e.year === cur.e.year && (geoRank(e.geography) < geoRank(cur.e.geography) ||
+        (geoRank(e.geography) === geoRank(cur.e.geography) && pubRank(e.publisher) < pubRank(cur.e.publisher))));
+    if (better) best.set(key, { e, i });
+  });
+  return [...best.values()]
+    .sort((a, b) => magnitude(b.e.value) - magnitude(a.e.value) || a.i - b.i)
+    .map((x) => x.e)
+    .slice(0, 5);
+}
+
 function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
   const f = raw ?? {};
   const claims = (a: unknown, p: string, topics?: string[]) =>
@@ -693,6 +737,30 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
     });
   };
 
+  const thisYear = new Date().getFullYear();
+  const marketEntries = (a: unknown, p: string): MarketEntry[] =>
+    list(a).flatMap((m, i) => {
+      const path = `${p}[${i}]`;
+      const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+      const segment = str(m?.segment);
+      const value = str(m?.value);
+      const publisher = str(m?.publisher);
+      const geography = str(m?.geography) || "Not stated";
+      const year = Number(m?.year);
+      const reason = !segment || !publisher ? "missing segment or publisher"
+        : !/\d/.test(value) ? "value has no figure"
+        : !Number.isInteger(year) || year < 1990 ? "missing year"
+        : year > thisYear ? "forecast year, not a current estimate"
+        : null;
+      const text = `${segment} (${geography}, ${year}): ${value}, ${publisher}`;
+      if (reason) {
+        ctx.dropped.push({ path, reason, text });
+        return [];
+      }
+      const claim = checkClaim({ text, status: "sourced", evidenceIds: m?.evidenceIds }, path, ctx);
+      return claim.status === "sourced" ? [{ segment, geography, year, value: tidyValue(value), publisher, claim }] : [];
+    });
+
   const bp = f.businessPerformance ?? {};
   const mo = f.marketOverview ?? {};
   const cl = f.competitiveLandscape ?? {};
@@ -707,8 +775,8 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
     },
     marketOverview: {
       definition: checkClaim(mo.definition, "marketOverview.definition", ctx),
-      tam: claims(mo.tam, "marketOverview.tam"),
-      sam: claims(mo.sam, "marketOverview.sam"),
+      tam: marketEntries(mo.tam, "marketOverview.tam"),
+      sam: marketEntries(mo.sam, "marketOverview.sam"),
       segmentation: claims(mo.segmentation, "marketOverview.segmentation"),
       drivers: claims(mo.drivers, "marketOverview.drivers"),
       inhibitors: claims(mo.inhibitors, "marketOverview.inhibitors"),
@@ -893,8 +961,8 @@ function pruneFacts(f: Facts): Facts {
     },
     marketOverview: {
       ...f.marketOverview,
-      tam: f.marketOverview.tam.filter(ok),
-      sam: f.marketOverview.sam.filter(ok),
+      tam: latestPerSegment(f.marketOverview.tam.filter((e) => ok(e.claim))),
+      sam: latestPerSegment(f.marketOverview.sam.filter((e) => ok(e.claim))),
       segmentation: f.marketOverview.segmentation.filter(ok),
       drivers: f.marketOverview.drivers.filter(ok),
       inhibitors: f.marketOverview.inhibitors.filter(ok),
@@ -963,6 +1031,10 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
   const fi = (i: Item | null, empty = ph.core) => (i ? i.text + cite(i.basedOn) : empty);
   const fis = (xs: Item[], empty = ph.core) => (xs.length ? xs.map((x) => fi(x)) : [empty]);
   const names = (xs: Named[]) => (xs.length ? xs.map((n) => n.name + cite(n.evidenceIds)) : [ph.facts]);
+  const marketLine = (e: MarketEntry) => `**${e.segment}** (${e.geography}, ${e.year}): ${e.value}, ${e.publisher}${cite(e.claim.evidenceIds)}`;
+  const marketRow = (e: MarketEntry) => ({
+    segment: e.segment, geography: e.geography, year: e.year, value: e.value, publisher: e.publisher, cite: cite(e.claim.evidenceIds).trim(),
+  });
   const gapFor = (name: string) => {
     const g = a.competitorGaps.find((x) =>
       x.competitor.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(x.competitor.toLowerCase())
@@ -998,9 +1070,11 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
     marketOverview: {
       definition: fc(f.marketOverview.definition),
       metrics: {
-        tam: f.marketOverview.tam.length ? bullets(f.marketOverview.tam.map(fc)) : ph.facts,
-        sam: f.marketOverview.sam.length ? bullets(f.marketOverview.sam.map(fc)) : ph.facts,
+        tam: f.marketOverview.tam.length ? bullets(f.marketOverview.tam.map(marketLine)) : ph.facts,
+        sam: f.marketOverview.sam.length ? bullets(f.marketOverview.sam.map(marketLine)) : ph.facts,
         som: a.somEstimate ? bullets([fi(a.somEstimate)]) : ph.core,
+        tamRows: f.marketOverview.tam.map(marketRow),
+        samRows: f.marketOverview.sam.map(marketRow),
       },
       segmentation: fcs(f.marketOverview.segmentation),
       drivers: fcs(f.marketOverview.drivers),
