@@ -1181,7 +1181,7 @@ export default function AccountMarketIntel() {
                             const q = result.quality ?? {};
                             await navigator.clipboard.writeText(
                               JSON.stringify(
-                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, competitorFilter: q.competitorFilter, sourceFlags: q.sourceFlags, dateChecks: q.dateChecks, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
+                                { company: result.companyName, scans: q.scans, sectionsOk: q.sectionsOk, evidenceByTopic: q.evidenceByTopic, competitors: q.competitors, competitorFilter: q.competitorFilter, sourceFlags: q.sourceFlags, dateChecks: q.dateChecks, build: q.build, methodStats: q.methodStats, contradictions: q.contradictions, verifier: q.verifier, droppedCount: q.droppedCount, dropped: q.dropped, warnings: q.warnings },
                                 null,
                                 2,
                               ),
@@ -1247,6 +1247,21 @@ export default function AccountMarketIntel() {
                                 <span className={cn("font-medium", c.kept ? "text-green-700" : "text-foreground")}>{c.name}</span>
                                 {" "}— {c.kept ? "kept as competitor" : `removed (${c.classification.replace(/_/g, " ")})`}
                                 {c.reason ? `: ${c.reason}` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {result.quality.build && (
+                        <p className="text-xs text-muted-foreground">Function build: <span className="font-mono text-foreground">{result.quality.build}</span></p>
+                      )}
+                      {result.quality.contradictions && result.quality.contradictions.length > 0 && (
+                        <div>
+                          <h5 className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Contradicting statements (weaker removed)</h5>
+                          <ul className="space-y-1 text-xs text-muted-foreground">
+                            {result.quality.contradictions.map((c, i) => (
+                              <li key={i}>
+                                <span className="font-medium text-foreground">Kept:</span> {c.kept.slice(0, 160)} <span className="font-medium text-foreground">Removed:</span> <span className="italic">{c.dropped.slice(0, 160)}</span>
                               </li>
                             ))}
                           </ul>

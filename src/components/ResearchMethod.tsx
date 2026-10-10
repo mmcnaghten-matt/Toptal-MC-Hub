@@ -5,8 +5,8 @@ import type { ResearchResult } from "@/services/geminiService";
 // Wording for the AI caveat and the short per-section notes. One place, so the sidebar, the report header, the
 // method section and the PDF all say the same thing.
 export const AI_CAVEAT =
-  "AI-generated research. Every statement is checked against its sources, but it may contain minor errors. Verify before using with a client.";
-export const AI_CAVEAT_SHORT = "AI-generated and checked against cited sources; may contain minor errors. See “How this research was done”.";
+  "AI-generated research. Statements are checked against their cited sources by automated rules and a second model pass, but the checks are not exhaustive and the report may contain errors. Verify anything that matters before using it with a client.";
+export const AI_CAVEAT_SHORT = "AI-generated and automatically checked against cited sources; the checks are not exhaustive, so verify before client use. See \u201cHow this research was done\u201d.";
 
 export const SECTION_NOTES: Record<string, string> = {
   executive: "A summary of the sections below. Each statement cites the sources it rests on.",
@@ -32,32 +32,40 @@ const Stat = ({ value, label }: { value: ReactNode; label: string }) => (
   </div>
 );
 
-const STEPS: { title: string; body: string }[] = [
-  {
-    title: "Search",
-    body: "Public web search runs per topic and per business segment. Every sentence kept has to be tied to a search result, so nothing comes from the model's memory.",
-  },
-  {
-    title: "Rank the sources",
-    body: "Sources are ranked: primary (filings, company releases, regulators), then major press and analyst firms, then everything else. Stock-data sites, social media, peer-list databases, job sites and look-alike domains are excluded.",
-  },
-  {
-    title: "Check dates against the pages",
-    body: "Each dated statement is checked against the page it cites. Dates the page contradicts or does not show are removed, events that only secondary pages report need a primary-source confirmation, and expired forecasts and old pages are set aside.",
-  },
-  {
-    title: "Write from the evidence only",
-    body: "Statements are written only from the evidence that survives, then validated: figures must appear in the evidence, financial results must come from primary sources, and litigation claims need a filing or must be worded as a law firm's claim. A second model pass independently checks each statement against its sources.",
-  },
-  {
-    title: "Current businesses only",
-    body: "The company's current segments are taken from its latest annual report. Businesses it has sold are excluded, markets are researched per current segment, and competitors are classified against those segments.",
-  },
-  {
-    title: "What it cannot do",
-    body: "It has no access to internal data. Paywalled sources may be missing, win/loss reasons need primary research, and it can still be wrong or out of date. Treat it as a well-sourced starting point and check anything that matters.",
-  },
-];
+type Q = NonNullable<ResearchResult["quality"]>;
+// The steps are written from what this run actually did, so the page never claims more than the run did.
+function buildSteps(q: Q | undefined, sourceCount: number): { title: string; body: string }[] {
+  const m = q?.methodStats;
+  const d = q?.dateChecks;
+  const other = m?.otherSources;
+  const pct = other != null && sourceCount ? Math.round((other / sourceCount) * 100) : null;
+  return [
+    {
+      title: "Search",
+      body: "Public web search runs per topic and per business segment. Every sentence kept has to be tied to a search result.",
+    },
+    {
+      title: "Rank and block sources",
+      body: `Sources are ranked: primary (filings, company releases, regulators), then major press and research firms, then everything else. A blocklist removes known stock-data, peer-list, job and social sites${m?.blockedSourceHits != null ? ` (${m.blockedSourceHits} search results blocked in this run)` : ""}; sites of those types that are not on the list can slip through, so scan the cited-domain list in the Research log.${pct != null ? ` ${other} of ${sourceCount} cited sources (${pct}%) are neither primary nor major press; they give context but are not the only support for a financial, market-size or ranking claim.` : ""}`,
+    },
+    {
+      title: "Check the pages",
+      body: `Dated statements are checked against the page they cite${m?.pagesRead ? ` (${m.pagesRead} pages read)` : ""}${d ? `: ${d.confirmed} confirmed, ${d.unverified} could not be checked and were kept as unverified` : ""}. Evidence a page contradicts, or that none of its readable pages states, is removed${m?.evidenceRemovedByPageSupport != null ? ` (${m.evidenceRemovedByPageSupport} removed because no cited page states it)` : ""}. Material events (sales, closures, leadership changes, settlements) that only secondary pages report need a primary-source confirmation${m?.materialEventsChecked ? `: ${m.materialEventsConfirmed ?? 0} of ${m.materialEventsChecked} confirmed` : ""}. Pages that block automated reading cannot be checked.`,
+    },
+    {
+      title: "Write from the evidence and validate",
+      body: `Statements are written only from the evidence that survives, then validated by automated rules (figures must appear in the evidence, financial results need primary sources, litigation needs a filing or must be worded as a law firm's claim) and by a second model pass${m?.claimsChecked ? ` over ${m.claimsChecked} statements` : ""}. A final read removes statements that contradict each other${m?.contradictionsRemoved != null ? ` (${m.contradictionsRemoved} removed)` : ""}. These checks do not catch everything.`,
+    },
+    {
+      title: "Current businesses only",
+      body: `The company's current segments come from its latest annual report. Businesses it has sold or owns are not treated as competitors or as current markets, markets are researched per current segment, and competitors are classified against those segments${m?.competitorCandidates ? ` (${m.competitorsClassified ?? 0} of ${m.competitorCandidates} candidates classified)` : ""}, with brands grouped under their parent.`,
+    },
+    {
+      title: "What it cannot do",
+      body: "It has no access to internal data. Paywalled sources may be missing, win/loss reasons need primary research, and it can still be wrong or out of date. Treat it as a well-sourced starting point and check anything that matters.",
+    },
+  ];
+}
 
 /** "How this research was done": the plain-language method plus this run's numbers. Sits just before the Sources. */
 export function ResearchMethod({ result, sectionRef }: { result: ResearchResult; sectionRef?: (el: HTMLElement | null) => void }) {
@@ -78,7 +86,7 @@ export function ResearchMethod({ result, sectionRef }: { result: ResearchResult;
       </div>
       <div className="p-8 space-y-8">
         <ol className="space-y-4">
-          {STEPS.map((s, i) => (
+          {buildSteps(q, result.sources.length).map((s, i) => (
             <li key={s.title} className="flex gap-4">
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{i + 1}</span>
               <div>

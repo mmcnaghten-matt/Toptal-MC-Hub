@@ -123,7 +123,24 @@ export interface ResearchResult {
       claimsChecked: number;
       claimsRemovedByVerifier: number;
       statementsDropped: number;
+      primarySources?: number;
+      majorSources?: number;
+      otherSources?: number;
+      blockedSourceHits?: number;
+      pagesRead?: number;
+      materialEventsChecked?: number;
+      materialEventsConfirmed?: number;
+      evidenceRemovedByPageSupport?: number;
+      competitorsClassified?: number;
+      competitorCandidates?: number;
+      contradictionsRemoved?: number;
+      windowMonths?: number;
+      staleMonths?: number;
     };
+    /** Statements that contradicted each other: the one with the weaker sources was removed. */
+    contradictions?: { kept: string; dropped: string; reason: string }[];
+    /** Git commit of the function that produced this report. */
+    build?: string;
     /** Every domain cited in the report, so blocked sites and source rules can be confirmed from one list. */
     sourceDomains?: { domain: string; count: number; tier: number; kinds: string[] }[];
     sourceTiers?: { primary: number; major: number; other: number };
