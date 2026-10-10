@@ -526,6 +526,17 @@ const ANALYSIS_SCHEMA = obj({
 const CORE_SCHEMA = obj(
   Object.fromEntries(Object.entries(ANALYSIS_SCHEMA.properties).filter(([k]) => k !== "recommendations" && k !== "mcOpportunities")),
 );
+const CORE1_SCHEMA = obj({
+  executiveSummary: ANALYSIS_SCHEMA.properties.executiveSummary,
+  performanceSummary: ANALYSIS_SCHEMA.properties.performanceSummary,
+  somEstimate: ANALYSIS_SCHEMA.properties.somEstimate,
+  competitorGaps: ANALYSIS_SCHEMA.properties.competitorGaps,
+});
+const FRAMEWORKS_SCHEMA = obj({
+  swot: ANALYSIS_SCHEMA.properties.swot,
+  portersFiveForces: ANALYSIS_SCHEMA.properties.portersFiveForces,
+  pestle: ANALYSIS_SCHEMA.properties.pestle,
+});
 const RECS_SCHEMA = obj({
   recommendations: ANALYSIS_SCHEMA.properties.recommendations,
   mcOpportunities: ANALYSIS_SCHEMA.properties.mcOpportunities,
@@ -555,7 +566,7 @@ Rules:
 SUB-CATEGORIES
 ${groupsPrompt([0, 1, 2, 3, 4, 5])}`;
 
-const analysisPrompt = (e: Entity, ev: Evidence[], today: string, part: "core" | "recs") => {
+const analysisPrompt = (e: Entity, ev: Evidence[], today: string, part: "core" | "frameworks" | "recs") => {
   const head = `You are a management consultant writing the analytical sections of a market-intelligence report. Today is ${today}.
 ${entityBlock(e)}
 
@@ -572,6 +583,12 @@ Rules:
 5. somEstimate: only if the evidence contains a published market size AND evidence on the company's scale. Call it an estimate and show the reasoning. Otherwise null.
 6. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.
 7. performanceSummary: 2-3 short paragraphs (at most 130 words in total), each its own array item with basedOn. Paragraph 1: scale and growth (revenue and revenue growth, with fiscal period). Paragraph 2: profitability (net income or margins). Paragraph 3: valuation and funding (market capitalization, valuation, funding). Weave in one clause on what this implies for the company's position. Write flowing prose, not a list, and omit a paragraph the evidence cannot support. Use only figures present in the cited evidence, with their periods; never compute totals or ratios.`;
+  }
+  if (part === "frameworks") {
+    return `${head}
+3. swot: up to 4 short items per quadrant (strengths and weaknesses are internal to ${e.name}; opportunities and threats are external), each resting on the cited evidence.
+4. portersFiveForces: for each force write 1-2 sentences assessing how strong that force is for ${e.name} and why, resting on the cited evidence (buyers, suppliers, existing rivals, substitutes, new entrants). Use null only if the evidence says nothing relevant.
+5. pestle: for each factor (political, economic, social, technological, legal, environmental) write 1-2 sentences on how it affects ${e.name}, resting on the cited evidence. Use null for a factor the evidence does not touch.`;
   }
   return `${head}
 3. recommendations: product, marketing and resource-allocation recommendations for ${e.name}, each tied to evidence. No numeric budgets, splits or targets.
@@ -1549,15 +1566,368 @@ async function stepAnalysis(apiKey: string, state: State, deepResearch: boolean,
   };
 }
 
+// ---------- Section pipeline (v2): small independent requests, orchestrated by the page ----------
+// entity -> scan (one per topic) -> ledger -> [identify -> competitor scans -> ledger] -> facts_section (one per
+// section) -> analysis_part (core / frameworks / recs) -> report. Each request has its own 150s budget and the page
+// retries only the piece that failed. The older research/competitors/facts/analysis steps remain for older pages.
+type Section = "performance" | "strategy" | "market" | "competitors" | "customer";
+const SECTIONS: Section[] = ["performance", "strategy", "market", "competitors", "customer"];
+type Slice = { topic: string; status: "ok" | "thin" | "failed"; ms: number; error?: string; meta: GroundingMeta | null };
+
+const SECTION_TOPICS: Record<Section, (t: string) => boolean> = {
+  performance: (t) => t === "profile" || t === "performance",
+  strategy: (t) => t === "profile" || t.startsWith("strategy_"),
+  market: (t) => t === "profile" || t === "market",
+  competitors: (t) => t === "competitors" || t.startsWith("competitor:"),
+  customer: (t) => t === "customer",
+};
+const FP = FACTS_SCHEMA.properties;
+const SECTION_SCHEMAS: Record<Section, Any> = {
+  performance: obj({ businessPerformance: obj({ financialHighlights: FP.businessPerformance.properties.financialHighlights, recentMetrics: FP.businessPerformance.properties.recentMetrics }) }),
+  strategy: obj({ businessPerformance: obj({ strategicInitiatives: FP.businessPerformance.properties.strategicInitiatives }) }),
+  market: obj({ marketOverview: FP.marketOverview }),
+  competitors: obj({ competitiveLandscape: FP.competitiveLandscape, competitorDeepDives: FP.competitorDeepDives }),
+  customer: obj({ customerInsights: FP.customerInsights }),
+};
+
+const FACT_BASE_RULES = `Rules:
+1. A claim with status "sourced" must list in evidenceIds the E numbers (as integers, e.g. 12) that directly state it. Do not cite evidence that is merely related.
+2. Restate the evidence faithfully. Copy every number, date, currency amount and percentage exactly as written in the cited evidence, with the period it refers to. Never compute, convert, round, add up, or estimate.
+3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
+4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
+5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").`;
+
+const FACT_SECTION_RULES: Record<Section, (competitors?: string[]) => string> = {
+  performance: () =>
+    `6. businessPerformance.financialHighlights: the company's key financial results, ONE fact per claim: revenue with its fiscal period and growth, net income or margins, market capitalization or valuation, funding. recentMetrics: other short metrics (headcount, customers, subscribers, units shipped), one per claim.`,
+  strategy: () =>
+    `6. strategicInitiatives: only SIGNIFICANT initiatives the evidence shows the company announced or started in the last ${INITIATIVE_WINDOW_MONTHS} months. For each, set subgroup to exactly one of these sub-categories and group to the group it belongs to, give a short name, and a one-sentence description that includes the month and year from the evidence. At most 3 per sub-category, most recent first. A sub-category with nothing significant gets no entries.
+
+SUB-CATEGORIES
+${groupsPrompt([0, 1, 2, 3, 4, 5])}`,
+  market: () =>
+    `6. definition: one sentence on how analysts define the market(s) the company competes in. segmentation, drivers, inhibitors: short claims named by analysts or industry publications.
+7. tam / sam are lists of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. If the only estimate is the company's own, name the company as publisher. Empty list if there is none.`,
+  competitors: (competitors) =>
+    `6. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
+      competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
+    } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.`,
+  customer: () =>
+    `6. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are reasons customers choose the company; lossReasons are reasons customers leave or choose a competitor.`,
+};
+
+const factsSectionPrompt = (e: Entity, ev: Evidence[], today: string, section: Section, competitors?: string[]) =>
+  `You are building one section of the fact base of a market-intelligence report. Today is ${today}.
+${entityBlock(e)}
+
+EVIDENCE (format: E<id> [topic] text). This is the ONLY information you may use:
+${evidenceBlock(ev)}
+
+${FACT_BASE_RULES}
+${FACT_SECTION_RULES[section](competitors)}`;
+
+const sliceOf = (topic: string, r: GeminiResult | null, ms: number, error?: string): Slice => {
+  const supports = r?.meta?.groundingSupports?.length ?? 0;
+  return { topic, status: error || !r ? "failed" : supports >= 3 ? "ok" : "thin", ms, error, meta: r?.meta ?? null };
+};
+
+// Slices come back from the page, so rebuild them field by field.
+function readSlices(raw: unknown): Slice[] {
+  return list(raw).slice(0, 30).flatMap((x): Slice[] => {
+    const topic = typeof x?.topic === "string" ? x.topic.slice(0, 120) : "";
+    if (!topic) return [];
+    const m = x?.meta;
+    const meta: GroundingMeta | null = m && typeof m === "object"
+      ? {
+        webSearchQueries: list(m.webSearchQueries).map(String).slice(0, 20),
+        groundingChunks: list(m.groundingChunks).slice(0, 200).map((c) => ({
+          web: { uri: typeof c?.web?.uri === "string" ? c.web.uri.slice(0, 2000) : undefined, title: typeof c?.web?.title === "string" ? c.web.title.slice(0, 300) : undefined },
+        })),
+        groundingSupports: list(m.groundingSupports).slice(0, 400).map((g) => ({
+          segment: { text: String(g?.segment?.text ?? "").slice(0, 2000) },
+          groundingChunkIndices: list(g?.groundingChunkIndices).filter((n) => Number.isInteger(n)),
+        })),
+        searchEntryPoint: typeof m.searchEntryPoint?.renderedContent === "string" ? { renderedContent: m.searchEntryPoint.renderedContent.slice(0, 20000) } : undefined,
+      }
+      : null;
+    return [{ topic, status: x?.status === "ok" || x?.status === "thin" ? x.status : "failed", ms: Number(x?.ms) || 0, meta }];
+  });
+}
+
+function readEntity(raw: Any): Entity | null {
+  if (!raw || typeof raw !== "object" || typeof raw.name !== "string") return null;
+  const s = (v: unknown) => String(v ?? "UNKNOWN").slice(0, 500);
+  return { name: s(raw.name), website: s(raw.website), headquarters: s(raw.headquarters), description: s(raw.description), ownership: s(raw.ownership), confidence: s(raw.confidence), otherEntities: s(raw.otherEntities) };
+}
+
+// Request 1: resolve the company.
+async function v2Entity(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const companyName = typeof body?.companyName === "string" ? body.companyName.trim() : "";
+  const website = typeof body?.companyWebsite === "string" && body.companyWebsite.trim() ? body.companyWebsite.trim() : undefined;
+  if (!companyName || companyName.length > 200) return json({ error: "companyName is required (max 200 characters)" }, 400);
+  const t0 = Date.now();
+  const ent = await resolveEntity(apiKey, companyName, website, todayStr(), clock.timeout(60_000, 10_000));
+  if (ent.error) return json({ error: ent.error, entity: ent.entity }, 422);
+  const warnings: string[] = [];
+  if (!website && !/^(none|unknown)?$/i.test(ent.entity.otherEntities.trim())) {
+    warnings.push(`Other organisations share this name (${ent.entity.otherEntities}). Confirm the website ${ent.entity.website} is the right company.`);
+  }
+  return json({ entity: ent.entity, slice: sliceOf("profile", ent.result, Date.now() - t0), warnings });
+}
+
+// Request 2: one grounded scan for one topic (or one competitor). A failed scan is returned as data.
+async function v2Scan(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const entity = readEntity(body?.entity);
+  if (!entity) return json({ error: "Missing or invalid entity." }, 400);
+  const today = todayStr();
+  let topic: string;
+  let prompt: string;
+  if (body?.topic === "competitor") {
+    const name = typeof body?.name === "string" ? body.name.trim().slice(0, 80) : "";
+    if (!name) return json({ error: "Missing competitor name." }, 400);
+    topic = `competitor:${name}`;
+    prompt = competitorPrompt(entity, name, today);
+  } else {
+    const tp = TOPICS.find((t) => t.key === body?.topic);
+    if (!tp) return json({ error: "Unknown scan topic." }, 400);
+    topic = tp.key;
+    prompt = researchPrompt(tp.ask, entity, today);
+  }
+  const t0 = Date.now();
+  const deadline = t0 + clock.timeout(110_000, 10_000);
+  const run = (ms: number) => callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, temperature: 0, timeoutMs: ms, attempts: 2 });
+  try {
+    let best = await run(Math.min(70_000, deadline - Date.now()));
+    // Thin result: try once more and keep whichever came back with more cited segments.
+    if ((best.meta?.groundingSupports?.length ?? 0) < 3 && deadline - Date.now() > 20_000) {
+      try {
+        const second = await run(deadline - Date.now());
+        if ((second.meta?.groundingSupports?.length ?? 0) > (best.meta?.groundingSupports?.length ?? 0)) best = second;
+      } catch {
+        // keep the first result
+      }
+    }
+    return json({ slice: sliceOf(topic, best, Date.now() - t0) });
+  } catch (e) {
+    return json({ slice: sliceOf(topic, null, Date.now() - t0, (e as Error)?.message ?? String(e)) });
+  }
+}
+
+// Request 3: turn scan slices into the evidence ledger. With `state`, extend it (ids and sources stay stable).
+async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
+  const base = body?.state ? readState(body.state, true) : null;
+  const entity = base?.entity ?? readEntity(body?.entity);
+  if (!entity) return json({ error: "Missing or invalid entity." }, 400);
+  const slices = readSlices(body?.slices);
+  const results = slices.filter((x) => x.meta).map((x) => ({ topic: x.topic, r: { text: "", meta: x.meta } as GeminiResult }));
+  const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
+  const urlMap = await resolveRedirects(uris, Math.min(8000, Math.max(1500, clock.remaining() - 30_000)));
+  const ledger = buildLedger(results, urlMap, base ? { sources: base.sources, evidence: base.evidence } : undefined);
+  if (!ledger.evidence.length) {
+    return json({ error: "Search returned no citable evidence for this company, so no report was produced.", entity }, 422);
+  }
+  const warnings = [...(base?.warnings ?? [])];
+  if (!base && ledger.evidence.length < MIN_EVIDENCE_WARN) {
+    warnings.push(`Only ${ledger.evidence.length} citable facts were found; expect most sections to be empty.`);
+  }
+  const state: State = {
+    companyName: base?.companyName ?? String(body?.companyName ?? entity.name).slice(0, 200),
+    entity,
+    sources: ledger.sources,
+    evidence: ledger.evidence,
+    queries: [...new Set([...(base?.queries ?? []), ...ledger.queries])],
+    searchSuggestions: [...(base?.searchSuggestions ?? []), ...ledger.searchSuggestions],
+    warnings,
+    timings: base?.timings ?? {},
+    researchModel: FLASH_MODEL,
+    competitors: base?.competitors,
+  };
+  return json({ state });
+}
+
+// Request 4: identify the main competitors from the evidence (grounded fallback if too few).
+async function v2Identify(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const state = readState(body?.state);
+  if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
+  const { competitors, extra } = await identifyCompetitors(apiKey, state, todayStr(), clock);
+  const slices = extra.map((x) => sliceOf(x.topic, x.r, 0));
+  return json({ competitors, slices });
+}
+
+// Request 5: facts for ONE section, from only that section's evidence, validated and verified.
+async function v2FactsSection(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const state = readState(body?.state);
+  const section = body?.section as Section;
+  if (!state || !SECTIONS.includes(section)) return json({ error: "Missing or invalid research state or section." }, 400);
+  const ev = state.evidence.filter((e) => SECTION_TOPICS[section](e.topic));
+  const ctx = makeCtx(ev);
+  const warnings: string[] = [];
+  const competitorNames = section === "competitors" && state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
+  if (!ev.length) {
+    return json({ section, ok: true, empty: true, facts: pruneFacts(validateFacts({}, ctx)), dropped: [], verifier: "no evidence", sourcedClaims: 0, warnings });
+  }
+  let raw: Any = null;
+  try {
+    raw = await structured(apiKey, clock, warnings, `Fact extraction (${section})`, factsSectionPrompt(state.entity, ev, todayStr(), section, competitorNames), SECTION_SCHEMAS[section], false, 0, 50_000);
+  } catch (e) {
+    warnings.push(`Fact extraction (${section}) failed (${(e as Error)?.message ?? e}).`);
+  }
+  const validated = validateFacts(raw, ctx, competitorNames);
+  const left = clock.remaining();
+  let verifier: string;
+  try {
+    verifier = left > 15_000 ? await verifyClaims(apiKey, ctx, Math.min(40_000, left - 6_000)) : "skipped (time budget)";
+  } catch (e) {
+    verifier = `failed (${(e as Error)?.message})`;
+  }
+  if (!verifier.startsWith("checked") && verifier !== "no sourced claims") warnings.push(`Verifier ${verifier} for ${section}; claims are marked "unchecked".`);
+  return json({
+    section, ok: !!raw, facts: pruneFacts(validated), dropped: ctx.dropped, verifier,
+    sourcedClaims: ctx.sourced.filter((x) => x.claim.status === "sourced").length, warnings,
+  });
+}
+
+// Request 6: one analysis part (raw model output; validated later in `report`).
+async function v2AnalysisPart(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const state = readState(body?.state);
+  const part = body?.part as "core" | "frameworks" | "recs";
+  if (!state || !["core", "frameworks", "recs"].includes(part)) return json({ error: "Missing or invalid research state or part." }, 400);
+  const schema = part === "core" ? CORE1_SCHEMA : part === "frameworks" ? FRAMEWORKS_SCHEMA : RECS_SCHEMA;
+  const warnings: string[] = [];
+  try {
+    const raw = await structured(apiKey, clock, warnings, `Analysis (${part})`, analysisPrompt(state.entity, state.evidence, todayStr(), part), schema, body?.deepResearch !== false, 0.3, 10_000);
+    return json({ part, ok: true, raw, warnings });
+  } catch (e) {
+    return json({ part, ok: false, raw: null, warnings: [...warnings, `Analysis (${part}) failed (${(e as Error)?.message ?? e}).`] });
+  }
+}
+
+// Replace the "not found" placeholder with "not generated" inside the parts of the report that a failed step feeds.
+const swapPlaceholder = (v: Any): Any =>
+  v === NF ? NOT_GENERATED : Array.isArray(v) ? v.map(swapPlaceholder) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swapPlaceholder(x)])) : v;
+
+// Request 7: merge everything, validate the analysis, map MC offerings and assemble the report.
+async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
+  const state = readState(body?.state);
+  if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
+  const deepResearch = body?.deepResearch !== false;
+  const parts: Any[] = list(body?.parts);
+  const okSection = (sec: Section) => {
+    const p = parts.find((x) => x?.section === sec);
+    return !!p && p.ok === true && !!p.facts;
+  };
+
+  // Merge the per-section facts into one Facts object.
+  const facts: Facts = validateFacts({}, makeCtx([]));
+  const take = (sec: Section) => parts.find((x) => x?.section === sec && x?.ok === true && x?.facts)?.facts;
+  const perf = take("performance"), strat = take("strategy"), mkt = take("market"), comp = take("competitors"), cust = take("customer");
+  if (perf) {
+    facts.businessPerformance.financialHighlights = list(perf.businessPerformance?.financialHighlights);
+    facts.businessPerformance.recentMetrics = list(perf.businessPerformance?.recentMetrics);
+  }
+  if (strat) facts.businessPerformance.strategicInitiatives = list(strat.businessPerformance?.strategicInitiatives);
+  if (mkt?.marketOverview) facts.marketOverview = { ...facts.marketOverview, ...mkt.marketOverview };
+  if (comp) {
+    facts.competitiveLandscape = { ...facts.competitiveLandscape, ...comp.competitiveLandscape };
+    facts.competitorDeepDives = list(comp.competitorDeepDives);
+  }
+  if (cust?.customerInsights) facts.customerInsights = { ...facts.customerInsights, ...cust.customerInsights };
+
+  const dropped: Ctx["dropped"] = parts.flatMap((p) => list(p?.dropped)).slice(0, 500);
+  const ctx = makeCtx(state.evidence, dropped);
+  const raws = body?.raw ?? {};
+  const rawCore = raws.core ?? null, rawFrameworks = raws.frameworks ?? null, rawRecs = raws.recs ?? null;
+  const analysis = validateAnalysis({ ...(rawCore ?? {}), ...(rawFrameworks ?? {}), recommendations: rawRecs?.recommendations, mcOpportunities: rawRecs?.mcOpportunities }, ctx);
+
+  const warnings = [...state.warnings, ...list(body?.clientWarnings).map(String).slice(0, 40), ...parts.flatMap((p) => list(p?.warnings).map(String))];
+  const left = clock.remaining();
+  let mc: Opportunity[] = [];
+  try {
+    mc = await normalizeOpportunities(apiKey, analysis.mcOpportunities, Math.min(25_000, Math.max(3_000, left - 8_000)));
+  } catch (e) {
+    console.error("MC normalisation failed:", e);
+  }
+
+  const placeholders: Placeholders = { facts: NF, core: NF, recs: rawRecs ? NF : NOT_GENERATED };
+  const cov = sectionCoverage(facts, analysis, mc);
+  const sourcedClaims = parts.reduce((n, p) => n + (Number(p?.sourcedClaims) || 0), 0);
+  const verifiers = parts.map((p) => (typeof p?.verifier === "string" ? `${p.section}: ${p.verifier}` : "")).filter(Boolean);
+  const scanLog = list(body?.scanLog).slice(0, 40).map((x) => ({
+    topic: String(x?.topic ?? "").slice(0, 120), status: String(x?.status ?? "").slice(0, 20), ms: Number(x?.ms) || 0,
+    segments: Number(x?.segments) || 0, retried: !!x?.retried,
+  }));
+
+  const report: Any = {
+    companyName: state.companyName,
+    entity: state.entity,
+    ...toLegacy(facts, analysis, mc, ctx, placeholders),
+    sources: state.sources,
+    evidence: state.evidence,
+    claims: { facts, analysis: { ...analysis, mcOpportunities: mc } },
+    quality: {
+      steps: { facts: SECTIONS.every(okSection), analysis: !!rawCore && !!rawFrameworks, recommendations: !!rawRecs },
+      sectionsOk: Object.fromEntries(SECTIONS.map((sec) => [sec, okSection(sec)])),
+      scans: scanLog,
+      evidenceByTopic: Object.fromEntries([...new Set(state.evidence.map((e) => e.topic))].map((t) => [t, state.evidence.filter((e) => e.topic === t).length])),
+      competitors: (state.competitors ?? []).map((c) => {
+        const d = facts.competitorDeepDives.find((x) => x.name === c.name);
+        const has = (cl: Claim) => cl.status === "sourced";
+        return {
+          name: c.name, kind: c.kind, evidenceCount: state.evidence.filter((e) => e.topic === `competitor:${c.name}`).length,
+          fieldsFound: d ? [has(d.revenue), has(d.headcount), has(d.activity), has(d.pricingModel), !!d.description, d.strengths.length > 0].filter(Boolean).length : 0,
+        };
+      }),
+      coverage: cov.coverage,
+      sectionsPopulated: cov.populated,
+      sections: cov.sections,
+      evidenceCount: state.evidence.length,
+      sourceCount: state.sources.length,
+      sourcedClaims,
+      droppedCount: dropped.length,
+      dropped,
+      verifier: verifiers.join("; ") || "not run",
+      warnings,
+      searchQueries: state.queries,
+      models: { research: FLASH_MODEL, facts: FLASH_MODEL, analysis: deepResearch ? `${PRO_MODEL} (falls back to ${FLASH_MODEL})` : FLASH_MODEL },
+    },
+    searchSuggestions: state.searchSuggestions,
+    generatedAt: new Date().toISOString(),
+  };
+
+  // Sections whose step failed say "Not generated" instead of "Not found".
+  const swap = (obj: Any, keys: string[]) => keys.forEach((k) => { if (obj && k in obj) obj[k] = swapPlaceholder(obj[k]); });
+  if (!okSection("performance")) {
+    swap(report.businessPerformance, ["recentMetrics"]);
+    if (!analysis.performanceSummary.length) swap(report.businessPerformance, ["financialHighlights"]);
+  }
+  if (!okSection("strategy")) swap(report.businessPerformance, ["strategicInitiatives", "strategicInitiativeGroups"]);
+  if (!okSection("market")) swap(report, ["marketOverview"]);
+  if (!okSection("competitors")) {
+    swap(report, ["competitiveLandscape"]);
+    report.competitorDeepDives = swapPlaceholder(report.competitorDeepDives);
+  }
+  if (!okSection("customer")) swap(report, ["customerInsights"]);
+  if (!rawCore) {
+    swap(report, ["executiveSummary"]);
+    if (analysis.performanceSummary.length === 0 && okSection("performance")) swap(report.businessPerformance, ["financialHighlights"]);
+    report.marketOverview.metrics.som = swapPlaceholder(report.marketOverview.metrics.som);
+    report.competitorDeepDives.forEach((d: Any) => { d.gapAnalysis = swapPlaceholder(d.gapAnalysis); });
+  }
+  if (!rawFrameworks) swap(report, ["strategicFrameworks"]);
+
+  console.log(JSON.stringify({ company: state.entity.name, evidence: state.evidence.length, scans: scanLog.length, sourcedClaims, dropped: dropped.length }));
+  return json(report);
+}
+
 // The page sends the state back to us, so treat it as untrusted input and rebuild it field by field.
-function readState(raw: Any): State | null {
+function readState(raw: Any, allowEmpty = false): State | null {
   if (!raw || typeof raw !== "object" || !raw.entity || typeof raw.entity.name !== "string") return null;
   const evidence: Evidence[] = list(raw.evidence).slice(0, MAX_EVIDENCE).flatMap((e) =>
     typeof e?.text === "string" && Number.isInteger(e?.id)
       ? [{ id: e.id, topic: String(e.topic ?? ""), text: e.text.slice(0, 2000), sourceIds: list(e.sourceIds).filter((n) => Number.isInteger(n)) }]
       : []
   );
-  if (!evidence.length) return null;
+  if (!evidence.length && !allowEmpty) return null;
   const s = (v: unknown) => String(v ?? "UNKNOWN").slice(0, 500);
   const en = raw.entity;
   return {
@@ -1631,6 +2001,14 @@ Deno.serve(async (req) => {
   const clock = makeClock(TIME_BUDGET_MS);
 
   try {
+    if (step === "entity") return await v2Entity(apiKey, body, clock);
+    if (step === "scan") return await v2Scan(apiKey, body, clock);
+    if (step === "ledger") return await v2Ledger(body, clock);
+    if (step === "identify") return await v2Identify(apiKey, body, clock);
+    if (step === "facts_section") return await v2FactsSection(apiKey, body, clock);
+    if (step === "analysis_part") return await v2AnalysisPart(apiKey, body, clock);
+    if (step === "report") return await v2Report(apiKey, body, clock);
+
     if (step === "competitors" || step === "facts" || step === "analysis") {
       const state = readState(body?.state);
       if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
