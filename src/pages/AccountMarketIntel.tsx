@@ -143,7 +143,7 @@ import {
 } from "recharts";
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
-import { performResearch, RESEARCH_STAGES, type ResearchResult } from "@/services/geminiService";
+import { performResearch, type ProgressChip, type ResearchResult } from "@/services/geminiService";
 import ToptalLogo from "@/components/ToptalLogo";
 import { cn } from "@/lib/utils";
 
@@ -163,7 +163,7 @@ export default function AccountMarketIntel() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [stage, setStage] = useState(0);
+  const [chips, setChips] = useState<ProgressChip[]>([]);
   const [deepResearch, setDeepResearch] = useState(true);
   const [result, setResult] = useState<ResearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -247,7 +247,7 @@ export default function AccountMarketIntel() {
       setError(null);
       setResult(null);
       try {
-        const data = await performResearch(query, deepResearch, setStage);
+        const data = await performResearch(query, deepResearch, setChips);
         setResult(data);
         setActiveSection("executive");
       } catch (err) {
@@ -431,9 +431,32 @@ export default function AccountMarketIntel() {
               <p className="mt-8 text-lg font-medium text-foreground animate-pulse">
                 Generating Comprehensive Intelligence Report...
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Step {stage + 1} of {RESEARCH_STAGES.length}: {RESEARCH_STAGES[stage]}
-              </p>
+              <div className="mt-4 flex max-w-xl flex-wrap justify-center gap-2">
+                {chips.map((c) => (
+                  <span
+                    key={c.id}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
+                      c.status === "pending" && "border-border text-muted-foreground",
+                      c.status === "running" && "border-primary/30 bg-primary/5 text-primary",
+                      c.status === "done" && "border-green-200 bg-green-50 text-green-700",
+                      c.status === "retried" && "border-amber-200 bg-amber-50 text-amber-700",
+                      c.status === "failed" && "border-red-200 bg-red-50 text-red-700",
+                    )}
+                  >
+                    {c.status === "running" ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : c.status === "failed" ? (
+                      <AlertCircle className="h-3 w-3" />
+                    ) : c.status === "pending" ? (
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                    ) : (
+                      <CheckCircle2 className="h-3 w-3" />
+                    )}
+                    {c.label}
+                  </span>
+                ))}
+              </div>
             </motion.div>
           )}
 
@@ -1112,6 +1135,55 @@ export default function AccountMarketIntel() {
                       ))}
                     </ol>
                   </section>
+                )}
+
+                {/* Research log: what each scan found, retries and warnings (for diagnosing gaps) */}
+                {result.quality && (
+                  <details className="rounded-lg border border-border bg-card text-sm">
+                    <summary className="cursor-pointer px-6 py-4 font-semibold text-foreground">Research log</summary>
+                    <div className="space-y-6 border-t border-border p-6">
+                      {result.quality.scans && result.quality.scans.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead>
+                              <tr className="border-b border-border uppercase tracking-widest text-muted-foreground">
+                                <th className="py-2 pr-4 font-bold">Scan</th>
+                                <th className="py-2 pr-4 font-bold">Status</th>
+                                <th className="py-2 pr-4 font-bold">Cited segments</th>
+                                <th className="py-2 pr-4 font-bold">Seconds</th>
+                                <th className="py-2 font-bold">Retried</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {result.quality.scans.map((sc, i) => (
+                                <tr key={i}>
+                                  <td className="py-1.5 pr-4 font-medium text-foreground">{sc.topic}</td>
+                                  <td className={cn("py-1.5 pr-4", sc.status === "failed" ? "text-red-600" : sc.status === "thin" ? "text-amber-600" : "text-green-700")}>{sc.status}</td>
+                                  <td className="py-1.5 pr-4 tabular-nums">{sc.segments}</td>
+                                  <td className="py-1.5 pr-4 tabular-nums">{Math.round(sc.ms / 1000)}</td>
+                                  <td className="py-1.5">{sc.retried ? "yes" : ""}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      {result.quality.sectionsOk && (
+                        <p className="text-xs text-muted-foreground">
+                          Fact extraction:{" "}
+                          {Object.entries(result.quality.sectionsOk).map(([k, ok]) => `${k} ${ok ? "ok" : "failed"}`).join(" · ")}
+                          {result.quality.droppedCount != null && ` · ${result.quality.droppedCount} statements dropped by validation`}
+                        </p>
+                      )}
+                      {result.quality.warnings && result.quality.warnings.length > 0 && (
+                        <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+                          {result.quality.warnings.map((w, i) => (
+                            <li key={i}>{w}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </details>
                 )}
               </div>
             </motion.div>

@@ -1,4 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import { runResearch, type ProgressChip } from "./researchPipeline";
+
+export type { ProgressChip };
 
 export interface MarketRow {
   segment: string;
@@ -87,51 +90,40 @@ export interface ResearchResult {
     rationale: string;
   }[];
   sources: { title: string; url: string }[];
+  quality?: {
+    scans?: { topic: string; status: string; ms: number; segments: number; retried: boolean }[];
+    warnings?: string[];
+    droppedCount?: number;
+    dropped?: { path: string; reason: string; text: string }[];
+    evidenceByTopic?: Record<string, number>;
+    competitors?: { name: string; kind: string; evidenceCount: number; fieldsFound: number }[];
+    sectionsOk?: Record<string, boolean>;
+    verifier?: string;
+  };
 }
 
-export const RESEARCH_STAGES = ["Researching sources", "Researching competitors", "Extracting and verifying facts", "Writing analysis"] as const;
-
-// The report is built in four chained calls so each stays under Supabase's 150s request limit.
-// Each step returns `state`, which the next step needs.
+// One request to the research function. Errors carry the HTTP status so the pipeline can decide whether to retry.
 async function callStep(body: Record<string, unknown>) {
   if (!supabase) {
     throw new Error("Backend not configured. This feature requires a published deployment with Lovable Cloud enabled.");
   }
-  for (let attempt = 0; ; attempt++) {
-    const { data, error } = await supabase.functions.invoke("gemini-research", { body });
-    if (!error) {
-      if (data?.error) throw new Error(data.error);
-      return data;
-    }
+  const { data, error } = await supabase.functions.invoke("gemini-research", { body });
+  if (error) {
     // functions.invoke hides the response body on non-2xx; the function puts a readable message in it.
     const res = (error as { context?: Response }).context;
-    const status = res?.status;
-    const retryable = attempt === 0 && (!status || status === 502 || status === 503);
-    if (!retryable) {
-      const detail = await res?.json?.().catch(() => null);
-      throw new Error(detail?.error || error.message || "Failed to perform research");
-    }
+    const detail = await res?.json?.().catch(() => null);
+    throw Object.assign(new Error(detail?.error || error.message || "Failed to perform research"), { status: res?.status });
   }
+  if (data?.error) throw new Error(data.error);
+  return data;
 }
 
+// The report is built from many small independent requests (see researchPipeline.ts).
 export async function performResearch(
   companyName: string,
   deepResearch: boolean = true,
-  onStage?: (stage: number) => void,
+  onProgress?: (chips: ProgressChip[]) => void,
 ): Promise<ResearchResult> {
-  onStage?.(0);
-  const research = await callStep({ step: "research", companyName, deepResearch });
-  onStage?.(1);
-  // Per-competitor research is an enrichment: if it fails, carry on with the research state we already have.
-  let state = research.state;
-  try {
-    state = (await callStep({ step: "competitors", state, deepResearch })).state;
-  } catch (err) {
-    console.error("Competitor research step failed; continuing without it:", err);
-  }
-  onStage?.(2);
-  const facts = await callStep({ step: "facts", state });
-  onStage?.(3);
-  return (await callStep({ step: "analysis", state: facts.state, deepResearch })) as ResearchResult;
+  return (await runResearch({ call: callStep, companyName, deepResearch, onProgress })) as ResearchResult;
 }
 // Testing pipeline automation fix
