@@ -123,7 +123,7 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
     throw e;
   }
   end("company");
-  const entity = entityRes.entity;
+  let entity = entityRes.entity;
   warnings.push(...(entityRes.warnings ?? []));
 
   // ---- 2. scans ----
@@ -182,6 +182,8 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
     }
   };
   const state1 = await verify(ledger1.data.state);
+  // The verified entity no longer lists sold businesses that no evidence supports; later scans use it.
+  entity = state1.entity ?? entity;
 
   // ---- 4. fact sections ----
   const factsSection = async (chip: string, section: string, state: any, label: string) => {
