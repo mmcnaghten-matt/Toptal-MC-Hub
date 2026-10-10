@@ -135,6 +135,8 @@ export function useSaveContent() {
         sources?: SourceRef[];
         researchedAt?: string;
       };
+      /** Skip the success/error toasts (used by the multi-update, which reports per sub-sector itself). */
+      silent?: boolean;
     }) => {
       // Get current content for versioning
       const { data: existing } = await supabase
@@ -196,14 +198,14 @@ export function useSaveContent() {
         if (error) throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: ["industry-content"] });
       queryClient.invalidateQueries({ queryKey: ["all-industry-content"] });
       queryClient.invalidateQueries({ queryKey: ["content-versions"] });
-      toast.success("Content saved successfully");
+      if (!vars.silent) toast.success("Content saved successfully");
     },
-    onError: (error) => {
-      toast.error("Failed to save: " + error.message);
+    onError: (error, vars) => {
+      if (!vars.silent) toast.error("Failed to save: " + error.message);
     },
   });
 }

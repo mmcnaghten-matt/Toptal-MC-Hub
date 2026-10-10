@@ -18,6 +18,7 @@ import SignOutButton from "@/components/SignOutButton";
 import { toast } from "sonner";
 import { RefreshPreview } from "@/components/RefreshPreview";
 import { ProgressChips } from "@/components/ProgressChips";
+import { MultiRefreshDialog } from "@/components/MultiRefreshDialog";
 import type { IndustryResearchResult, ProgressChip } from "@/services/industryResearchPipeline";
 import { useAdminRole } from "@/hooks/useAdminRole";
 
@@ -31,6 +32,7 @@ export default function AdminIndustryInsights() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewContent, setPreviewContent] = useState<IndustryResearchResult | null>(null);
   const [chips, setChips] = useState<ProgressChip[]>([]);
+  const [multiOpen, setMultiOpen] = useState(false);
 
   // Edit state
   const [editOverview, setEditOverview] = useState("");
@@ -184,7 +186,12 @@ export default function AdminIndustryInsights() {
         {/* Industry & Sub-industry selector */}
         {!selectedSubId ? (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-foreground">Select a Sub-Sector to Manage</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-xl font-bold text-foreground">Select a Sub-Sector to Manage</h2>
+              <Button variant="outline" size="sm" onClick={() => setMultiOpen(true)}>
+                <RefreshCw className="h-4 w-4 mr-1" /> Multi-update
+              </Button>
+            </div>
             {industries.map((industry) => (
               <div key={industry.id} className="space-y-2">
                 <h3 className="text-lg font-semibold text-foreground">{industry.name}</h3>
@@ -456,6 +463,7 @@ export default function AdminIndustryInsights() {
           </div>
         )}
       </main>
+      <MultiRefreshDialog open={multiOpen} onOpenChange={setMultiOpen} />
     </div>
   );
 }
