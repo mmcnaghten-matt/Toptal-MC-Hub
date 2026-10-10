@@ -35,7 +35,7 @@ const TIME_BUDGET_MS = Number(Deno.env.get("REPORT_TIME_BUDGET_MS") ?? "140000")
 const MIN_EVIDENCE_WARN = 10;
 const MAX_EVIDENCE = 500;
 // Per research topic, so big companies don't fill the ledger with the first topics.
-const topicCap = (topic: string) => (topic === "market" ? 80 : topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
+const topicCap = (topic: string) => (topic === "market" ? 80 : topic.startsWith("market:") ? 35 : topic.startsWith("strategy_") ? 30 : topic.startsWith("competitor:") ? 25 : 40);
 const MAX_VERIFY = 120;
 const NF = "Not found in public sources.";
 const NOT_GENERATED = "Not generated: this analysis step failed or timed out. Try again.";
@@ -177,9 +177,10 @@ type GroundingMeta = {
   searchEntryPoint?: { renderedContent?: string };
 };
 type GeminiResult = { text: string; meta: GroundingMeta | null };
-type Source = { id: number; title: string; url: string; tier?: number };
+// kinds: what sort of site a source is (peer_list, seller, review, lookalike); flags on evidence = kinds shared by ALL of its sources.
+type Source = { id: number; title: string; url: string; tier?: number; kinds?: string[] };
 // tier: 1 primary (filings, regulators, company releases), 2 major press/analysts, 3 everything else. srcTiers aligns with sourceIds.
-type Evidence = { id: number; topic: string; text: string; sourceIds: number[]; tier?: number; srcTiers?: number[] };
+type Evidence = { id: number; topic: string; text: string; sourceIds: number[]; tier?: number; srcTiers?: number[]; flags?: string[] };
 type Claim = {
   text: string | null;
   status: "sourced" | "not_found";
@@ -196,6 +197,9 @@ type Entity = {
   ownership: string;
   confidence: string;
   otherEntities: string;
+  /** Current reporting segments (from the latest annual report / IR site) and businesses sold or discontinued. */
+  segments?: { name: string; description: string }[];
+  divested?: { name: string; date: string }[];
 };
 type Ctx = {
   byId: Map<number, Evidence>;
@@ -204,6 +208,8 @@ type Ctx = {
   sourced: { path: string; claim: Claim }[];
   /** Analysis items (synthesised text), registered so a verifier pass can check them against their cited evidence. */
   items: { path: string; item: Item }[];
+  /** Weakest source tier allowed to support a financial result: 1 for public companies (filings, IR, wires), 2 otherwise. */
+  finMaxTier: 1 | 2;
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -318,6 +324,29 @@ Write UNKNOWN for any field you cannot confirm from search results. Do not guess
   return { entity, result, error };
 }
 
+// The company's CURRENT reporting segments and the businesses it has sold or discontinued. Market research is then done
+// per current segment, and market figures for a divested business are not shown as current.
+async function resolveSegments(apiKey: string, e: Entity, today: string, timeoutMs: number) {
+  const prompt = `Today is ${today}. Use Google Search for the company "${e.name}" (${e.website}, ${e.ownership}).
+Find (1) its CURRENT reporting segments or, if it does not report segments, its major product lines, from its latest annual report (Form 10-K or equivalent) or investor-relations site; and (2) businesses it has SOLD, spun off or discontinued in the last 36 months, with the month and year.
+Answer one item per line in exactly this format, nothing else:
+SEGMENT: <segment name> | <one line: what it sells>
+DIVESTED: <business name> | <month year it was sold or closed>
+Write "NOT FOUND" if you cannot find segments. Do not guess.`;
+  const result = await callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, timeoutMs, temperature: 0, attempts: 1 });
+  const rows = (tag: string) =>
+    result.text.split("\n").flatMap((line) => {
+      const m = line.match(new RegExp(`^[\\s*_-]*${tag}[\\s*_]*:\\s*(.+)$`, "i"));
+      if (!m) return [];
+      const [a, ...rest] = m[1].replace(/\*+/g, "").split("|");
+      const name = a.trim();
+      return name && name.length <= 80 && !/^(not found|unknown|none)/i.test(name) ? [{ name, rest: rest.join("|").trim().slice(0, 200) }] : [];
+    });
+  const segments = rows("SEGMENT").slice(0, 6).map((r) => ({ name: r.name, description: r.rest }));
+  const divested = rows("DIVESTED").slice(0, 4).map((r) => ({ name: r.name, date: r.rest }));
+  return { segments, divested, result };
+}
+
 // ---------- Step 1: grounded research ----------
 const TOPICS = [
   {
@@ -328,7 +357,7 @@ const TOPICS = [
   {
     key: "performance",
     label: "Financial performance & funding",
-    ask: "Revenue and revenue growth (with fiscal period), profitability or margins, funding rounds (date, amount, round type, lead investors), total funding, valuation, employee headcount, and growth rankings or awards that state growth figures. If the company is public, the last two fiscal years of reported results.",
+    ask: "Revenue and revenue growth (with fiscal period), profitability or margins, funding rounds (date, amount, round type, lead investors), total funding, valuation, employee headcount, and growth rankings or awards that state growth figures. If the company is public, use its SEC filings and its investor-relations and newsroom pages: the last two fiscal years of reported results, the latest quarter's reported and adjusted results (say which is which), and any acquisitions or divestitures in the last 24 months that explain changes in revenue or headcount. Do not use stock-data websites.",
   },
   ...[[0, 1], [2, 3], [4, 5]].map((idx, n) => ({
     key: `strategy_${n + 1}`,
@@ -346,14 +375,26 @@ const TOPICS = [
     ask: "Companies named as competitors or alternatives to this company by analysts, comparison or review sites, press coverage, or the company itself. List the most frequently named, who named them, and the market or segment in which they compete.",
   },
   {
-    key: "customer",
-    label: "Customer voice",
-    ask: "Published customer evidence: ratings and recurring themes in reviews on software review sites, case studies, testimonials, published customer outcomes, complaints, and reasons customers give for choosing or leaving the company. Report only what sources state; do not characterise overall sentiment unless a source does.",
+    key: "customer_praise",
+    label: "Customer voice: praise",
+    ask: "Published evidence of what customers like: ratings and recurring praise themes in reviews on independent review sites, case studies, testimonials from named customers, published customer outcomes, and reasons customers give for choosing the company. Do NOT use pages of dealers, contractors, installers or distributors who sell the product: that is their marketing, not customer evidence. Report only what sources state; do not characterise overall sentiment unless a source does.",
+  },
+  {
+    key: "customer_complaints",
+    label: "Customer voice: complaints",
+    ask: "Published evidence of what customers criticise: complaints and reviews on BBB, ConsumerAffairs, Trustpilot, Sitejabber and similar sites (search them by name), warranty or claims disputes, product defects or recalls, class actions and court filings, regulator complaints, and reasons customers give for leaving or switching. Do NOT use pages of dealers, contractors, installers or distributors who sell the product. Report only what sources state; if you find no complaints, write one line \"NOT FOUND: customer complaints\".",
   },
 ];
 
+const marketSegmentAsk = (segment: string) =>
+  `The market for the company's "${segment}" business: how analysts define it, and the latest published market-size estimates. Report EVERY independent estimate you find (figure, year, geography, publisher), from at least two different publishers if they exist, with the market's growth rate and the drivers and headwinds analysts or industry publications name for it. Only cover this segment, not the company's other segments or businesses it has sold.`;
+
 const entityBlock = (e: Entity) =>
-  `COMPANY: ${e.name} | website: ${e.website} | HQ: ${e.headquarters} | ${e.ownership}\nWHAT IT DOES: ${e.description}`;
+  `COMPANY: ${e.name} | website: ${e.website} | HQ: ${e.headquarters} | ${e.ownership}\nWHAT IT DOES: ${e.description}` +
+  (e.segments?.length ? `\nCURRENT SEGMENTS: ${e.segments.map((x) => x.name).join("; ")}` : "") +
+  (e.divested?.length
+    ? `\nSOLD OR DISCONTINUED (no longer part of the company; never present these as current businesses or markets it serves): ${e.divested.map((x) => `${x.name}${x.date ? ` (${x.date})` : ""}`).join("; ")}`
+    : "");
 
 const researchPrompt = (ask: string, e: Entity, today: string) => `Today is ${today}.
 ${entityBlock(e)}
@@ -396,15 +437,77 @@ function normUrl(url: string): string {
   }
 }
 
+// ---------- Text hygiene ----------
+// Search snippets and page titles arrive with HTML entities ("&ldquo;", "&#174;") and sometimes with UTF-8 punctuation that
+// was decoded with the wrong character set (an em dash shown as ",Äî"). Clean both so no source line shows them.
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ldquo: "\u201c", rdquo: "\u201d", lsquo: "\u2018", rsquo: "\u2019",
+  ndash: "\u2013", mdash: "\u2014", hellip: "\u2026", reg: "\u00ae", copy: "\u00a9", trade: "\u2122", deg: "\u00b0", middot: "\u00b7",
+  bull: "\u2022", eacute: "\u00e9", egrave: "\u00e8", aacute: "\u00e1", uuml: "\u00fc", ouml: "\u00f6", auml: "\u00e4", ntilde: "\u00f1",
+  szlig: "\u00df", euro: "\u20ac", pound: "\u00a3", yen: "\u00a5", cent: "\u00a2", laquo: "\u00ab", raquo: "\u00bb", times: "\u00d7",
+};
+const MOJIBAKE: [RegExp, string][] = [
+  [/(?:\u00e2\u20ac\u201d|\u201a\u00c4\u00ee|,\u00c4\u00ee)/g, "\u2014"], // em dash
+  [/(?:\u00e2\u20ac\u201c|\u201a\u00c4\u00ec|,\u00c4\u00ec)/g, "\u2013"], // en dash
+  [/(?:\u00e2\u20ac\u2122|\u201a\u00c4\u00f4|,\u00c4\u00f4)/g, "\u2019"], // right single quote
+  [/(?:\u00e2\u20ac\u0153|\u201a\u00c4\u00fa|,\u00c4\u00fa)/g, "\u201c"], // left double quote
+  [/(?:\u00e2\u20ac\u009d|\u201a\u00c4\u00f9|,\u00c4\u00f9)/g, "\u201d"], // right double quote
+  [/\u00c2(?=[\u00a0-\u00bf])/g, ""],
+];
+function cleanText(t: string): string {
+  let out = t;
+  for (const [re, rep] of MOJIBAKE) out = out.replace(re, rep);
+  // Twice, so "&amp;ldquo;" (double-encoded) also resolves.
+  for (let i = 0; i < 2; i++) {
+    out = out.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]*);/gi, (m, e: string) => {
+      if (e[0] === "#") {
+        const code = e[1].toLowerCase() === "x" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return Number.isFinite(code) && code > 31 && code < 0x110000 ? String.fromCodePoint(code) : m;
+      }
+      return NAMED_ENTITIES[e.toLowerCase()] ?? m;
+    });
+  }
+  return out.replace(/[\u00a0\u2007\u202f]/g, " ").replace(/[\u200b-\u200d\ufeff]/g, "");
+}
+// Source titles are also reduced to plain punctuation so no font or export path can garble them.
+const plainTitle = (t: string) =>
+  cleanText(t).replace(/[\u2013\u2014]/g, " - ").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\u2026/g, "...").replace(/\s+/g, " ").trim();
+
 // ---------- Source tiers ----------
 // Evidence is only as good as its source. Known-bad types (social media, stock forums, content farms, law-firm
 // marketing) are dropped before any synthesis; the rest are ranked so primary sources win when facts conflict.
 const DOMAINS_EXCLUDED = [
   "facebook.com", "fb.com", "instagram.com", "x.com", "twitter.com", "reddit.com", "tiktok.com", "pinterest.com", "quora.com",
   "linkedin.com", "youtube.com", "youtu.be", "stocktwits.com", "koalagains.com", "capout.ai", "creately.com",
+  // Stock-data aggregators: trailing ratios and "analysis" computed by third parties (often on a different basis than the
+  // company reports, e.g. including impairments) must never feed the financial story.
+  "stockanalysis.com", "wallstreetzen.com", "fullratio.com", "macrotrends.net", "companiesmarketcap.com", "gurufocus.com",
+  "simplywall.st", "stockscan.io", "marketbeat.com", "finance.yahoo.com", "seekingalpha.com", "investing.com", "tipranks.com",
+  "zacks.com", "ycharts.com", "finbox.com", "alphaspread.com", "stockinvest.us", "revelio.com", "reveliolabs.com", "reportlinker.com",
+  // Conference and event marketing sites
+  "iqpc.com", "iqpc.co.uk",
   ...(Deno.env.get("SOURCE_DENYLIST") ?? "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean),
 ];
-const DOMAINS_T1 = ["sec.gov", "europa.eu", "prnewswire.com", "businesswire.com", "globenewswire.com", "accesswire.com"];
+const DOMAINS_T1 = ["sec.gov", "europa.eu", "prnewswire.com", "businesswire.com", "globenewswire.com", "accesswire.com", "q4cdn.com"];
+// Algorithmic peer lists and company-profile databases: they pair companies by name or industry code, so they are not
+// evidence that one company competes with another.
+const DOMAINS_PEER_LISTS = [
+  "comparably.com", "owler.com", "craft.co", "growjo.com", "leadiq.com", "zoominfo.com", "similarweb.com", "cbinsights.com",
+  "tracxn.com", "globaldata.com", "rocketreach.co", "dnb.com", "buzzfile.com", "datanyze.com", "apollo.io", "pitchbook.com",
+];
+// Review, complaint and court sites: valid evidence of what customers criticise.
+const DOMAINS_REVIEW = [
+  "bbb.org", "consumeraffairs.com", "trustpilot.com", "sitejabber.com", "pissedconsumer.com", "complaintsboard.com", "yelp.com",
+  "g2.com", "capterra.com", "trustradius.com", "softwareadvice.com", "gartner.com", "consumerreports.org", "courtlistener.com",
+  "classaction.org", "cpsc.gov", "ftc.gov", "justia.com", "angi.com", "homeadvisor.com", "reviews.com",
+];
+// Pages that sell or install the product (dealers, contractors, distributors): marketing, not customer evidence.
+const SELLER_RE = /(preferred[ -]contractor|certified[ -]contractor|authori[sz]ed (dealer|distributor|installer)|roofing (company|contractor|services?|co\b)|\broofers?\b|\bcontractors?\b|\binstallers?\b|\bdealers?\b|distribut(or|ion)\b|\bsupply\b|\bexteriors?\b|home ?improvement)/i;
+// Host names run words together ("smithroofingcontractors.com"), so they are matched without word boundaries.
+const SELLER_HOST_RE = /(contractor|roofer|roofing|installer|dealer|distribut|supply(?!chain)|exterior|reseller|homeimprovement)/i;
+const sellerLike = (host: string, title?: string) => SELLER_HOST_RE.test(host.replace(/[-.]/g, "")) || SELLER_RE.test(title ?? "");
+// Bot-check and error pages: nobody can audit what they say.
+const BOT_CHECK_TITLE_RE = /^(just a moment|access denied|attention required|human verification|verify(ing)? you are human|are you a (human|robot)|security check|checking your browser|please wait|enable javascript|one more step|pardon our interruption|request blocked|403|404|forbidden|robot|captcha)/i;
 const DOMAINS_T2 = [
   "reuters.com", "bloomberg.com", "wsj.com", "ft.com", "cnbc.com", "apnews.com", "nytimes.com", "washingtonpost.com", "barrons.com",
   "economist.com", "marketwatch.com", "fortune.com", "axios.com", "bbc.com", "theguardian.com", "politico.com",
@@ -439,14 +542,46 @@ function rootDomainOf(text?: string): string {
 }
 
 /** 0 = excluded, 1 = primary, 2 = major press / analysts, 3 = everything else. */
-function sourceTier(url: string, title: string | undefined, companyRoot: string): 0 | 1 | 2 | 3 {
+function sourceTier(url: string, title: string | undefined, companyRoot: string, topic = ""): 0 | 1 | 2 | 3 {
   const host = hostOf(url, title);
   if (!host) return 3;
   if (matchesDomain(host, DOMAINS_EXCLUDED)) return 0;
-  if (LAW_FIRM_RE.test(host.replace(/[-.]/g, " ")) || LAW_FIRM_RE.test(title ?? "")) return 0;
+  // Complaint research may use class-action and court coverage, which the law-firm filter would otherwise remove.
+  const complaints = topic === "customer_complaints";
+  if (LAW_FIRM_RE.test(host.replace(/[-.]/g, " ")) || (!complaints && LAW_FIRM_RE.test(title ?? ""))) {
+    if (!(complaints && matchesDomain(host, DOMAINS_REVIEW))) return 0;
+  }
+  // Pages that sell the product say nothing reliable about customer satisfaction.
+  if (topic.startsWith("customer") && !matchesDomain(host, DOMAINS_REVIEW) && !(companyRoot && matchesDomain(host, [companyRoot])) &&
+      sellerLike(host, title)) return 0;
   if (matchesDomain(host, DOMAINS_T1) || /\.(gov|mil)(\.[a-z]{2})?$/.test(host) || (companyRoot && matchesDomain(host, [companyRoot]))) return 1;
   if (matchesDomain(host, DOMAINS_T2)) return 2;
   return 3;
+}
+
+// The brand token of a name or domain: "Owens Corning" / "owenscorning.com" -> "owenscorning".
+const brandToken = (s: string) =>
+  s.toLowerCase().replace(/\.(com|net|org|co|io|us)\b.*$/, "").replace(/\b(inc|corp|corporation|company|ltd|llc|plc|holdings|group|incorporated)\b\.?/g, "").replace(/[^a-z0-9]/g, "");
+
+/**
+ * What sort of site a source is. A look-alike is a domain whose name contains the brand but is not the brand's own site
+ * (e.g. "johnsmanvilleus.com" for Johns Manville): it often belongs to a marketing or SEO operator.
+ */
+function sourceKinds(url: string, title: string | undefined, companyRoot: string, brand?: string): string[] {
+  const host = hostOf(url, title);
+  if (!host) return [];
+  const kinds: string[] = [];
+  if (matchesDomain(host, DOMAINS_PEER_LISTS)) kinds.push("peer_list");
+  if (matchesDomain(host, DOMAINS_REVIEW)) kinds.push("review");
+  const ownSite = companyRoot && matchesDomain(host, [companyRoot]);
+  if (!ownSite && !matchesDomain(host, DOMAINS_T1) && !matchesDomain(host, DOMAINS_T2) && sellerLike(host, title)) kinds.push("seller");
+  const token = brandToken(brand ?? "");
+  if (!ownSite && token.length >= 6) {
+    const label = host.split(".").slice(-2, -1)[0] ?? "";
+    const squashed = label.replace(/[^a-z0-9]/g, "");
+    if (squashed.includes(token) && squashed !== token) kinds.push("lookalike");
+  }
+  return kinds;
 }
 
 function buildLedger(
@@ -454,11 +589,13 @@ function buildLedger(
   urlMap: Map<string, string>,
   existing?: { sources: Source[]; evidence: Evidence[] },
   companyWebsite?: string,
+  companyName?: string,
 ) {
   const companyRoot = rootDomainOf(companyWebsite);
   let droppedByTier = 0;
   const sources: Source[] = [...(existing?.sources ?? [])].map((x) => ({ ...x, tier: x.tier ?? (sourceTier(x.url, x.title, companyRoot) || 3) }));
   const tierOfSource = new Map<number, number>(sources.map((x) => [x.id, x.tier ?? 3]));
+  const kindsOfSource = new Map<number, string[]>(sources.map((x) => [x.id, x.kinds ?? []]));
   const srcIndex = new Map<string, number>(sources.map((x) => [normUrl(x.url), x.id]));
   const evidence: Evidence[] = [...(existing?.evidence ?? [])];
   const seen = new Set<string>(evidence.map((e) => `${e.topic}|${e.text.toLowerCase()}`));
@@ -477,7 +614,7 @@ function buildLedger(
       const raw = c.web?.uri;
       if (!raw) return null;
       const url = urlMap.get(raw) ?? raw;
-      const tier = sourceTier(url, c.web?.title, companyRoot);
+      const tier = sourceTier(url, c.web?.title, companyRoot, topic);
       if (tier === 0) {
         excludedChunks.add(ci);
         return null;
@@ -486,14 +623,16 @@ function buildLedger(
       let id = srcIndex.get(key);
       if (!id) {
         id = sources.length + 1;
-        sources.push({ id, title: c.web?.title ?? new URL(url).host, url, tier });
+        const kinds = sourceKinds(url, c.web?.title, companyRoot, topic.startsWith("competitor:") ? topic.slice(11) : companyName);
+        sources.push({ id, title: plainTitle(c.web?.title ?? "") || new URL(url).host, url, tier, ...(kinds.length ? { kinds } : {}) });
         tierOfSource.set(id, tier);
+        kindsOfSource.set(id, kinds);
         srcIndex.set(key, id);
       }
       return id;
     });
     for (const s of meta.groundingSupports ?? []) {
-      const text = (s.segment?.text ?? "").replace(/^[\s*-]+/, "").trim();
+      const text = cleanText(s.segment?.text ?? "").replace(/^[\s*-]+/, "").trim();
       if (text.length < 15 || /NOT FOUND/i.test(text) || /^(CONFIDENCE|OTHER_ENTITIES)\b/.test(text)) continue;
       const ids = [...new Set((s.groundingChunkIndices ?? []).map((i) => chunkSrc[i]).filter((x): x is number => x != null))];
       if (!ids.length) {
@@ -506,7 +645,9 @@ function buildLedger(
       if (evidence.length >= MAX_EVIDENCE || (perTopic.get(topic) ?? 0) >= topicCap(topic)) break; // this topic is full (later topics still get their share)
       perTopic.set(topic, (perTopic.get(topic) ?? 0) + 1);
       const srcTiers = ids.map((id) => tierOfSource.get(id) ?? 3);
-      evidence.push({ id: evidence.length + 1, topic, text, sourceIds: ids, tier: Math.min(...srcTiers), srcTiers });
+      // A flag applies only when every source behind the fact has it (one good source rescues the fact).
+      const flags = (kindsOfSource.get(ids[0]) ?? []).filter((k) => ids.every((id) => (kindsOfSource.get(id) ?? []).includes(k)));
+      evidence.push({ id: evidence.length + 1, topic, text, sourceIds: ids, tier: Math.min(...srcTiers), srcTiers, ...(flags.length ? { flags } : {}) });
     }
   }
   return { sources, evidence, searchSuggestions, queries: [...new Set(queries)], droppedByTier };
@@ -645,7 +786,8 @@ ${evidenceBlock(ev)}
 Rules:
 1. Every item must list in basedOn the E numbers (integers) it rests on. If you cannot point to evidence for an item, leave it out: null for single fields, [] for lists. Fewer, well-grounded items beat filling every slot, but do use the evidence you have: a well-documented company should get a full analysis.
 2. Judgement and synthesis are expected, but introduce no new facts: no figures, percentages, budgets, targets, dates, names, customers or events that are not in the cited evidence.
-2a. Evidence lines carry a source tier (T1 primary, T2 major press and analysts, T3 other). Rest conclusions on T1 and T2 evidence. Do not draw a trend or conclusion from a single aggregator figure, or from figures reported on different bases (original versus restated, total versus continuing operations). Write a company's own marketing claims as that company's claim. Investment commentary ("undervalued", price targets) is not a strength. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.`;
+2a. Evidence lines carry a source tier (T1 primary, T2 major press and analysts, T3 other). Rest conclusions on T1 and T2 evidence. Do not draw a trend or conclusion from a single aggregator figure, or from figures reported on different bases (original versus restated, total versus continuing operations). Write a company's own marketing claims as that company's claim. Investment commentary ("undervalued", price targets) is not a strength. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.
+2b. Financial interpretation. (i) When revenue, headcount or margins changed because of an acquisition or divestiture that the evidence mentions, say so and name the deal and date; never present acquired growth as organic, and never call a deal-driven jump or fall a trend or a weakness. (ii) Never compare or combine adjusted and reported (GAAP) figures, or figures from different periods or bases; name the basis of every margin or earnings figure. (iii) Do not use margins or ratios computed by third-party websites; use only figures the company itself reported. (iv) Describe only the company's current businesses (the CURRENT SEGMENTS in the company block); a business listed as sold is history, not a current strength, opportunity or market.`;
   if (part === "core") {
     return `${head}
 3. executiveSummary.tldr: 3-4 sentences for leadership on the company's position, recent performance and priorities.
@@ -709,7 +851,7 @@ function figuresSupported(text: string, ev: Evidence[], financialOnly: boolean):
 const validEvidence = (ids: unknown, ctx: Ctx, topics?: string[]) =>
   [...new Set(Array.isArray(ids) ? ids : [])]
     .map((id) => ctx.byId.get(Number(id)))
-    .filter((e): e is Evidence => !!e && (!topics || topics.includes(e.topic)));
+    .filter((e): e is Evidence => !!e && (!topics || topics.some((t) => e.topic === t || (t.endsWith("*") && e.topic.startsWith(t.slice(0, -1))))));
 
 const notFound = (): Claim => ({ text: null, status: "not_found", evidenceIds: [] });
 
@@ -718,12 +860,12 @@ function checkClaim(c: Any, path: string, ctx: Ctx, topics?: string[], opts?: { 
   const text = typeof c.text === "string" ? c.text.trim() : "";
   const evAny = validEvidence(c.evidenceIds, ctx, topics);
   // Financial results must rest on primary (T1) or major-press/analyst (T2) evidence, never on aggregators or blogs.
-  const ev = opts?.primaryOnly ? evAny.filter((e) => (e.tier ?? 2) <= 2) : evAny;
+  const ev = opts?.primaryOnly ? evAny.filter((e) => (e.tier ?? 2) <= ctx.finMaxTier) : evAny;
   const reason = !text
     ? "empty text"
     : !ev.length
     ? opts?.primaryOnly && evAny.length
-      ? "financial figure needs a primary or major-press source"
+      ? ctx.finMaxTier === 1 ? "financial figure needs a primary source (filing, investor page or company release)" : "financial figure needs a primary or major-press source"
       : topics ? `no valid ${topics.join("/")} evidence cited` : "no valid evidence cited"
     : !opts?.allowHedge && (HEDGE_I.test(text) || HEDGE_CS.test(text))
     ? "hedged language in a factual field"
@@ -753,6 +895,8 @@ function quantityWordsSupported(text: string, ev: Evidence[]): boolean {
   return /(doubl|tripl|quadrupl|halved|\d+[- ]fold|\b[2-9]x\b|\d{3,}\s?%)/.test(hay);
 }
 
+const FIN_TERMS = /\b(revenue|net sales|sales growth|margin|ebitda|net income|operating income|earnings|profit(ability)?|headcount|employees|workforce)\b/i;
+
 function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
   const text = typeof it?.text === "string" ? it.text.trim() : "";
   if (!text) return null;
@@ -768,8 +912,9 @@ function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
     : !quantityWordsSupported(text, ev)
     ? "quantity wording not supported by cited evidence"
     : // a statement about the company's financial performance cannot rest on aggregators or blogs alone
-      (text.match(FIN_FIGURE) ?? []).length > 0 && ev.some((e) => e.topic === "performance") && !ev.some((e) => (e.tier ?? 2) <= 2)
-    ? "financial figure needs a primary or major-press source"
+      ((text.match(FIN_FIGURE) ?? []).length > 0 || FIN_TERMS.test(text)) && ev.some((e) => e.topic === "performance") &&
+        !ev.some((e) => (e.tier ?? 2) <= ctx.finMaxTier)
+    ? ctx.finMaxTier === 1 ? "financial statement needs a primary source (filing, investor page or company release)" : "financial statement needs a primary or major-press source"
     : null;
   if (reason) {
     ctx.dropped.push({ path, reason, text });
@@ -782,7 +927,7 @@ function checkItem(it: Any, path: string, ctx: Ctx): Item | null {
 
 const list = (a: unknown): Any[] => (Array.isArray(a) ? a : []);
 
-type MarketEntry = { segment: string; geography: string; year: number; value: string; publisher: string; claim: Claim };
+type MarketEntry = { segment: string; geography: string; year: number; value: string; publisher: string; claim: Claim; varies?: boolean };
 
 // Display-only tidy: abbreviate unit words without touching any digit, so number validation stays valid.
 const tidyValue = (v: string) =>
@@ -802,30 +947,67 @@ const segmentKey = (name: string) =>
   name.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9 ]/g, " ").split(/\s+/)
     .filter((w) => w && !SEGMENT_FILLER.has(w)).map((w) => (w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w)).join(" ");
 
-// One row per segment: latest year, then global over regional, then better-known publisher, then first seen.
-// Largest segments first, at most 5.
+// One row per segment, largest first, at most 5. For each segment the candidates are the latest estimates (global over
+// regional, one per publisher). When publishers agree to within 25% the best-known publisher's figure is shown; when they
+// disagree the row shows the range and says so, because market-research estimates of one market often differ several-fold.
 function latestPerSegment(entries: MarketEntry[]): MarketEntry[] {
   const geoRank = (g: string) => (/global|worldwide|world/i.test(g) ? 0 : 1);
   const pubRank = (p: string) => {
     const i = PUBLISHER_RANK.findIndex((x) => p.toLowerCase().includes(x));
     return i < 0 ? 99 : i;
   };
-  const best = new Map<string, { e: MarketEntry; i: number }>();
+  const groups = new Map<string, { e: MarketEntry; i: number }[]>();
   entries.forEach((e, i) => {
     const key = segmentKey(e.segment) || e.segment.toLowerCase();
-    const cur = best.get(key);
-    const better = !cur || e.year > cur.e.year ||
-      (e.year === cur.e.year && (geoRank(e.geography) < geoRank(cur.e.geography) ||
-        (geoRank(e.geography) === geoRank(cur.e.geography) && pubRank(e.publisher) < pubRank(cur.e.publisher))));
-    if (better) best.set(key, { e, i });
+    groups.set(key, [...(groups.get(key) ?? []), { e, i }]);
   });
-  return [...best.values()]
-    .sort((a, b) => magnitude(b.e.value) - magnitude(a.e.value) || a.i - b.i)
-    .map((x) => x.e)
-    .slice(0, 5);
+  const out: { e: MarketEntry; size: number; i: number }[] = [];
+  for (const rows of groups.values()) {
+    const maxYear = Math.max(...rows.map((r) => r.e.year));
+    let cands = rows.filter((r) => r.e.year >= maxYear - 1);
+    if (cands.some((r) => geoRank(r.e.geography) === 0)) cands = cands.filter((r) => geoRank(r.e.geography) === 0);
+    const byPublisher = new Map<string, { e: MarketEntry; i: number }>();
+    for (const r of cands) {
+      const k = r.e.publisher.toLowerCase().trim();
+      const cur = byPublisher.get(k);
+      if (!cur || r.e.year > cur.e.year) byPublisher.set(k, r);
+    }
+    const uniq = [...byPublisher.values()];
+    const best = [...uniq].sort((a, b) =>
+      b.e.year - a.e.year || geoRank(a.e.geography) - geoRank(b.e.geography) || pubRank(a.e.publisher) - pubRank(b.e.publisher) || a.i - b.i
+    )[0];
+    const sized = uniq.map((r) => ({ r, m: magnitude(r.e.value) })).filter((x) => Number.isFinite(x.m) && x.m > 0).sort((a, b) => a.m - b.m);
+    const lo = sized[0], hi = sized[sized.length - 1];
+    if (sized.length >= 2 && (hi.m - lo.m) / hi.m > 0.25) {
+      const evidenceIds = [...new Set(sized.flatMap((x) => x.r.e.claim.evidenceIds))];
+      out.push({
+        e: {
+          segment: best.e.segment,
+          geography: best.e.geography,
+          year: Math.max(...sized.map((x) => x.r.e.year)),
+          value: `${lo.r.e.value} to ${hi.r.e.value}`,
+          publisher: `estimates vary by source: ${lo.r.e.publisher} (${lo.r.e.value}), ${hi.r.e.publisher} (${hi.r.e.value})`,
+          claim: { ...best.e.claim, evidenceIds },
+          varies: true,
+        },
+        size: hi.m,
+        i: best.i,
+      });
+    } else {
+      out.push({ e: best.e, size: magnitude(best.e.value), i: best.i });
+    }
+  }
+  return out.sort((a, b) => b.size - a.size || a.i - b.i).map((x) => x.e).slice(0, 5);
 }
 
-function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
+// Does a market-size row's segment name refer to one of these business names? (shared significant word)
+const segmentWords = (name: string) => segmentKey(name).split(" ").filter((w) => w.length > 3);
+const sameSegment = (rowSegment: string, names: string[]) => {
+  const words = new Set(segmentWords(rowSegment));
+  return names.some((n) => segmentWords(n).some((w) => words.has(w)));
+};
+
+function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[], opts?: { entity?: Entity; landscape?: Competitor[]; rejectedNames?: string[] }) {
   const f = raw ?? {};
   const claims = (a: unknown, p: string, topics?: string[], opts?: { allowHedge?: boolean; primaryOnly?: boolean }) =>
     list(a).map((c, i) => checkClaim(c, `${p}[${i}]`, ctx, topics, opts)).filter((c) => c.status === "sourced");
@@ -905,6 +1087,18 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
         : year > thisYear ? "forecast year, not a current estimate"
         : null;
       const text = `${segment} (${geography}, ${year}): ${value}, ${publisher}`;
+      // Market figures must belong to a business the company is in today, not one it has sold.
+      const current = opts?.entity?.segments?.map((x) => x.name) ?? [];
+      const sold = opts?.entity?.divested?.map((x) => x.name) ?? [];
+      const segReason = segment && sold.length && sameSegment(segment, sold) && !sameSegment(segment, current)
+        ? "market for a business the company has sold"
+        : segment && current.length && !sameSegment(segment, current)
+        ? "market does not match a current reporting segment"
+        : null;
+      if (segReason) {
+        ctx.dropped.push({ path, reason: segReason, text });
+        return [];
+      }
       if (reason) {
         ctx.dropped.push({ path, reason, text });
         return [];
@@ -917,7 +1111,7 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
   const mo = f.marketOverview ?? {};
   const cl = f.competitiveLandscape ?? {};
   const ci = f.customerInsights ?? {};
-  const CUSTOMER = ["customer"];
+  const CUSTOMER = ["customer*"];
 
   return {
     businessPerformance: {
@@ -932,11 +1126,20 @@ function validateFacts(raw: Any, ctx: Ctx, competitorNames?: string[]) {
       drivers: summaries(mo.drivers, "marketOverview.drivers"),
       inhibitors: summaries(mo.inhibitors, "marketOverview.inhibitors"),
     },
-    competitiveLandscape: {
-      directCompetitors: named(cl.directCompetitors, "competitiveLandscape.directCompetitors"),
-      indirectCompetitors: named(cl.indirectCompetitors, "competitiveLandscape.indirectCompetitors"),
-      potentialEntrants: named(cl.potentialEntrants, "competitiveLandscape.potentialEntrants"),
-    },
+    competitiveLandscape: opts?.landscape?.length
+      // The validated list decides who is a competitor; the model only supplies potential entrants.
+      ? {
+        directCompetitors: opts.landscape.filter((c) => c.kind === "direct" && c.evidenceIds?.length).map((c) => ({ name: c.name, evidenceIds: c.evidenceIds! })),
+        indirectCompetitors: opts.landscape.filter((c) => c.kind === "indirect" && c.evidenceIds?.length).map((c) => ({ name: c.name, evidenceIds: c.evidenceIds! })),
+        potentialEntrants: named(cl.potentialEntrants, "competitiveLandscape.potentialEntrants").filter(
+          (n) => !(opts.rejectedNames ?? []).some((r) => r.toLowerCase() === n.name.toLowerCase()),
+        ),
+      }
+      : {
+        directCompetitors: named(cl.directCompetitors, "competitiveLandscape.directCompetitors"),
+        indirectCompetitors: named(cl.indirectCompetitors, "competitiveLandscape.indirectCompetitors"),
+        potentialEntrants: named(cl.potentialEntrants, "competitiveLandscape.potentialEntrants"),
+      },
     competitorDeepDives: list(f.competitorDeepDives)
       .slice(0, 5)
       .flatMap((d, i) => {
@@ -1219,10 +1422,22 @@ function renumberCitations(report: Any, sources: Source[]): Any {
   return out;
 }
 
+// Remove [n] markers (n in `drop`) from every statement; sources, claims, quality and entity are left alone.
+function stripCitations(report: Any, drop: Set<number>): Any {
+  const rewrite = (v: Any): Any => {
+    if (typeof v === "string") return v.replace(/\s?\[(\d+)\]/g, (m, d) => (drop.has(Number(d)) ? "" : m));
+    if (Array.isArray(v)) return v.map(rewrite);
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, rewrite(x)]));
+    return v;
+  };
+  const out: Any = {};
+  for (const [k, v] of Object.entries(report)) out[k] = NO_RENUMBER.has(k) ? v : rewrite(v);
+  return out;
+}
+
 // Best effort: replace a source's domain-only title with the page's own <title>. Never blocks the report for long.
 async function fetchTitles(sources: Source[], budgetMs: number): Promise<void> {
   const deadline = Date.now() + budgetMs;
-  const decode = (t: string) => t.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
   await Promise.allSettled(sources.map(async (src) => {
     if (!/^https?:/.test(src.url)) return;
     const left = deadline - Date.now();
@@ -1245,16 +1460,32 @@ async function fetchTitles(sources: Source[], budgetMs: number): Promise<void> {
     }
     await reader.cancel();
     const m = html.match(/<title[^>]*>([\s\S]{2,300}?)<\/title>/i);
-    const title = m ? decode(m[1]).replace(/\s+/g, " ").trim() : "";
-    if (title && !/^(just a moment|access denied|attention required|403|404|forbidden|robot|captcha)/i.test(title)) {
+    const title = m ? plainTitle(m[1]) : "";
+    if (title && BOT_CHECK_TITLE_RE.test(title)) {
+      // The page served a bot check, so nobody can audit what it supposedly says.
+      src.kinds = [...new Set([...(src.kinds ?? []), "unauditable"])];
+    } else if (title) {
       const host = hostOf(src.url, src.title);
-      src.title = `${title.slice(0, 150)}${host ? ` — ${host}` : ""}`;
+      src.title = `${title.slice(0, 150)}${host ? ` - ${host}` : ""}`;
     }
   }));
 }
 
 // ---------- Legacy (previous UI) shape, with [n] citations into `sources` ----------
 type Placeholders = { facts: string; core: string; recs: string };
+// Is the customer evidence two-sided? Praise and complaints are researched separately, so an empty side means the
+// sources found none (or only sellers' marketing, which is excluded), and the report must say so.
+type EvidenceBalance = "balanced" | "praise_only" | "complaints_only" | "none" | "unknown";
+function customerBalance(evidence: Evidence[], f: Facts): EvidenceBalance {
+  const praiseEv = evidence.some((e) => e.topic === "customer_praise");
+  const complaintEv = evidence.some((e) => e.topic === "customer_complaints");
+  if (!praiseEv && !complaintEv) return evidence.some((e) => e.topic === "customer") ? "unknown" : "none";
+  const ci = f.customerInsights;
+  const praise = praiseEv && ci.winReasons.length > 0;
+  const complaints = complaintEv && ci.lossReasons.length > 0;
+  return praise && complaints ? "balanced" : praise ? "praise_only" : complaints ? "complaints_only" : "none";
+}
+
 function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeholders) {
   // At most 3 citations per statement: best source tier first, then sources shared by several cited facts, then earliest.
   const cite = (evIds: number[]) => {
@@ -1293,7 +1524,9 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
   const marketLine = (e: MarketEntry) => `**${e.segment}** (${e.geography}, ${e.year}): ${e.value}, ${e.publisher}${cite(e.claim.evidenceIds)}`;
   const marketRow = (e: MarketEntry) => ({
     segment: e.segment, geography: e.geography, year: e.year, value: e.value, publisher: e.publisher, cite: cite(e.claim.evidenceIds).trim(),
+    ...(e.varies ? { varies: true } : {}),
   });
+  const balance = customerBalance(ctx.evidence, f);
   const gapFor = (name: string) => {
     const g = a.competitorGaps.find((x) =>
       x.competitor.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(x.competitor.toLowerCase())
@@ -1374,14 +1607,19 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
       },
     },
     customerInsights: {
+      evidenceBalance: balance,
       sentiment: (() => {
-        const head = f.customerInsights.sentiment.status === "sourced" ? fc(f.customerInsights.sentiment) : "";
+        const head = balance === "praise_only"
+          ? "Only praise was found in published sources; no independent complaint evidence was found, so overall sentiment cannot be judged."
+          : balance === "complaints_only"
+          ? "Only complaints were found in published sources; no independent praise was found, so overall sentiment cannot be judged."
+          : f.customerInsights.sentiment.status === "sourced" ? fc(f.customerInsights.sentiment) : "";
         const themes = f.customerInsights.sentimentThemes.length ? bullets(f.customerInsights.sentimentThemes.map(fc)) : "";
         return [head, themes].filter(Boolean).join("\n\n") || ph.facts;
       })(),
       // JSON string; the page's WinLossColumns renders it as two columns.
       winLossReasons: f.customerInsights.winReasons.length || f.customerInsights.lossReasons.length
-        ? JSON.stringify({ wins: f.customerInsights.winReasons.map(fc), losses: f.customerInsights.lossReasons.map(fc) })
+        ? JSON.stringify({ wins: f.customerInsights.winReasons.map(fc), losses: f.customerInsights.lossReasons.map(fc), balance })
         : ph.facts,
       unmetNeeds: fcj(f.customerInsights.unmetNeeds),
     },
@@ -1435,8 +1673,9 @@ type State = {
   researchModel: string;
   /** Supports dropped because every source was an excluded type (social media, stock forums, ...). */
   droppedByTier?: number;
-  // set by the competitors step
+  // set by the competitors step: the competitors that get their own research, and the full validated list (max 10)
   competitors?: Competitor[];
+  validatedCompetitors?: Competitor[];
   // set by the facts step
   facts?: Facts;
   factsOk?: boolean;
@@ -1444,16 +1683,20 @@ type State = {
   verifier?: string;
   sourcedClaims?: number;
 };
-type Competitor = { name: string; kind: "direct" | "indirect" };
+type Competitor = { name: string; kind: "direct" | "indirect"; segment?: string; evidenceIds?: number[] };
 type StepResult = { ok: true; state: State } | { ok: false; status: number; body: Any };
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
-const makeCtx = (evidence: Evidence[], dropped: Ctx["dropped"] = []): Ctx => ({
+// Public companies publish audited results, so their financial claims must rest on those (T1: SEC filings, the company's
+// investor pages and releases, wire services). Private companies have no filings, so major press (T2) is allowed too.
+const isPublicCompany = (e?: Entity) => !!e && /\bpublic\b|\b(nyse|nasdaq|lse|tsx|euronext|xetra|asx|hkex|tse)\b/i.test(e.ownership) && !/\bprivate\b/i.test(e.ownership);
+const makeCtx = (evidence: Evidence[], dropped: Ctx["dropped"] = [], entity?: Entity): Ctx => ({
   byId: new Map(evidence.map((e) => [e.id, e])),
   evidence,
   dropped,
   sourced: [],
   items: [],
+  finMaxTier: isPublicCompany(entity) ? 1 : 2,
 });
 
 // Structured (no tools, evidence-only) call. Prefers Pro when asked, falls back to Flash if Pro fails or times out.
@@ -1518,7 +1761,7 @@ async function stepResearch(
   t0 = Date.now();
   const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
   const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 20_000)));
-  const ledger = buildLedger(results, urlMap, undefined, entity.website);
+  const ledger = buildLedger(results, urlMap, undefined, entity.website, entity.name);
   tick("ledger", t0);
   if (!ledger.evidence.length) {
     return { ok: false, status: 422, body: { error: "Search returned no citable evidence for this company, so no report was produced.", entity, warnings } };
@@ -1537,8 +1780,17 @@ async function stepResearch(
 
 // Step 2: identify the main competitors, then research each one with its own focused search.
 // One broad search for all competitors gave shallow, inconsistent coverage, especially for very large companies.
+// Candidates come from the evidence and from a per-segment search of the rivals named in annual reports and trade press.
+// A classification pass then keeps only real competitors: peer-list sites pair companies by name or industry code, and
+// customers, sales channels and suppliers show up in competitor lists too.
+const COMPETITOR_UNUSABLE_FLAGS = ["peer_list", "lookalike"];
+const usableForCompetitors = (e: Evidence) => !(e.flags ?? []).some((f) => COMPETITOR_UNUSABLE_FLAGS.includes(f));
+const MAX_COMPETITORS = 10;
+const MAX_DEEP_DIVES = 5;
+
 async function identifyCompetitors(apiKey: string, state: State, today: string, clock: ReturnType<typeof makeClock>) {
   const company = state.entity.name;
+  const warnings: string[] = [];
   const clean = (names: unknown, evText: string) => {
     const seen = new Set<string>([company.toLowerCase()]);
     return list(names).flatMap((n) => {
@@ -1549,16 +1801,20 @@ async function identifyCompetitors(apiKey: string, state: State, today: string, 
       return [name];
     });
   };
-  const ev = state.evidence.filter((e) => e.topic === "competitors" || e.topic === "profile");
-  const evText = ev.map((e) => e.text.toLowerCase()).join("\n");
-  let direct: string[] = [];
-  let indirect: string[] = [];
+  const ev = state.evidence.filter((e) => (e.topic === "competitors" || e.topic === "profile") && usableForCompetitors(e));
+  let evText = ev.map((e) => e.text.toLowerCase()).join("\n");
+  const candidates: { name: string; kind: "direct" | "indirect"; segment?: string }[] = [];
   const extra: { topic: string; r: GeminiResult }[] = [];
+  const addCandidate = (name: string, kind: "direct" | "indirect", segment?: string) => {
+    const key = name.toLowerCase();
+    if (name.length < 2 || name.length > 80 || key === company.toLowerCase() || candidates.some((c) => c.name.toLowerCase() === key)) return;
+    if (candidates.length < 18) candidates.push({ name, kind, segment });
+  };
 
   if (ev.length) {
     const prompt = `${entityBlock(state.entity)}
 
-From the evidence below, list the companies it names as DIRECT competitors of ${company} (same market, same customers), most prominent first (at most 5), and up to 3 INDIRECT competitors or alternatives. Use ONLY company names that appear in the evidence, exactly as written. Company names, not products. Exclude ${company} and its subsidiaries.
+From the evidence below, list the companies it names as DIRECT competitors of ${company} (same market, same customers), most prominent first (at most 8), and up to 4 INDIRECT competitors or alternatives. Use ONLY company names that appear in the evidence, exactly as written there. Do not list ${company} itself.
 
 EVIDENCE:
 ${evidenceBlock(ev)}`;
@@ -1566,45 +1822,112 @@ ${evidenceBlock(ev)}`;
     try {
       const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, temperature: 0, thinkingBudget: 0, attempts: 1, timeoutMs: clock.timeout(25_000, 100_000) });
       const j = safeJson(r.text);
-      direct = clean(j?.direct, evText).slice(0, 5);
-      indirect = clean(j?.indirect, evText).slice(0, 3);
+      clean(j?.direct, evText).slice(0, 8).forEach((n) => addCandidate(n, "direct"));
+      clean(j?.indirect, evText).slice(0, 4).forEach((n) => addCandidate(n, "indirect"));
     } catch (e) {
       console.error("Competitor identification (evidence) failed:", e);
     }
   }
-  if (direct.length < 3) {
-    // Not enough named in the evidence: ask a grounded search directly.
+
+  // Rivals named in annual reports and trade press, per current segment. This is how a segment's main rival (the one
+  // analysts always name) reaches the list even when comparison sites do not mention it.
+  const segs = state.entity.segments ?? [];
+  if (segs.length || candidates.filter((c) => c.kind === "direct").length < 3) {
     try {
       const prompt = `Today is ${today}.
 ${entityBlock(state.entity)}
-Use Google Search. Name the 5 companies most frequently cited by analysts, comparison sites or press as DIRECT competitors of ${company}, then up to 3 INDIRECT competitors or alternatives. Company names only. Answer one per line in exactly this format:
-DIRECT: <company name>
-INDIRECT: <company name>`;
-      const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, temperature: 0, timeoutMs: clock.timeout(30_000, 90_000), attempts: 1 });
-      const lines = r.text.split("\n");
-      const pick = (tag: string) => lines.map((l) => l.match(new RegExp(`^[\\s*_-]*${tag}[\\s*_]*:\\s*(.+)$`, "i"))?.[1]).filter((x): x is string => !!x);
-      const seen = new Set([...direct, ...indirect].map((n) => n.toLowerCase()).concat(company.toLowerCase()));
-      const add = (names: string[], into: string[], max: number) => {
-        for (const n0 of names) {
-          const n = n0.replace(/\*+/g, "").trim();
-          if (n.length >= 2 && n.length <= 80 && !seen.has(n.toLowerCase()) && into.length < max) {
-            seen.add(n.toLowerCase());
-            into.push(n);
-          }
-        }
-      };
-      add(pick("DIRECT"), direct, 5);
-      add(pick("INDIRECT"), indirect, 3);
+Use Google Search. ${segs.length
+        ? `For EACH current segment of ${company} (${segs.map((x) => x.name).join("; ")}), name the 3 main DIRECT competitors: companies that sell a substitutable product or service to the same customers. Use the competition section of ${company}'s latest annual report or Form 10-K and industry or trade press.`
+        : `Name the 5 companies most frequently cited by analysts, trade press or the company's annual report as DIRECT competitors of ${company}, then up to 3 INDIRECT competitors or alternatives.`}
+Do not list customers, distributors, installers, suppliers or companies in unrelated industries. Company names only. Answer one per line in exactly this format:
+DIRECT: <company name> | <segment it competes in>
+INDIRECT: <company name> | <segment it competes in>`;
+      const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, grounded: true, temperature: 0, timeoutMs: clock.timeout(35_000, 85_000), attempts: 1 });
+      const pick = (tag: string) =>
+        r.text.split("\n").flatMap((l) => {
+          const m = l.match(new RegExp(`^[\\s*_-]*${tag}[\\s*_]*:\\s*(.+)$`, "i"));
+          if (!m) return [];
+          const [name, seg] = m[1].replace(/\*+/g, "").split("|");
+          return [{ name: name.trim(), segment: (seg ?? "").trim().slice(0, 80) || undefined }];
+        });
+      pick("DIRECT").slice(0, 12).forEach((x) => addCandidate(x.name, "direct", x.segment));
+      pick("INDIRECT").slice(0, 6).forEach((x) => addCandidate(x.name, "indirect", x.segment));
+      evText += "\n" + r.text.toLowerCase();
       extra.push({ topic: "competitors", r });
     } catch (e) {
       console.error("Competitor identification (search) failed:", e);
     }
   }
-  const competitors: Competitor[] = [
-    ...direct.map((name) => ({ name, kind: "direct" as const })),
-    ...indirect.map((name) => ({ name, kind: "indirect" as const })),
-  ].slice(0, 5);
-  return { competitors, extra };
+
+  // Classification: keep only genuine competitors of the company's current businesses.
+  type Class = "competitor" | "customer_channel" | "supplier" | "unrelated";
+  const verdicts = new Map<string, { cls: Class; segment: string; reason: string }>();
+  if (candidates.length) {
+    const snippets = (name: string) =>
+      ev.filter((e) => e.text.toLowerCase().includes(name.toLowerCase())).slice(0, 2).map((e) => `  - ${e.text.slice(0, 220)}`).join("\n");
+    const prompt = `${entityBlock(state.entity)}
+
+Classify each candidate against ${company}'s CURRENT businesses${segs.length ? ` (${segs.map((x) => x.name).join("; ")})` : ""}.
+- competitor: sells a substitutable product or service to the same kind of customers as at least one current business of ${company}.
+- customer_channel: buys, distributes, resells, installs or contracts with ${company} (distributors, retailers, installers, contractors, builders).
+- supplier: supplies ${company} with materials, equipment or services.
+- unrelated: shares only a similar name, serves a different market (for example cement or aggregates for a building-products company), or competes only in a business ${company} has sold.
+Use what the evidence says and well-known facts about what each company does. For competitors, name the current segment they compete in.
+
+CANDIDATES:
+${candidates.map((c, i) => `${i + 1}. ${c.name}${c.segment ? ` (named for: ${c.segment})` : ""}\n${snippets(c.name)}`).join("\n")}`;
+    const schema = arr(obj({
+      name: STR,
+      classification: { type: "STRING", format: "enum", enum: ["competitor", "customer_channel", "supplier", "unrelated"] },
+      segment: STR,
+      reason: STR,
+    }));
+    try {
+      const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, temperature: 0, thinkingBudget: 0, attempts: 1, timeoutMs: clock.timeout(30_000, 60_000) });
+      for (const v of list(safeJson(r.text))) {
+        if (typeof v?.name === "string") {
+          verdicts.set(v.name.trim().toLowerCase(), { cls: v.classification, segment: String(v.segment ?? "").slice(0, 80), reason: String(v.reason ?? "").slice(0, 200) });
+        }
+      }
+    } catch (e) {
+      console.error("Competitor classification failed:", e);
+    }
+    if (!verdicts.size) warnings.push("Competitor classification did not complete; the competitor list is unfiltered apart from peer-list sites.");
+  }
+
+  const filter: { name: string; classification: string; kept: boolean; reason: string }[] = [];
+  const kept: { name: string; kind: "direct" | "indirect"; segment?: string }[] = [];
+  for (const c of candidates) {
+    const v = verdicts.get(c.name.toLowerCase());
+    // Without a verdict (classifier failed) only direct candidates are kept; with one, only "competitor".
+    const isCompetitor = v ? v.cls === "competitor" : c.kind === "direct";
+    filter.push({ name: c.name, classification: v?.cls ?? "unclassified", kept: isCompetitor, reason: v?.reason ?? "" });
+    if (isCompetitor) kept.push({ ...c, segment: v?.segment || c.segment });
+  }
+  // Direct first, then indirect, in the order they were named.
+  const ordered = [...kept.filter((c) => c.kind === "direct"), ...kept.filter((c) => c.kind === "indirect")].slice(0, MAX_COMPETITORS);
+  const validated: Competitor[] = ordered.map((c) => ({
+    name: c.name,
+    kind: c.kind,
+    ...(c.segment ? { segment: c.segment } : {}),
+    evidenceIds: ev.filter((e) => e.text.toLowerCase().includes(c.name.toLowerCase())).slice(0, 3).map((e) => e.id),
+  }));
+
+  // Deep dives: at most 5, taking one direct competitor from each segment before a second from any.
+  const bySeg = new Map<string, Competitor[]>();
+  for (const c of validated.filter((x) => x.kind === "direct")) {
+    const k = (c.segment ?? "").toLowerCase();
+    bySeg.set(k, [...(bySeg.get(k) ?? []), c]);
+  }
+  const deep: Competitor[] = [];
+  for (let round = 0; deep.length < MAX_DEEP_DIVES && round < 5; round++) {
+    for (const group of bySeg.values()) {
+      if (group[round] && deep.length < MAX_DEEP_DIVES) deep.push(group[round]);
+    }
+  }
+  for (const c of validated.filter((x) => x.kind === "indirect")) if (deep.length < MAX_DEEP_DIVES) deep.push(c);
+  const competitors = deep.map(({ name, kind, segment }) => ({ name, kind, ...(segment ? { segment } : {}) }));
+  return { competitors, validated, extra, filter, warnings };
 }
 
 const competitorPrompt = (e: Entity, name: string, today: string) => `Today is ${today}.
@@ -1647,11 +1970,12 @@ async function stepCompetitors(apiKey: string, state: State, deepResearch: boole
   const today = todayStr();
 
   let t0 = Date.now();
-  const { competitors, extra } = await identifyCompetitors(apiKey, state, today, clock);
+  const { competitors, validated, extra, warnings: idWarnings } = await identifyCompetitors(apiKey, state, today, clock);
+  warnings.push(...idWarnings);
   timings.competitorsIdentify = Date.now() - t0;
   if (!competitors.length) {
     warnings.push("No competitors could be identified, so competitor deep dives rely on general research only.");
-    return { ok: true, state: { ...state, warnings, timings, competitors: [] } };
+    return { ok: true, state: { ...state, warnings, timings, competitors: [], validatedCompetitors: validated } };
   }
 
   t0 = Date.now();
@@ -1668,7 +1992,7 @@ async function stepCompetitors(apiKey: string, state: State, deepResearch: boole
   t0 = Date.now();
   const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
   const urlMap = await resolveRedirects(uris, Math.min(6000, Math.max(1500, clock.remaining() - 20_000)));
-  const ledger = buildLedger(results, urlMap, { sources: state.sources, evidence: state.evidence }, state.entity.website);
+  const ledger = buildLedger(results, urlMap, { sources: state.sources, evidence: state.evidence }, state.entity.website, state.entity.name);
   timings.competitorsLedger = Date.now() - t0;
 
   return {
@@ -1682,6 +2006,7 @@ async function stepCompetitors(apiKey: string, state: State, deepResearch: boole
       warnings,
       timings,
       competitors,
+      validatedCompetitors: validated,
     },
   };
 }
@@ -1690,7 +2015,7 @@ async function stepCompetitors(apiKey: string, state: State, deepResearch: boole
 async function stepFacts(apiKey: string, state: State, clock: ReturnType<typeof makeClock>): Promise<StepResult> {
   const warnings = [...state.warnings];
   const timings = { ...state.timings };
-  const ctx = makeCtx(state.evidence);
+  const ctx = makeCtx(state.evidence, [], state.entity);
   const competitorNames = state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
 
   let t0 = Date.now();
@@ -1730,7 +2055,7 @@ async function stepAnalysis(apiKey: string, state: State, deepResearch: boolean,
   const facts = state.facts!;
   const warnings = [...state.warnings];
   const timings = { ...state.timings };
-  const ctx = makeCtx(state.evidence, [...(state.dropped ?? [])]);
+  const ctx = makeCtx(state.evidence, [...(state.dropped ?? [])], state.entity);
   const today = todayStr();
 
   let t0 = Date.now();
@@ -1818,13 +2143,13 @@ const SECTIONS: Section[] = ["performance", "strategy", "market_size", "market_d
 type Slice = { topic: string; status: "ok" | "thin" | "failed"; ms: number; error?: string; meta: GroundingMeta | null };
 
 const SECTION_TOPICS: Record<Section, (t: string) => boolean> = {
-  performance: (t) => t === "profile" || t === "performance",
-  strategy: (t) => t === "profile" || t.startsWith("strategy_"),
+  performance: (t) => t === "profile" || t === "performance" || t === "segments",
+  strategy: (t) => t === "profile" || t === "segments" || t.startsWith("strategy_"),
   // Market sections use market evidence only, so company descriptions cannot leak in as "market" facts.
-  market_size: (t) => t === "market",
-  market_dynamics: (t) => t === "market",
+  market_size: (t) => t === "market" || t.startsWith("market:"),
+  market_dynamics: (t) => t === "market" || t.startsWith("market:"),
   competitors: (t) => t === "competitors" || t.startsWith("competitor:"),
-  customer: (t) => t === "customer",
+  customer: (t) => t.startsWith("customer"),
 };
 const FP = FACTS_SCHEMA.properties;
 const SECTION_SCHEMAS: Record<Section, Any> = {
@@ -1842,11 +2167,12 @@ const FACT_BASE_RULES = `Rules:
 3. If no evidence supports a field, return status "not_found", text null, evidenceIds []. In lists, include only supported items; an empty list is a correct answer.
 4. No hedging. A statement that needs "likely", "probably", "may", "could" or "expected to" is not a fact; leave it out.
 5. Attribute self-reported figures in the text ("the company says...", "according to a company press release...").
-5a. Evidence lines carry a source tier: T1 primary (filings, regulators, company releases), T2 major press and analysts, T3 everything else. Prefer T1 and T2. Financial results (revenue, income, margins, cash returned, market capitalization, headcount, funding) must come from T1 or T2 evidence only. A fact whose only support is a company's own marketing is written as that company's claim ("GAF says..."). Never present investment commentary (valuation opinions, "undervalued", price targets) as a fact or a strength. Never combine figures reported on different bases (for example original versus restated, or total versus continuing operations) into one statement or range: use the most recent restated figure and say which basis it is.`;
+5a. Evidence lines carry a source tier: T1 primary (filings, regulators, company releases), T2 major press and analysts, T3 everything else. Prefer T1 and T2. Financial results (revenue, income, margins, cash returned, market capitalization, headcount, funding) must come from T1 evidence for a public company (T1 or T2 for a private one). A fact whose only support is a company's own marketing is written as that company's claim ("GAF says..."). Never present investment commentary (valuation opinions, "undervalued", price targets) as a fact or a strength. Never combine figures reported on different bases (for example original versus restated, or total versus continuing operations) into one statement or range: use the most recent restated figure and say which basis it is.`;
 
-const FACT_SECTION_RULES: Record<Section, (competitors?: string[]) => string> = {
+const FACT_SECTION_RULES: Record<Section, (competitors?: string[], landscape?: boolean) => string> = {
   performance: () =>
-    `6. businessPerformance.financialHighlights: the company's key financial results, ONE fact per claim: revenue with its fiscal period and growth, net income or margins, market capitalization or valuation, funding. recentMetrics: other short metrics (headcount, customers, subscribers, units shipped), one per claim.`,
+    `6. businessPerformance.financialHighlights: the company's key financial results, ONE fact per claim: revenue with its fiscal period and growth, net income or margins, market capitalization or valuation, funding. recentMetrics: other short metrics (headcount, customers, subscribers, units shipped), one per claim.
+7. Say which basis a figure is on (reported or adjusted, full year or quarter) whenever the evidence says. If the evidence says growth, headcount or margin changed because of an acquisition, divestiture or one-off charge (such as an impairment), state that in the same claim or an adjacent claim. Never put a reported figure and an adjusted figure in the same claim. Do not state a ratio that the evidence only shows as computed by a third party.`,
   strategy: () =>
     `6. strategicInitiatives: only SIGNIFICANT initiatives the evidence shows the company announced or started in the last ${INITIATIVE_WINDOW_MONTHS} months. For each, set subgroup to exactly one of these sub-categories and group to the group it belongs to, give a short name, and a one-sentence description that includes the month and year from the evidence. At most 3 per sub-category, most recent first. A sub-category with nothing significant gets no entries.
 
@@ -1854,19 +2180,24 @@ SUB-CATEGORIES
 ${groupsPrompt([0, 1, 2, 3, 4, 5])}`,
   market_size: () =>
     `6. marketOverview.definition: ONE sentence on how analysts define the market(s) the company competes in, with basedOn listing the E numbers it rests on.
-7. tam is a list of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. Empty list if there is none.`,
+7. tam is a list of published market-size estimates, ONE entry per market segment or product line (a large company can serve several). Report only the most recent ACTUAL estimate for a segment, never a forecast or projection for a future year; if the evidence has several years or publishers for a segment, give only the most recent year and prefer a global figure. Fields: segment (short name of the market), geography, year, value (copied as written in the evidence, e.g. "$48.2B"), publisher (the research firm or source named in the evidence), evidenceIds. Never derive, convert, add up or estimate a figure. Empty list if there is none.
+8. Market-size estimates from different research firms for the same market often disagree widely. When the evidence has estimates from more than one publisher for a segment, report each publisher's most recent estimate as its own entry (at most 3 per segment) so the reader can see the spread. Only report markets for the company's CURRENT SEGMENTS; never a market for a business listed as sold or discontinued.`,
   market_dynamics: () =>
     `6. drivers: factors that increase demand across the MARKET or industry (technology shifts, customer behaviour, regulation, economics) as stated by analysts or industry publications. inhibitors: factors that restrain growth of the market (saturation, regulation, supply constraints, competition, macro conditions). segmentation: how the market is divided (by product, customer type or geography).
 7. These describe the market, never the company's own strengths, products, partnerships or customers. Each list has at most 5 items; one idea per item, at most 25 words. They are summaries of the evidence, so hedged wording is fine, but cite in basedOn the E numbers each item rests on and add no figures that are not in the cited evidence. Empty list if the evidence has none.`,
-  competitors: (competitors) =>
-    `6. competitiveLandscape: only companies the evidence names as competitors or alternatives. competitorDeepDives: ${
+  competitors: (competitors, landscape) =>
+    `6. competitiveLandscape: ${
+      landscape
+        ? "directCompetitors and indirectCompetitors are set by the system from a validated list: return empty lists for both. potentialEntrants: only companies the evidence names as new or likely entrants, otherwise an empty list."
+        : "only companies the evidence names as competitors or alternatives."
+    } competitorDeepDives: ${
       competitors?.length ? `exactly these competitors, in this order, one entry each: ${competitors.join("; ")}.` : "at most 5, chosen from those competitors."
     } For each: revenue, headcount, activity and pricingModel are strict claims (rules 1-5; not_found if no evidence). description is ONE or TWO sentences on what that competitor sells and how it positions itself; strengths are 3 to 5 short items (at most 12 words each), each an advantage the evidence attributes to that competitor. For description and strengths, cite in basedOn the E numbers about THAT competitor (evidence tagged [competitor:<name>] is about it); they are summaries of the evidence, so they may use general wording, but add no figures, names or events that are not in the cited evidence.`,
   customer: () =>
-    `6. customerInsights: cite only [customer] evidence (reviews, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are things customers praise about the company; lossReasons are things customers criticise or complain about. These are review themes from review and complaint sites, NOT win/loss data: never claim they explain why deals were won or lost.`,
+    `6. customerInsights: cite only [customer_praise] and [customer_complaints] evidence (reviews, complaints, case studies, testimonials, published outcomes). Otherwise not_found or an empty list. Never infer sentiment. Style: sentiment is ONE headline sentence of at most 25 words that reports what the sources say, and it may only describe overall sentiment as positive or negative if BOTH praise and complaint evidence exist; with only one side, say plainly that only praise (or only complaints) was found. sentimentThemes, winReasons, lossReasons and unmetNeeds are lists with at most 5 items each; one idea per item, at most 25 words, starting with a 2-4 word bold label ("**Ease of use:** reviewers on G2 praise setup speed."). winReasons are things customers praise about the company, drawn from [customer_praise] evidence; lossReasons are things customers criticise or complain about, drawn from [customer_complaints] evidence (warranty disputes, defects, class actions and court filings count). A seller's own marketing is a claim by the seller, never customer evidence. These are review themes from review and complaint sites, NOT win/loss data: never claim they explain why deals were won or lost.`,
 };
 
-const factsSectionPrompt = (e: Entity, ev: Evidence[], today: string, section: Section, competitors?: string[]) =>
+const factsSectionPrompt = (e: Entity, ev: Evidence[], today: string, section: Section, competitors?: string[], landscape?: boolean) =>
   `You are building one section of the fact base of a market-intelligence report. Today is ${today}.
 ${entityBlock(e)}
 
@@ -1874,7 +2205,7 @@ EVIDENCE (format: E<id> [topic] text). This is the ONLY information you may use:
 ${evidenceBlock(ev)}
 
 ${FACT_BASE_RULES}
-${FACT_SECTION_RULES[section](competitors)}`;
+${FACT_SECTION_RULES[section](competitors, landscape)}`;
 
 const sliceOf = (topic: string, r: GeminiResult | null, ms: number, error?: string): Slice => {
   const supports = r?.meta?.groundingSupports?.length ?? 0;
@@ -1907,7 +2238,17 @@ function readSlices(raw: unknown): Slice[] {
 function readEntity(raw: Any): Entity | null {
   if (!raw || typeof raw !== "object" || typeof raw.name !== "string") return null;
   const s = (v: unknown) => String(v ?? "UNKNOWN").slice(0, 500);
-  return { name: s(raw.name), website: s(raw.website), headquarters: s(raw.headquarters), description: s(raw.description), ownership: s(raw.ownership), confidence: s(raw.confidence), otherEntities: s(raw.otherEntities) };
+  return {
+    name: s(raw.name), website: s(raw.website), headquarters: s(raw.headquarters), description: s(raw.description), ownership: s(raw.ownership),
+    confidence: s(raw.confidence), otherEntities: s(raw.otherEntities), ...readSegments(raw),
+  };
+}
+function readSegments(raw: Any): Pick<Entity, "segments" | "divested"> {
+  const t = (v: unknown, n: number) => String(v ?? "").slice(0, n).trim();
+  return {
+    segments: list(raw?.segments).slice(0, 6).flatMap((x) => (t(x?.name, 80) ? [{ name: t(x.name, 80), description: t(x?.description, 200) }] : [])),
+    divested: list(raw?.divested).slice(0, 4).flatMap((x) => (t(x?.name, 80) ? [{ name: t(x.name, 80), date: t(x?.date, 80) }] : [])),
+  };
 }
 
 // Request 1: resolve the company.
@@ -1922,7 +2263,19 @@ async function v2Entity(apiKey: string, body: Any, clock: ReturnType<typeof make
   if (!website && !/^(none|unknown)?$/i.test(ent.entity.otherEntities.trim())) {
     warnings.push(`Other organisations share this name (${ent.entity.otherEntities}). Confirm the website ${ent.entity.website} is the right company.`);
   }
-  return json({ entity: ent.entity, slice: sliceOf("profile", ent.result, Date.now() - t0), warnings });
+  // Current reporting segments (and anything sold), so market research follows the business as it is today.
+  let segmentSlice: Slice | null = null;
+  const t1 = Date.now();
+  try {
+    const seg = await resolveSegments(apiKey, ent.entity, todayStr(), clock.timeout(50_000, 5_000));
+    ent.entity.segments = seg.segments;
+    ent.entity.divested = seg.divested;
+    segmentSlice = sliceOf("segments", seg.result, Date.now() - t1);
+    if (!seg.segments.length) warnings.push("Could not confirm the company's current reporting segments; market research is not split by segment.");
+  } catch (e) {
+    warnings.push(`Segment lookup failed (${(e as Error)?.message ?? e}); market research is not split by segment.`);
+  }
+  return json({ entity: ent.entity, slice: sliceOf("profile", ent.result, t1 - t0), segmentSlice, warnings });
 }
 
 // Request 2: one grounded scan for one topic (or one competitor). A failed scan is returned as data.
@@ -1932,7 +2285,12 @@ async function v2Scan(apiKey: string, body: Any, clock: ReturnType<typeof makeCl
   const today = todayStr();
   let topic: string;
   let prompt: string;
-  if (body?.topic === "competitor") {
+  if (body?.topic === "market_segment") {
+    const segment = typeof body?.segment === "string" ? body.segment.trim().slice(0, 80) : "";
+    if (!segment) return json({ error: "Missing segment name." }, 400);
+    topic = `market:${segment}`;
+    prompt = researchPrompt(marketSegmentAsk(segment), entity, today);
+  } else if (body?.topic === "competitor") {
     const name = typeof body?.name === "string" ? body.name.trim().slice(0, 80) : "";
     if (!name) return json({ error: "Missing competitor name." }, 400);
     topic = `competitor:${name}`;
@@ -1972,7 +2330,7 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
   const results = slices.filter((x) => x.meta).map((x) => ({ topic: x.topic, r: { text: "", meta: x.meta } as GeminiResult }));
   const uris = results.flatMap((x) => (x.r.meta?.groundingChunks ?? []).map((c) => c.web?.uri).filter((u): u is string => !!u));
   const urlMap = await resolveRedirects(uris, Math.min(8000, Math.max(1500, clock.remaining() - 30_000)));
-  const ledger = buildLedger(results, urlMap, base ? { sources: base.sources, evidence: base.evidence } : undefined, entity.website);
+  const ledger = buildLedger(results, urlMap, base ? { sources: base.sources, evidence: base.evidence } : undefined, entity.website, entity.name);
   if (!ledger.evidence.length) {
     return json({ error: "Search returned no citable evidence for this company, so no report was produced.", entity }, 422);
   }
@@ -1992,6 +2350,7 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
     researchModel: FLASH_MODEL,
     droppedByTier: (base?.droppedByTier ?? 0) + ledger.droppedByTier,
     competitors: base?.competitors,
+    validatedCompetitors: base?.validatedCompetitors,
   };
   return json({ state });
 }
@@ -2000,9 +2359,9 @@ async function v2Ledger(body: Any, clock: ReturnType<typeof makeClock>) {
 async function v2Identify(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
   const state = readState(body?.state);
   if (!state) return json({ error: "Missing or invalid research state. Start the report again." }, 400);
-  const { competitors, extra } = await identifyCompetitors(apiKey, state, todayStr(), clock);
+  const { competitors, validated, extra, filter, warnings } = await identifyCompetitors(apiKey, state, todayStr(), clock);
   const slices = extra.map((x) => sliceOf(x.topic, x.r, 0));
-  return json({ competitors, slices });
+  return json({ competitors, validated, slices, filter, warnings });
 }
 
 // How much a section's validated facts contain (used to decide whether to retry an empty-looking result).
@@ -2027,15 +2386,27 @@ async function v2FactsSection(apiKey: string, body: Any, clock: ReturnType<typeo
   const state = readState(body?.state);
   const section = body?.section as Section;
   if (!state || !SECTIONS.includes(section)) return json({ error: "Missing or invalid research state or section." }, 400);
-  const ev = state.evidence.filter((e) => SECTION_TOPICS[section](e.topic));
+  // Evidence that only peer-list or look-alike sites support cannot show who competes with whom.
+  const ev = state.evidence.filter((e) => SECTION_TOPICS[section](e.topic) && (section !== "competitors" || usableForCompetitors(e)));
   const warnings: string[] = [];
   const competitorNames = section === "competitors" && state.competitors?.length ? state.competitors.map((c) => c.name) : undefined;
+  // Evidence ids are looked up now: rivals found by the annual-report search only reach the ledger after identification.
+  const landscape = section === "competitors" && state.validatedCompetitors?.length
+    ? state.validatedCompetitors.map((c) => ({
+      ...c,
+      evidenceIds: state.evidence
+        .filter((e) => (e.topic === "competitors" || e.topic === "profile" || e.topic.toLowerCase() === `competitor:${c.name}`.toLowerCase()) &&
+          usableForCompetitors(e) && e.text.toLowerCase().includes(c.name.toLowerCase()))
+        .slice(0, 3).map((e) => e.id),
+    }))
+    : undefined;
   if (!ev.length) {
-    return json({ section, ok: true, empty: true, facts: pruneFacts(validateFacts({}, makeCtx(ev))), dropped: [], verifier: "no evidence", sourcedClaims: 0, warnings });
+    return json({ section, ok: true, empty: true, facts: pruneFacts(validateFacts({}, makeCtx(ev, [], state.entity))), dropped: [], verifier: "no evidence", sourcedClaims: 0, warnings });
   }
-  const prompt = factsSectionPrompt(state.entity, ev, todayStr(), section, competitorNames);
+  const prompt = factsSectionPrompt(state.entity, ev, todayStr(), section, competitorNames, !!landscape);
+  const vOpts = { entity: state.entity, landscape };
   const attempt = async (temperature: number) => {
-    const ctx = makeCtx(ev);
+    const ctx = makeCtx(ev, [], state.entity);
     const w: string[] = [];
     let raw: Any = null;
     try {
@@ -2043,7 +2414,7 @@ async function v2FactsSection(apiKey: string, body: Any, clock: ReturnType<typeo
     } catch (e) {
       w.push(`Fact extraction (${section}) failed (${(e as Error)?.message ?? e}).`);
     }
-    const validated = validateFacts(raw, ctx, competitorNames);
+    const validated = validateFacts(raw, ctx, competitorNames, vOpts);
     return { ctx, raw, validated, w, score: sectionScore(section, pruneFacts(validated)) };
   };
   let best = await attempt(0);
@@ -2123,7 +2494,7 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   if (cust?.customerInsights) facts.customerInsights = { ...facts.customerInsights, ...cust.customerInsights };
 
   const dropped: Ctx["dropped"] = parts.flatMap((p) => list(p?.dropped)).slice(0, 500);
-  const ctx = makeCtx(state.evidence, dropped);
+  const ctx = makeCtx(state.evidence, dropped, state.entity);
   const raws = body?.raw ?? {};
   const rawCore = raws.core ?? null, rawFrameworks = raws.frameworks ?? null, rawRecs = raws.recs ?? null;
   const analysis = validateAnalysis({ ...(rawCore ?? {}), ...(rawFrameworks ?? {}), recommendations: rawRecs?.recommendations, mcOpportunities: rawRecs?.mcOpportunities }, ctx);
@@ -2219,6 +2590,19 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   // Citations renumbered 1..n (only what the text cites), then real page titles for those sources.
   report = renumberCitations(report, state.sources);
   await fetchTitles(report.sources, Math.min(8_000, Math.max(0, clock.remaining() - 8_000)));
+  // Sources whose page is a bot check cannot be audited: take their citations out and number the rest again.
+  const unauditable = new Set<number>((report.sources as Source[]).flatMap((x, i) => ((x.kinds ?? []).includes("unauditable") ? [i + 1] : [])));
+  if (unauditable.size) {
+    const removed = (report.sources as Source[]).filter((_x, i) => unauditable.has(i + 1)).map((x) => x.url);
+    report = renumberCitations(stripCitations(report, unauditable), (report.sources as Source[]).map((x, i) => ({ ...x, id: i + 1 })));
+    report.quality.warnings = [...(report.quality.warnings ?? []), `${removed.length} source(s) showed a bot-check page instead of content, so their citations were removed.`];
+  }
+  report.quality.sourceFlags = (report.sources as Source[])
+    .filter((x) => (x.kinds ?? []).some((k) => k === "lookalike" || k === "unauditable" || k === "peer_list" || k === "seller"))
+    .map((x) => ({ title: x.title.slice(0, 150), url: x.url, flags: (x.kinds ?? []).filter((k) => k !== "review") }));
+  report.quality.competitorFilter = list(body?.competitorFilter).slice(0, 40).map((x) => ({
+    name: String(x?.name ?? "").slice(0, 80), classification: String(x?.classification ?? "").slice(0, 30), kept: !!x?.kept, reason: String(x?.reason ?? "").slice(0, 200),
+  }));
   const tierCounts = { primary: 0, major: 0, other: 0 };
   for (const src of report.sources as Source[]) tierCounts[src.tier === 1 ? "primary" : src.tier === 2 ? "major" : "other"]++;
   report.quality.sourceCount = report.sources.length;
@@ -2226,6 +2610,18 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
 
   console.log(JSON.stringify({ company: state.entity.name, evidence: state.evidence.length, scans: scanLog.length, sourcedClaims, dropped: dropped.length, sources: report.sources.length }));
   return json(report);
+}
+
+function readCompetitors(raw: Any[], max: number): Competitor[] {
+  return list(raw).flatMap((c): Competitor[] =>
+    typeof c?.name === "string" && c.name.trim()
+      ? [{
+        name: c.name.trim().slice(0, 80), kind: c.kind === "indirect" ? "indirect" : "direct",
+        ...(typeof c.segment === "string" && c.segment.trim() ? { segment: c.segment.trim().slice(0, 80) } : {}),
+        ...(Array.isArray(c.evidenceIds) ? { evidenceIds: list(c.evidenceIds).filter((n) => Number.isInteger(n)).slice(0, 5) } : {}),
+      }]
+      : []
+  ).slice(0, max);
 }
 
 // The page sends the state back to us, so treat it as untrusted input and rebuild it field by field.
@@ -2236,6 +2632,7 @@ function readState(raw: Any, allowEmpty = false): State | null {
       ? [{
         id: e.id, topic: String(e.topic ?? ""), text: e.text.slice(0, 2000), sourceIds: list(e.sourceIds).filter((n) => Number.isInteger(n)),
         tier: [1, 2, 3].includes(e.tier) ? e.tier : 2, srcTiers: list(e.srcTiers).map((n) => ([1, 2, 3].includes(n) ? n : 3)),
+        ...(Array.isArray(e.flags) ? { flags: list(e.flags).map((f) => String(f).slice(0, 20)).slice(0, 4) } : {}),
       }]
       : []
   );
@@ -2247,12 +2644,15 @@ function readState(raw: Any, allowEmpty = false): State | null {
     companyName: String(raw.companyName ?? en.name).slice(0, 200),
     entity: {
       name: s(en.name), website: s(en.website), headquarters: s(en.headquarters), description: s(en.description),
-      ownership: s(en.ownership), confidence: s(en.confidence), otherEntities: s(en.otherEntities),
+      ownership: s(en.ownership), confidence: s(en.confidence), otherEntities: s(en.otherEntities), ...readSegments(en),
     },
     evidence,
     sources: list(raw.sources).slice(0, 800).flatMap((x): Source[] =>
       Number.isInteger(x?.id)
-        ? [{ id: x.id, title: String(x.title ?? "").slice(0, 300), url: String(x.url ?? "").slice(0, 2000), tier: [1, 2, 3].includes(x.tier) ? x.tier : 3 }]
+        ? [{
+          id: x.id, title: String(x.title ?? "").slice(0, 300), url: String(x.url ?? "").slice(0, 2000), tier: [1, 2, 3].includes(x.tier) ? x.tier : 3,
+          ...(Array.isArray(x.kinds) ? { kinds: list(x.kinds).map((k) => String(k).slice(0, 20)).slice(0, 4) } : {}),
+        }]
         : []
     ),
     queries: list(raw.queries),
@@ -2261,13 +2661,8 @@ function readState(raw: Any, allowEmpty = false): State | null {
     warnings: list(raw.warnings).map(String),
     timings: raw.timings && typeof raw.timings === "object" ? raw.timings : {},
     researchModel: String(raw.researchModel ?? FLASH_MODEL),
-    competitors: Array.isArray(raw.competitors)
-      ? list(raw.competitors).flatMap((c): Competitor[] =>
-        typeof c?.name === "string" && c.name.trim()
-          ? [{ name: c.name.trim().slice(0, 80), kind: c.kind === "indirect" ? "indirect" : "direct" }]
-          : []
-      ).slice(0, 5)
-      : undefined,
+    competitors: Array.isArray(raw.competitors) ? readCompetitors(raw.competitors, MAX_DEEP_DIVES) : undefined,
+    validatedCompetitors: Array.isArray(raw.validatedCompetitors) ? readCompetitors(raw.validatedCompetitors, MAX_COMPETITORS) : undefined,
   };
 }
 
