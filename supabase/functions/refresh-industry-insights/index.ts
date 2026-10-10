@@ -566,26 +566,101 @@ function textReason(text: string, ev: Evidence[]): string | null {
   return null;
 }
 
-// An item is kept only if it cites real evidence with a source attached, its figures and quantity wording are supported
-// (rounding tolerated, statistics need a T1/T2 source), and it is not about a period older than the research window.
-function checkItem(it: Any, path: string, byId: Map<number, Evidence>, dropped: Dropped[], reg?: { path: string; item: Item }[]): Item | null {
+type Kind = "interpretive" | "event";
+type Verdict = { reason: string; repairable: boolean } | null;
+// interpretive (overview, challenges, need narratives): no age rule. event (initiatives): must be inside the research window.
+// A figure/quantity/source problem is "repairable": the statement can be rewritten without the unsupported detail.
+function judge(text: string, ev: Evidence[], kind: Kind): Verdict {
+  const r = textReason(text, ev);
+  if (r) return { reason: r, repairable: true };
+  if (kind === "event") {
+    const years = (text.match(/\b20\d\d\b/g) ?? []).map(Number);
+    if (years.length && Math.max(...years) < cutoffYear()) return { reason: `older than ${WINDOW_MONTHS} months`, repairable: false };
+  }
+  return null;
+}
+
+// Strict check used when assembling the final report (no rewriting at that point).
+function checkItem(it: Any, path: string, byId: Map<number, Evidence>, dropped: Dropped[], reg?: { path: string; item: Item }[], kind: Kind = "interpretive"): Item | null {
   const text = typeof it?.text === "string" ? it.text.trim() : "";
   if (!text) return null;
   const evAll = evidenceFor(it?.basedOn, byId);
   const ev = evAll.filter((e) => e.sourceIds.length > 0);
-  const years = (text.match(/\b20\d\d\b/g) ?? []).map(Number);
-  const reason = !evAll.length
-    ? "no evidence cited"
-    : !ev.length
-    ? "no source attached to the cited evidence"
-    : textReason(text, ev) ?? (years.length && Math.max(...years) < cutoffYear() ? `older than ${WINDOW_MONTHS} months` : null);
-  if (reason) {
-    dropped.push({ path, reason, text });
+  const v = !evAll.length ? { reason: "no evidence cited" } : !ev.length ? { reason: "no source attached to the cited evidence" } : judge(text, ev, kind);
+  if (v) {
+    dropped.push({ path, reason: v.reason, text });
     return null;
   }
   const item: Item = { text, basedOn: ev.map((e) => e.id) };
   reg?.push({ path, item });
   return item;
+}
+
+// One batched call: rewrite statements that failed on a figure, quantity word or source so they no longer need it.
+async function repairTexts(apiKey: string, rows: { text: string; reason: string; evidence: string[] }[], timeoutMs: number): Promise<string[]> {
+  const prompt = `Each numbered STATEMENT below was rejected because of the problem named under it. Rewrite each statement so that it keeps the same point but contains NO number, percentage, dollar amount, quantity word (such as "over half", "majority", "doubled") or date that is not stated in its EVIDENCE. Describe the issue qualitatively instead. Keep the same style: if the statement starts with "Short title: description", keep that format. Do not add any new fact. If the point cannot stand without the unsupported detail, return an empty string.
+
+${rows.map((r, i) => `STATEMENT ${i}: ${r.text}\nPROBLEM: ${r.reason}\nEVIDENCE:\n${r.evidence.map((e) => `- ${e}`).join("\n")}`).join("\n\n")}
+
+Return one {"index", "text"} per statement.`;
+  const schema = arr(obj({ index: { type: "INTEGER" }, text: STR }));
+  const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, timeoutMs, temperature: 0, thinkingBudget: 0, attempts: 1 });
+  const out: string[] = rows.map(() => "");
+  for (const x of list(safeJson(r.text))) {
+    const i = Number(x?.index);
+    if (i >= 0 && i < rows.length && typeof x?.text === "string") out[i] = x.text.trim();
+  }
+  return out;
+}
+
+type Repaired = { path: string; before: string; after: string };
+
+// Validate raw model items; items that fail only on figures/quantities/sources are rewritten once and re-checked.
+async function vetItems(
+  apiKey: string, raw: Any[], prefix: string, byId: Map<number, Evidence>, kind: Kind,
+  dropped: Dropped[], reg: { path: string; item: Item }[], repaired: Repaired[], clock: ReturnType<typeof makeClock>,
+): Promise<Item[]> {
+  const accepted: { i: number; item: Item }[] = [];
+  const fixable: { i: number; path: string; text: string; ev: Evidence[]; basedOn: number[]; reason: string }[] = [];
+  raw.forEach((it, i) => {
+    const path = `${prefix}[${i}]`;
+    const text = typeof it?.text === "string" ? it.text.trim() : "";
+    if (!text) return;
+    const evAll = evidenceFor(it?.basedOn, byId);
+    const ev = evAll.filter((e) => e.sourceIds.length > 0);
+    if (!evAll.length) return void dropped.push({ path, reason: "no evidence cited", text });
+    if (!ev.length) return void dropped.push({ path, reason: "no source attached to the cited evidence", text });
+    const v = judge(text, ev, kind);
+    if (!v) {
+      const item: Item = { text, basedOn: ev.map((e) => e.id) };
+      reg.push({ path, item });
+      accepted.push({ i, item });
+    } else if (v.repairable) {
+      fixable.push({ i, path, text, ev, basedOn: ev.map((e) => e.id), reason: v.reason });
+    } else {
+      dropped.push({ path, reason: v.reason, text });
+    }
+  });
+  let rewrites: string[] = [];
+  if (fixable.length && clock.remaining() > 40_000) {
+    try {
+      rewrites = await repairTexts(apiKey, fixable.map((f) => ({ text: f.text, reason: f.reason, evidence: f.ev.map((e) => e.text) })), Math.min(25_000, clock.remaining() - 20_000));
+    } catch (e) {
+      console.error("Repair failed:", e);
+    }
+  }
+  fixable.forEach((f, k) => {
+    const nt = rewrites[k];
+    if (nt && !judge(nt, f.ev, kind)) {
+      const item: Item = { text: nt, basedOn: f.basedOn };
+      reg.push({ path: f.path, item });
+      accepted.push({ i: f.i, item });
+      repaired.push({ path: f.path, before: f.text, after: nt });
+    } else {
+      dropped.push({ path: f.path, reason: `${f.reason} (could not be rewritten)`, text: f.text });
+    }
+  });
+  return accepted.sort((a, b) => a.i - b.i).map((x) => x.item);
 }
 
 const titleKey = (t: string) => t.split(":")[0].toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
@@ -603,18 +678,11 @@ function dedupe(items: Item[], path: string, dropped: Dropped[]): Item[] {
 }
 
 type NeedIn = { name: string; signals: string[]; narrative: string; basedOn: number[]; item?: Item };
-function checkNeed(n: Any, path: string, byId: Map<number, Evidence>, dropped: Dropped[], reg?: { path: string; item: Item }[]): NeedIn | null {
-  const name = typeof n?.name === "string" ? n.name.trim() : "";
-  const narrative = typeof n?.narrative === "string" ? n.narrative.trim() : "";
-  if (!name || !narrative) return null;
-  const evAll = evidenceFor(n?.basedOn, byId);
-  const ev = evAll.filter((e) => e.sourceIds.length > 0);
-  const reason = !evAll.length ? "no evidence cited" : !ev.length ? "no source attached to the cited evidence" : textReason(narrative, ev);
-  if (reason) {
-    dropped.push({ path, reason, text: `${name}: ${narrative}` });
-    return null;
-  }
-  // Signals are buyer-observable symptoms; a signal quoting a figure must match the evidence.
+
+// Signals are buyer-observable symptoms; a signal quoting a figure must match the evidence. Needs with fewer than 2 are dropped.
+function finalizeNeed(
+  n: Any, name: string, narrative: string, ev: Evidence[], path: string, dropped: Dropped[], reg?: { path: string; item: Item }[],
+): NeedIn | null {
   const signals = list(n?.signals).map((x) => (typeof x === "string" ? x.trim() : "")).filter(Boolean).filter((sg, i) => {
     if (figuresSupported(sg, ev, true)) return true;
     dropped.push({ path: `${path}.signals[${i}]`, reason: "figure not present in cited evidence", text: sg });
@@ -629,6 +697,70 @@ function checkNeed(n: Any, path: string, byId: Map<number, Evidence>, dropped: D
   return { name, signals, narrative, basedOn: ev.map((e) => e.id), item };
 }
 
+// Strict check used when assembling the final report.
+function checkNeed(n: Any, path: string, byId: Map<number, Evidence>, dropped: Dropped[], reg?: { path: string; item: Item }[]): NeedIn | null {
+  const name = typeof n?.name === "string" ? n.name.trim() : "";
+  const narrative = typeof n?.narrative === "string" ? n.narrative.trim() : "";
+  if (!name || !narrative) return null;
+  const evAll = evidenceFor(n?.basedOn, byId);
+  const ev = evAll.filter((e) => e.sourceIds.length > 0);
+  const v = !evAll.length ? { reason: "no evidence cited" } : !ev.length ? { reason: "no source attached to the cited evidence" } : judge(narrative, ev, "interpretive");
+  if (v) {
+    dropped.push({ path, reason: v.reason, text: `${name}: ${narrative}` });
+    return null;
+  }
+  return finalizeNeed(n, name, narrative, ev, path, dropped, reg);
+}
+
+// Validate raw needs; a narrative that fails only on a figure/quantity/source is rewritten once and re-checked.
+async function vetNeeds(
+  apiKey: string, raw: Any[], byId: Map<number, Evidence>, dropped: Dropped[], reg: { path: string; item: Item }[],
+  repaired: Repaired[], clock: ReturnType<typeof makeClock>,
+): Promise<NeedIn[]> {
+  const out: { i: number; need: NeedIn }[] = [];
+  const fixable: { i: number; path: string; n: Any; name: string; text: string; ev: Evidence[]; reason: string }[] = [];
+  raw.forEach((n, i) => {
+    const path = `needs[${i}]`;
+    const name = typeof n?.name === "string" ? n.name.trim() : "";
+    const narrative = typeof n?.narrative === "string" ? n.narrative.trim() : "";
+    if (!name || !narrative) return;
+    const evAll = evidenceFor(n?.basedOn, byId);
+    const ev = evAll.filter((e) => e.sourceIds.length > 0);
+    if (!evAll.length) return void dropped.push({ path, reason: "no evidence cited", text: `${name}: ${narrative}` });
+    if (!ev.length) return void dropped.push({ path, reason: "no source attached to the cited evidence", text: `${name}: ${narrative}` });
+    const v = judge(narrative, ev, "interpretive");
+    if (!v) {
+      const need = finalizeNeed(n, name, narrative, ev, path, dropped, reg);
+      if (need) out.push({ i, need });
+    } else if (v.repairable) {
+      fixable.push({ i, path, n, name, text: narrative, ev, reason: v.reason });
+    } else {
+      dropped.push({ path, reason: v.reason, text: `${name}: ${narrative}` });
+    }
+  });
+  let rewrites: string[] = [];
+  if (fixable.length && clock.remaining() > 40_000) {
+    try {
+      rewrites = await repairTexts(apiKey, fixable.map((f) => ({ text: f.text, reason: f.reason, evidence: f.ev.map((e) => e.text) })), Math.min(25_000, clock.remaining() - 20_000));
+    } catch (e) {
+      console.error("Repair failed:", e);
+    }
+  }
+  fixable.forEach((f, k) => {
+    const nt = rewrites[k];
+    if (nt && !judge(nt, f.ev, "interpretive")) {
+      const need = finalizeNeed(f.n, f.name, nt, f.ev, f.path, dropped, reg);
+      if (need) {
+        out.push({ i: f.i, need });
+        repaired.push({ path: `${f.path}.narrative`, before: f.text, after: nt });
+      }
+    } else {
+      dropped.push({ path: f.path, reason: `${f.reason} (could not be rewritten)`, text: `${f.name}: ${f.text}` });
+    }
+  });
+  return out.sort((a, b) => a.i - b.i).map((x) => x.need);
+}
+
 // Verifier: each synthesised statement is checked against its cited evidence; unsupported ones are removed.
 async function verifyItems(apiKey: string, reg: { path: string; item: Item }[], byId: Map<number, Evidence>, dropped: Dropped[], timeoutMs: number): Promise<string> {
   const items = reg.slice(0, 120);
@@ -636,7 +768,7 @@ async function verifyItems(apiKey: string, reg: { path: string; item: Item }[], 
   const prompt = `For each numbered CLAIM, judge whether the EVIDENCE listed under it supports it. The claims are analysis written from the evidence, so reasonable synthesis is fine.
 "supported": the evidence supports the claim, and any number, quantity (including words like "over half" or "majority"), date, name or event in it appears in the evidence.
 "partial": mostly supported, but the wording is somewhat stronger than the evidence.
-"unsupported": the claim states a number, quantity, date, name or event that the evidence does not contain, contradicts the evidence, or is about a different industry or sub-sector.
+"unsupported": the claim states a specific number, quantity, date, name or event that the evidence does not contain, contradicts the evidence, or is about a different industry or sub-sector. General statements and reasonable inferences that follow from the evidence are NOT unsupported.
 
 ${items.map((x, i) => `CLAIM ${i}: ${x.item.text}\nEVIDENCE:\n${x.item.basedOn.map((id) => `- ${byId.get(id)?.text}`).join("\n")}`).join("\n\n")}
 
@@ -747,7 +879,8 @@ Rules:
 2. Synthesis and judgement are expected, but introduce no new facts: no figures, percentages, dates, names or events that are not in the cited evidence. Copy figures exactly as written, with their period.
 3. Be specific to "${st.subIndustryName}". Do not write statements that would apply equally to any industry (generic AI, talent or supply-chain remarks) unless the evidence ties them to this sub-sector.
 4. Prefer developments from the last ${WINDOW_MONTHS} months.
-4a. Evidence lines carry a source tier (T1 primary: regulators, statistical agencies, company releases; T2 major press and analyst or consulting firms; T3 other). Rest conclusions on T1 and T2 evidence; statistics and figures must come from T1 or T2. Do not combine figures reported on different bases, years or geographies into one statement. Write a company's or vendor's own marketing claim as that party's claim. Investment commentary ("undervalued", price targets) is not a sector development. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.`;
+4a. Evidence lines carry a source tier (T1 primary: regulators, statistical agencies, company releases; T2 major press and analyst or consulting firms; T3 other). Rest conclusions on T1 and T2 evidence; statistics and figures must come from T1 or T2. Do not combine figures reported on different bases, years or geographies into one statement. Write a company's or vendor's own marketing claim as that party's claim. Investment commentary ("undervalued", price targets) is not a sector development. Do not state quantities in words ("over half", "majority", "doubled") unless the cited evidence states them.
+4b. The overview, challenges, initiatives and need narratives are YOUR interpretation of what the evidence implies. Cite in basedOn the evidence that motivates each one, but do not force a statistic into it: include a number, percentage or dollar amount ONLY when it is essential and appears exactly in the cited evidence; otherwise describe the issue qualitatively.`;
 
 const OVERVIEW_SCHEMA = obj({ overview: OPT_ITEM, challenges: arr(ITEM) });
 const INITIATIVES_SCHEMA = obj({ initiatives: arr(ITEM) });
@@ -755,7 +888,9 @@ const NEEDS_SCHEMA = obj({
   needs: arr(obj({ name: STR, signals: arr(STR), narrative: STR, basedOn: INTS })),
 });
 
-// 3. Synthesis from the evidence only. Items are validated here so later parts build on validated text.
+// 3. Synthesis from the evidence only. Items are validated, rewritten once if only a figure/quantity/source is the problem,
+// then verified against their cited evidence, so later parts and the report build on checked text.
+// `exclude` + `want` ask for additional items on angles not yet covered (the page's top-up when a list is thin).
 async function v2Synth(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
   const state = readState(body?.state);
   const part = body?.part as "overview" | "initiatives" | "needs";
@@ -764,29 +899,57 @@ async function v2Synth(apiKey: string, body: Any, clock: ReturnType<typeof makeC
   const byId = new Map(state.evidence.map((e) => [e.id, e]));
   const dropped: Dropped[] = [];
   const warnings: string[] = [];
+  const repaired: Repaired[] = [];
+  const reg: { path: string; item: Item }[] = [];
+  const exclude = list(body?.exclude).map(String).slice(0, 30);
+  const want = Math.min(8, Math.max(0, Number(body?.want) || 0));
+  const topup = want > 0;
+  const avoid = topup ? `\nALREADY ACCEPTED (do not repeat or rephrase these; cover different angles of the evidence):\n${exclude.map((t) => `- ${t}`).join("\n")}\n` : "";
   const TITLE = `each "Short title: description" (title of 2-5 words, then a colon, then 1-2 sentences)`;
+  const RESERVE = 55_000; // time kept for the rewrite and verification that follow generation
+
+  // Verify what survived validation; drop unsupported items. Returns a short log line.
+  const verify = async (): Promise<string> => {
+    if (clock.remaining() < 30_000) return "skipped (time budget)";
+    try {
+      return await verifyItems(apiKey, reg, byId, dropped, Math.min(30_000, clock.remaining() - 10_000));
+    } catch (e) {
+      warnings.push(`Verifier failed (${(e as Error)?.message ?? e}); statements are unchecked.`);
+      return "failed";
+    }
+  };
+  const keep = (xs: Item[]) => xs.filter((x) => !x.rejected);
+
   try {
     if (part === "overview") {
-      const prompt = `${SYNTH_HEAD(state, today)}
+      const prompt = topup
+        ? `${SYNTH_HEAD(state, today)}${avoid}
+5. challenges: propose ${want + 2} ADDITIONAL challenges the sub-sector faces, on angles NOT covered by the accepted ones above, ${TITLE}. Leave overview null.`
+        : `${SYNTH_HEAD(state, today)}
 5. overview: 2-3 sentences on the sub-sector's current state, key pressures and transformation imperatives.
-6. challenges: 3-5 challenges the sub-sector faces, ${TITLE}.`;
-      const raw = await structured(apiKey, clock, warnings, "Synthesis (overview)", prompt, OVERVIEW_SCHEMA, true, 0.3, 10_000);
-      const overview = checkItem(raw?.overview, "overview", byId, dropped);
-      const challenges = dedupe(list(raw?.challenges).map((c, i) => checkItem(c, `challenges[${i}]`, byId, dropped)).filter((c): c is Item => !!c), "challenges", dropped).slice(0, 5);
-      return json({ part, ok: true, overview, challenges, dropped, warnings });
+6. challenges: propose 7-9 candidate challenges the sub-sector faces (more than will be kept; the weakest are discarded), ${TITLE}.`;
+      const raw = await structured(apiKey, clock, warnings, "Synthesis (overview)", prompt, OVERVIEW_SCHEMA, true, 0.3, RESERVE);
+      const overviewArr = topup ? [] : await vetItems(apiKey, [raw?.overview], "overview", byId, "interpretive", dropped, reg, repaired, clock);
+      const challengesAll = dedupe(await vetItems(apiKey, list(raw?.challenges), "challenges", byId, "interpretive", dropped, reg, repaired, clock), "challenges", dropped);
+      const verifier = await verify();
+      return json({ part, ok: true, overview: keep(overviewArr)[0] ?? null, challenges: keep(challengesAll).slice(0, 8), repaired, verifier, dropped, warnings });
     }
     if (part === "initiatives") {
-      const prompt = `${SYNTH_HEAD(state, today)}
-5. initiatives: 3-5 things organizations in this sub-sector are actually doing now (programs, investments, partnerships, operating-model changes), ${TITLE}. Describe what is being done, not what should be done.`;
-      const raw = await structured(apiKey, clock, warnings, "Synthesis (initiatives)", prompt, INITIATIVES_SCHEMA, true, 0.3, 10_000);
-      const initiatives = dedupe(list(raw?.initiatives).map((c, i) => checkItem(c, `initiatives[${i}]`, byId, dropped)).filter((c): c is Item => !!c), "initiatives", dropped).slice(0, 5);
-      return json({ part, ok: true, initiatives, dropped, warnings });
+      const prompt = topup
+        ? `${SYNTH_HEAD(state, today)}${avoid}
+5. initiatives: propose ${want + 2} ADDITIONAL things organizations in this sub-sector are actually doing now, on angles NOT covered by the accepted ones above, ${TITLE}. Describe what is being done, not what should be done.`
+        : `${SYNTH_HEAD(state, today)}
+5. initiatives: propose 6-8 candidate things organizations in this sub-sector are actually doing now (programs, investments, partnerships, operating-model changes), ${TITLE}. Describe what is being done, not what should be done. More than will be kept; the weakest are discarded.`;
+      const raw = await structured(apiKey, clock, warnings, "Synthesis (initiatives)", prompt, INITIATIVES_SCHEMA, true, 0.3, RESERVE);
+      const all = dedupe(await vetItems(apiKey, list(raw?.initiatives), "initiatives", byId, "event", dropped, reg, repaired, clock), "initiatives", dropped);
+      const verifier = await verify();
+      return json({ part, ok: true, initiatives: keep(all).slice(0, 8), repaired, verifier, dropped, warnings });
     }
     // needs: derived from the validated challenges and initiatives
-    const challenges = list(body?.challenges).map((c) => (typeof c?.text === "string" ? c.text : "")).filter(Boolean).slice(0, 5);
-    const initiatives = list(body?.initiatives).map((c) => (typeof c?.text === "string" ? c.text : "")).filter(Boolean).slice(0, 5);
+    const challenges = list(body?.challenges).map((c) => (typeof c?.text === "string" ? c.text : "")).filter(Boolean).slice(0, 8);
+    const initiatives = list(body?.initiatives).map((c) => (typeof c?.text === "string" ? c.text : "")).filter(Boolean).slice(0, 8);
     if (!challenges.length && !initiatives.length) return json({ part, ok: false, needs: [], dropped, warnings: ["No validated challenges or initiatives to derive needs from."] });
-    const prompt = `${SYNTH_HEAD(state, today)}
+    const prompt = `${SYNTH_HEAD(state, today)}${avoid}
 
 VALIDATED CHALLENGES:
 ${challenges.map((c, i) => `C${i + 1}. ${c}`).join("\n") || "(none)"}
@@ -794,12 +957,13 @@ ${challenges.map((c, i) => `C${i + 1}. ${c}`).join("\n") || "(none)"}
 VALIDATED INITIATIVES:
 ${initiatives.map((c, i) => `I${i + 1}. ${c}`).join("\n") || "(none)"}
 
-5. needs: 5-8 needs of organizations in this sub-sector. Each must follow from at least one challenge or initiative above; do not invent unrelated needs, and do not describe consulting services.
-6. name: 5-8 words naming the need in business terms. signals: 3-5 short, observable things a seller could listen for in a conversation with a prospect (symptoms, not statistics; do not invent figures). narrative: 2-3 sentences on why this need matters now for the sub-sector, using only the cited evidence; do NOT mention consulting offerings or services. basedOn: the E numbers the narrative rests on.`;
-    const raw = await structured(apiKey, clock, warnings, "Synthesis (needs)", prompt, NEEDS_SCHEMA, true, 0.3, 10_000);
-    const seen = new Set<string>();
-    const needs = list(raw?.needs).map((n, i) => checkNeed(n, `needs[${i}]`, byId, dropped)).filter((n): n is NeedIn => {
-      if (!n) return false;
+5. needs: ${topup ? `propose ${want + 2} ADDITIONAL needs, different from the accepted ones above` : "propose 9-10 candidate needs (more than will be kept; the weakest are discarded)"} of organizations in this sub-sector. Each must follow from at least one challenge or initiative above; do not invent unrelated needs, and do not describe consulting services.
+6. name: 5-8 words naming the need in business terms. signals: 3-5 short, observable things a seller could listen for in a conversation with a prospect (symptoms, not statistics; do not invent figures). narrative: 2-3 sentences on why this need matters now for the sub-sector, interpreting the cited evidence (no statistic unless it is exactly in the evidence); do NOT mention consulting offerings or services. basedOn: the E numbers the narrative rests on.`;
+    const raw = await structured(apiKey, clock, warnings, "Synthesis (needs)", prompt, NEEDS_SCHEMA, true, 0.3, RESERVE);
+    const seen = new Set<string>(exclude.map((t) => t.toLowerCase().replace(/[^a-z0-9 ]/g, "")));
+    const vetted = await vetNeeds(apiKey, list(raw?.needs), byId, dropped, reg, repaired, clock);
+    const verifier = await verify();
+    const needs = vetted.filter((n) => !n.item?.rejected).filter((n) => {
       const k = n.name.toLowerCase().replace(/[^a-z0-9 ]/g, "");
       if (seen.has(k)) {
         dropped.push({ path: "needs", reason: "duplicate of an earlier need", text: n.name });
@@ -807,8 +971,8 @@ ${initiatives.map((c, i) => `I${i + 1}. ${c}`).join("\n") || "(none)"}
       }
       seen.add(k);
       return true;
-    }).slice(0, 8);
-    return json({ part, ok: true, needs, dropped, warnings });
+    }).slice(0, 10);
+    return json({ part, ok: true, needs, repaired, verifier, dropped, warnings });
   } catch (e) {
     return json({ part, ok: false, dropped, warnings: [...warnings, `Synthesis (${part}) failed (${(e as Error)?.message ?? e}).`] });
   }
@@ -915,9 +1079,9 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   const reg: { path: string; item: Item }[] = [];
   let overview = checkItem(body?.overview, "overview", byId, dropped, reg);
   let challenges = dedupe(list(body?.challenges).map((c, i) => checkItem(c, `challenges[${i}]`, byId, dropped, reg)).filter((c): c is Item => !!c), "challenges", dropped).slice(0, 5);
-  let initiatives = dedupe(list(body?.initiatives).map((c, i) => checkItem(c, `initiatives[${i}]`, byId, dropped, reg)).filter((c): c is Item => !!c), "initiatives", dropped).slice(0, 5);
+  let initiatives = dedupe(list(body?.initiatives).map((c, i) => checkItem(c, `initiatives[${i}]`, byId, dropped, reg, "event")).filter((c): c is Item => !!c), "initiatives", dropped).slice(0, 5);
   const offers = list(body?.offers);
-  let needs = list(body?.needs).slice(0, 8).flatMap((n, i) => {
+  let needs = list(body?.needs).slice(0, 10).flatMap((n, i) => {
     const need = checkNeed(n, `needs[${i}]`, byId, dropped, reg);
     const o = offers[i];
     const mcOffers = [...new Set(list(o?.mcOffers).filter((x) => VALID_SET.has(x)))].slice(0, MAX_OFFERS_PER_NEED);
@@ -929,20 +1093,12 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
     return [{ ...need, mcOffers, offerNarrative: typeof o?.offerNarrative === "string" ? o.offerNarrative.trim() : "" }];
   });
 
-  // Every statement is checked against its cited evidence; unsupported ones are removed.
-  let verifier = "skipped (time budget)";
-  if (clock.remaining() > 30_000) {
-    try {
-      verifier = await verifyItems(apiKey, reg, byId, dropped, Math.min(40_000, clock.remaining() - 15_000));
-    } catch (e) {
-      verifier = `failed (${(e as Error)?.message ?? e})`;
-      warnings.push(`Verifier ${verifier}; statements are unchecked.`);
-    }
-  }
-  if (overview?.rejected) overview = null;
-  challenges = challenges.filter((c) => !c.rejected);
-  initiatives = initiatives.filter((c) => !c.rejected);
-  needs = needs.filter((n) => !n.item?.rejected);
+  // Statements were already verified in the synth parts (and rewritten once if a figure was the only problem);
+  // the report re-validates deterministically, trims to the final sizes and assembles.
+  const verifier = list(body?.verifierLog).map((x) => String(x).slice(0, 120)).slice(0, 8).join("; ") || "not run";
+  const repairedLog = list(body?.repaired).slice(0, 40).map((r) => ({ path: String(r?.path ?? ""), before: String(r?.before ?? "").slice(0, 400), after: String(r?.after ?? "").slice(0, 400) }));
+  const topUps = list(body?.topUps).map((x) => String(x).slice(0, 120)).slice(0, 6);
+  needs = needs.slice(0, 8);
 
   // Number sources in order of first citation so the Sources list only holds what the text cites.
   // At most 3 citations per statement: best source tier first, then sources shared by several cited facts, then earliest.
@@ -1010,6 +1166,8 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
       sourcesDroppedByType: state.droppedByTier,
       sourceTiers: tierCounts,
       verifier,
+      repaired: repairedLog,
+      topUps,
       droppedCount: dropped.length,
       dropped: dropped.slice(0, 100),
       warnings,
