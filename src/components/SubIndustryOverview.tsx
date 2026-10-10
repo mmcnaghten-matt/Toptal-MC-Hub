@@ -1,6 +1,7 @@
 import { SubIndustry, Need } from "@/data/industryData";
 import { AlertTriangle, Rocket, ArrowRight, Target } from "lucide-react";
 import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
+import { AiResearchNote } from "@/components/AiResearchNote";
 
 interface Props {
   subIndustry: SubIndustry & { updatedAt?: string };
@@ -40,6 +41,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
           {researchedDate && <> · Researched {researchedDate} from {subIndustry.sources?.length ?? 0} sources</>}
         </p>
       )}
+      <AiResearchNote />
       {/* Overview */}
       <section className="rounded-lg border border-border bg-card p-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">

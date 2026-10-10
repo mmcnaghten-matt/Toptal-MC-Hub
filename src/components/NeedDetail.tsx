@@ -1,5 +1,6 @@
 import { Need, SourceRef } from "@/data/industryData";
 import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
+import { AiResearchNote } from "@/components/AiResearchNote";
 import { ChevronLeft, Radio, Briefcase, MessageSquareText } from "lucide-react";
 
 interface Props {
@@ -88,6 +89,7 @@ export function NeedDetail({ need, onBack, sources }: Props) {
         </section>
       </div>
 
+      <AiResearchNote compact />
       <SourcesList sources={sources} />
     </div>
     </SourcesProvider>
