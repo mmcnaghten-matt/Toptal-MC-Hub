@@ -138,6 +138,7 @@ import { jsPDF } from "jspdf";
 import { performResearch, type ProgressChip, type ResearchResult } from "@/services/geminiService";
 import ToptalLogo from "@/components/ToptalLogo";
 import { cn } from "@/lib/utils";
+import { collectAtomicIntervals, planPageCuts, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
 const SECTIONS = [
   { id: "executive", label: "Executive Summary", icon: FileText },
@@ -177,11 +178,13 @@ export default function AccountMarketIntel() {
       const margin = 10;
       const contentWidth = pdfWidth - margin * 2;
 
+      const PIXEL_RATIO = 2;
+      const CONTENT_TOP = 15; // below the running header on section pages
       const captureElement = async (element: HTMLElement) => {
         const dataUrl = await toPng(element, {
           cacheBust: true,
           backgroundColor: "#ffffff",
-          pixelRatio: 2,
+          pixelRatio: PIXEL_RATIO,
         });
         const img = new Image();
         await new Promise((resolve) => {
@@ -189,7 +192,46 @@ export default function AccountMarketIntel() {
           img.src = dataUrl;
         });
         const ratio = contentWidth / img.width;
-        return { dataUrl, scaledHeight: img.height * ratio };
+        return { dataUrl, scaledHeight: img.height * ratio, img };
+      };
+
+      const sectionHeader = (label: string) => {
+        pdf.setFontSize(10);
+        pdf.setTextColor(105, 118, 132);
+        pdf.text(label, margin, 8);
+        pdf.line(margin, 10, pdfWidth - margin, 10);
+      };
+
+      // Draws a captured element starting at (margin, y). A section taller than the page continues on new pages,
+      // cut between paragraphs/cards where possible. Returns the y position after the last slice.
+      const placeCaptured = (
+        element: HTMLElement,
+        cap: Awaited<ReturnType<typeof captureElement>>,
+        y: number,
+        continuationLabel: string,
+      ): number => {
+        const cssHeight = cap.img.height / PIXEL_RATIO;
+        const mmPerCss = contentWidth / (cap.img.width / PIXEL_RATIO);
+        const firstPx = (pdfHeight - margin - y) / mmPerCss;
+        const nextPx = (pdfHeight - margin - CONTENT_TOP) / mmPerCss;
+        if (cssHeight <= firstPx) {
+          pdf.addImage(cap.dataUrl, "PNG", margin, y, contentWidth, cap.scaledHeight);
+          return y + cap.scaledHeight;
+        }
+        const cuts = planPageCuts(cssHeight, firstPx, nextPx, collectAtomicIntervals(element, nextPx * 0.45));
+        let endY = y;
+        cuts.forEach((start, i) => {
+          const end = i + 1 < cuts.length ? cuts[i + 1] : cssHeight;
+          if (i > 0) {
+            pdf.addPage();
+            sectionHeader(continuationLabel);
+          }
+          const top = i === 0 ? y : CONTENT_TOP;
+          const heightMm = (end - start) * mmPerCss;
+          pdf.addImage(sliceImageToDataUrl(cap.img, start, end, PIXEL_RATIO), "PNG", margin, top, contentWidth, heightMm);
+          endY = top + heightMm;
+        });
+        return endY;
       };
 
       // Page 1: Header + Executive Summary combined
@@ -203,26 +245,23 @@ export default function AccountMarketIntel() {
       const firstEl = sectionRefs.current[firstSection.id];
       if (firstEl) {
         const first = await captureElement(firstEl);
-        // If it fits on the same page, add it; otherwise new page
+        // If it fits on the same page, add it; otherwise start a new page (and continue across pages if needed)
         if (currentY + first.scaledHeight > pdfHeight - margin) {
           pdf.addPage();
           currentY = margin;
         }
-        pdf.addImage(first.dataUrl, "PNG", margin, currentY, contentWidth, first.scaledHeight);
+        placeCaptured(firstEl, first, currentY, `${result.companyName} - ${firstSection.label} (cont.)`);
       }
 
-      // Remaining sections: one per page
+      // Remaining sections: each starts on its own page and rolls onto further pages when longer than one page
       for (let i = 1; i < SECTIONS.length; i++) {
         const section = SECTIONS[i];
         const element = sectionRefs.current[section.id];
         if (!element) continue;
         pdf.addPage();
-        pdf.setFontSize(10);
-        pdf.setTextColor(105, 118, 132);
-        pdf.text(`${result.companyName} - ${section.label}`, margin, 8);
-        pdf.line(margin, 10, pdfWidth - margin, 10);
+        sectionHeader(`${result.companyName} - ${section.label}`);
         const sec = await captureElement(element);
-        pdf.addImage(sec.dataUrl, "PNG", margin, 15, contentWidth, sec.scaledHeight);
+        placeCaptured(element, sec, CONTENT_TOP, `${result.companyName} - ${section.label} (cont.)`);
       }
       pdf.save(`${result.companyName.replace(/\s+/g, "_")}_Market_Intelligence_Report.pdf`);
     } catch (err) {
