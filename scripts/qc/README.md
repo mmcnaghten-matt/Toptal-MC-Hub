@@ -47,6 +47,7 @@ at 2026-10-10 (`fixed-date.mjs`). Add a case here whenever a QC round finds a ne
 | `tiers.test.mjs` | Source tiers, excluded domains, three-citation cap, financial-statement rules |
 | `industry.test.mjs` | Industry Insights: stock-data sites blocked; dated regulation, deal and program items checked against the cited page (2007 page contradicted, undated page dropped, unreadable page kept as unverified, old undated page dropped); market statistics not date-checked; evidence ids stripped; awards not initiatives; directional parts still free to interpret; refresh completes if the date check cannot run |
 | `industry-interpretive.test.mjs` | Industry Insights: unsupported figures are rewritten instead of dropped, thin lists get one top-up, events must be inside the 24-month window, the verifier removes unsupported statements |
+| `job.test.mjs` | Emailed reports: recipient is the signed-in toptal.com address (request addresses ignored, non-toptal.com refused in the function, the database and the send step), a job split into slices equals a single run and never repeats a research call, one email with the report link, failure email, rejected email retried once, stalled jobs resumed, attempt and age caps, internal routes need the job secret, research function accepts internal calls only with the secret and a toptal.com user, generated job function up to date |
 
 ## Deploying and confirming the build
 

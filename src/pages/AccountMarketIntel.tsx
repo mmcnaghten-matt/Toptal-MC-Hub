@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
   Building2,
@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   Menu,
   X,
+  Mail,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown, Rich, SourcesProvider, toStr } from "@/components/Cited";
@@ -110,6 +111,8 @@ import ToptalLogo from "@/components/ToptalLogo";
 import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/components/ResearchMethod";
 import { cn } from "@/lib/utils";
 import { normalizeWebsite } from "@/lib/website";
+import { SubmitChoiceDialog } from "@/components/SubmitChoiceDialog";
+import { getReportEmail, listMyJobs, loadReport, startEmailedReport, type ClientInsightJob } from "@/services/clientInsightJobs";
 import { planCutsFromImage, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
 const SECTIONS = [
@@ -141,6 +144,18 @@ export default function AccountMarketIntel() {
   const [activeSection, setActiveSection] = useState("executive");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Wait here or email me; emailed reports run on the server and are listed under "Your recent reports".
+  const [searchParams, setSearchParams] = useSearchParams();
+  const reportId = searchParams.get("report");
+  const [choiceOpen, setChoiceOpen] = useState(false);
+  const [reportEmail, setReportEmail] = useState<string | null>(null);
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailed, setEmailed] = useState<{ id: string; email: string; company: string } | null>(null);
+  const [jobs, setJobs] = useState<ClientInsightJob[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(false);
+  const [savedMissing, setSavedMissing] = useState(false);
 
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const headerRef = useRef<HTMLDivElement>(null);
@@ -269,9 +284,22 @@ export default function AccountMarketIntel() {
     }
   };
 
+  // Submitting the form first asks how the report should be delivered (see SubmitChoiceDialog).
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!query.trim() || loading) return;
+    if (normalizeWebsite(website) === null) {
+      setWebsiteError("Enter a website such as example.com, or leave it blank.");
+      return;
+    }
+    setWebsiteError(null);
+    setEmailError(null);
+    setChoiceOpen(true);
+  };
+
+  // "Wait here": the research runs in this page, as it always has.
   const handleSearch = useCallback(
-    async (e?: React.FormEvent) => {
-      e?.preventDefault();
+    async () => {
       if (!query.trim()) return;
       // The website is optional; when given it must look like one (the function checks it again).
       const site = normalizeWebsite(website);
@@ -280,6 +308,10 @@ export default function AccountMarketIntel() {
         return;
       }
       setWebsiteError(null);
+      setChoiceOpen(false);
+      setEmailed(null);
+      setSavedMissing(false);
+      if (reportId) setSearchParams({}, { replace: true });
       setLoading(true);
       setError(null);
       setResult(null);
@@ -293,8 +325,68 @@ export default function AccountMarketIntel() {
         setLoading(false);
       }
     },
-    [query, website, deepResearch]
+    [query, website, deepResearch, reportId, setSearchParams]
   );
+
+  // "Email me": the server runs the research and emails the signed-in person's own address.
+  const handleEmail = async () => {
+    const site = normalizeWebsite(website);
+    if (site === null || !query.trim()) return;
+    setEmailBusy(true);
+    setEmailError(null);
+    try {
+      const job = await startEmailedReport({ companyName: query.trim(), ...(site ? { companyWebsite: site } : {}), deepResearch });
+      setChoiceOpen(false);
+      setResult(null);
+      setError(null);
+      setSavedMissing(false);
+      if (reportId) setSearchParams({}, { replace: true });
+      setEmailed({ id: job.id, email: job.email, company: query.trim() });
+      listMyJobs().then(setJobs).catch(() => {});
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : "Could not start the emailed report. Try again.");
+    } finally {
+      setEmailBusy(false);
+    }
+  };
+
+  // The signed-in address and the person's recent reports (refreshed while one is running).
+  useEffect(() => {
+    getReportEmail().then(setReportEmail).catch(() => setReportEmail(null));
+    listMyJobs().then(setJobs).catch(() => {});
+  }, []);
+  const anyRunning = jobs.some((j) => j.status === "running");
+  useEffect(() => {
+    if (!anyRunning) return;
+    const t = setInterval(() => listMyJobs().then(setJobs).catch(() => {}), 20000);
+    return () => clearInterval(t);
+  }, [anyRunning]);
+
+  // A link from the email (?report=<id>) opens the saved report.
+  useEffect(() => {
+    if (!reportId) return;
+    let cancelled = false;
+    setLoadingSaved(true);
+    setSavedMissing(false);
+    setError(null);
+    loadReport(reportId)
+      .then((saved) => {
+        if (cancelled) return;
+        if (saved) {
+          setResult(saved);
+          setEmailed(null);
+          setActiveSection("executive");
+        } else {
+          setResult(null);
+          setSavedMissing(true);
+        }
+      })
+      .catch(() => !cancelled && setSavedMissing(true))
+      .finally(() => !cancelled && setLoadingSaved(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId]);
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
@@ -364,7 +456,7 @@ export default function AccountMarketIntel() {
             </>
           )}
 
-          <motion.form layout onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
+          <motion.form layout onSubmit={handleSubmit} className="relative max-w-2xl mx-auto">
             <div className="flex p-1 bg-card rounded-lg shadow-xl">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -378,7 +470,7 @@ export default function AccountMarketIntel() {
               </div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || loadingSaved}
                 className="bg-accent text-accent-foreground px-8 py-3 rounded-md hover:bg-accent/90 disabled:opacity-50 transition-all font-bold flex items-center gap-2"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Analyze Now"}
@@ -440,9 +532,75 @@ export default function AccountMarketIntel() {
       </section>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* Emailed report: confirmation, a saved report that cannot be opened, and the person's recent reports */}
+        {!loading && loadingSaved && (
+          <div className="mx-auto mb-6 flex max-w-2xl items-center justify-center gap-2 rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground" role="status">
+            <Loader2 className="h-4 w-4 animate-spin" /> Opening your saved report...
+          </div>
+        )}
+        {!loading && !loadingSaved && savedMissing && !result && (
+          <div className="mx-auto mb-6 max-w-2xl rounded-lg border-l-4 border-destructive bg-card p-6 shadow" role="alert">
+            <p className="font-bold text-foreground">Report not found</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              This report has expired (reports are kept for 30 days), or it belongs to someone else. Reports can only be opened by the person who ran them, signed in with their Toptal account.
+            </p>
+          </div>
+        )}
+        {!loading && !result && emailed && (
+          <div className="mx-auto mb-6 max-w-2xl rounded-lg border-l-4 border-primary bg-card p-6 shadow" role="status" data-testid="emailed-confirmation">
+            <p className="flex items-center gap-2 font-bold text-foreground">
+              <Mail className="h-5 w-5 text-primary" /> We will email you when it is ready
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              The research for <span className="font-medium text-foreground">{emailed.company}</span> is running. It takes about 5 to 7 minutes, and the email goes to{" "}
+              <span className="font-medium text-foreground">{emailed.email}</span>. You can close this page.
+            </p>
+            <button
+              type="button"
+              onClick={() => setEmailed(null)}
+              className="mt-3 text-sm font-medium text-primary hover:underline"
+            >
+              Start another report
+            </button>
+          </div>
+        )}
+        {!loading && !result && jobs.length > 0 && (
+          <section className="mx-auto mb-8 max-w-2xl" aria-labelledby="recent-reports">
+            <h2 id="recent-reports" className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Your recent reports</h2>
+            <ul className="divide-y divide-border rounded-lg border border-border bg-card">
+              {jobs.map((j) => (
+                <li key={j.id} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-foreground">{j.company}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(j.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                      {j.status === "failed" && j.error ? ` · ${j.error}` : ""}
+                    </p>
+                  </div>
+                  {j.status === "done" ? (
+                    <button
+                      type="button"
+                      onClick={() => setSearchParams({ report: j.id })}
+                      className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
+                    >
+                      Open
+                    </button>
+                  ) : j.status === "running" ? (
+                    <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-primary">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Running{j.progress ? ` · ${j.progress}` : ""}
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-xs font-medium text-destructive">Failed</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <AnimatePresence mode="wait">
           {/* Empty State */}
-          {!result && !loading && !error && (
+          {!result && !loading && !error && !emailed && !savedMissing && !loadingSaved && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1387,6 +1545,18 @@ export default function AccountMarketIntel() {
           )}
         </AnimatePresence>
       </main>
+
+      <SubmitChoiceDialog
+        open={choiceOpen}
+        onOpenChange={setChoiceOpen}
+        company={query.trim()}
+        website={normalizeWebsite(website) || undefined}
+        email={reportEmail}
+        emailBusy={emailBusy}
+        emailError={emailError}
+        onWait={handleSearch}
+        onEmail={handleEmail}
+      />
     </div>
     </SourcesProvider>
   );
