@@ -61,3 +61,11 @@ export async function loadReport(jobId: string): Promise<ResearchResult | null> 
   if (error) throw new Error(error.message);
   return (data?.result as ResearchResult | undefined) ?? null;
 }
+
+/** Deletes one of the person's own reports (and stops it if it is still running). Returns false if nothing was deleted. */
+export async function deleteReport(jobId: string): Promise<boolean> {
+  if (!supabase || !/^[0-9a-f-]{36}$/i.test(jobId)) return false;
+  const { data, error } = await tables().from("client_insight_jobs").delete().eq("id", jobId).select("id");
+  if (error) throw new Error(error.message);
+  return (data ?? []).length > 0;
+}

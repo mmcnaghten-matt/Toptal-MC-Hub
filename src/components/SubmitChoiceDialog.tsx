@@ -22,7 +22,7 @@ export function SubmitChoiceDialog({ open, onOpenChange, company, website, eligi
         <DialogHeader>
           <DialogTitle>Research {company}</DialogTitle>
           <DialogDescription>
-            This research takes about 5 to 7 minutes{website ? ` (company website: ${website})` : ""}. How would you like to run it?
+            This research takes about 6 to 10 minutes{website ? ` (company website: ${website})` : ""}. How would you like to run it?
           </DialogDescription>
         </DialogHeader>
 

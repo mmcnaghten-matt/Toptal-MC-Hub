@@ -22,6 +22,7 @@ import {
   Menu,
   X,
   Server,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown, Rich, SourcesProvider, toStr } from "@/components/Cited";
@@ -112,7 +113,17 @@ import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/compo
 import { cn } from "@/lib/utils";
 import { normalizeWebsite } from "@/lib/website";
 import { SubmitChoiceDialog } from "@/components/SubmitChoiceDialog";
-import { getSignedInToptalEmail, listMyJobs, loadReport, startBackgroundReport, type ClientInsightJob } from "@/services/clientInsightJobs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { deleteReport, getSignedInToptalEmail, listMyJobs, loadReport, startBackgroundReport, type ClientInsightJob } from "@/services/clientInsightJobs";
 import { planCutsFromImage, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
 const SECTIONS = [
@@ -155,6 +166,9 @@ export default function AccountMarketIntel() {
   const [bgStarted, setBgStarted] = useState<{ id: string; company: string } | null>(null);
   const [jobs, setJobs] = useState<ClientInsightJob[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
+  const [toDelete, setToDelete] = useState<ClientInsightJob | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [savedMissing, setSavedMissing] = useState(false);
 
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
@@ -347,6 +361,26 @@ export default function AccountMarketIntel() {
       setBgError(err instanceof Error ? err.message : "Could not start the bgStarted report. Try again.");
     } finally {
       setBgBusy(false);
+    }
+  };
+
+  // Delete one of the person's reports (after confirming); also stops it if it is still running.
+  const handleDelete = async () => {
+    if (!toDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteReport(toDelete.id);
+      setJobs((all) => all.filter((j) => j.id !== toDelete.id));
+      setToDelete(null);
+      if (reportId === toDelete.id) {
+        setSearchParams({}, { replace: true });
+        setResult(null);
+      }
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Could not delete the report. Try again.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -552,7 +586,7 @@ export default function AccountMarketIntel() {
               <Server className="h-5 w-5 text-primary" /> Running in the background
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              The research for <span className="font-medium text-foreground">{bgStarted.company}</span> takes about 5 to 7 minutes. You can close this page. Come back to
+              The research for <span className="font-medium text-foreground">{bgStarted.company}</span> takes about 6 to 10 minutes. You can close this page. Come back to
               this page and open the report from <span className="font-medium text-foreground">Your recent reports</span> when it shows as finished.
             </p>
             <button
@@ -577,21 +611,32 @@ export default function AccountMarketIntel() {
                       {j.status === "failed" && j.error ? ` · ${j.error}` : ""}
                     </p>
                   </div>
-                  {j.status === "done" ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    {j.status === "done" ? (
+                      <button
+                        type="button"
+                        onClick={() => setSearchParams({ report: j.id })}
+                        className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
+                      >
+                        Open
+                      </button>
+                    ) : j.status === "running" ? (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-primary">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Running{j.progress ? ` · ${j.progress}` : ""}
+                      </span>
+                    ) : (
+                      <span className="shrink-0 text-xs font-medium text-destructive">Failed</span>
+                    )}
                     <button
                       type="button"
-                      onClick={() => setSearchParams({ report: j.id })}
-                      className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:bg-primary/90"
+                      onClick={() => { setDeleteError(null); setToDelete(j); }}
+                      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      aria-label={`Delete the report for ${j.company}`}
+                      title="Delete"
                     >
-                      Open
+                      <Trash2 className="h-4 w-4" />
                     </button>
-                  ) : j.status === "running" ? (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-primary">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Running{j.progress ? ` · ${j.progress}` : ""}
-                    </span>
-                  ) : (
-                    <span className="shrink-0 text-xs font-medium text-destructive">Failed</span>
-                  )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -1545,6 +1590,31 @@ export default function AccountMarketIntel() {
           )}
         </AnimatePresence>
       </main>
+
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this report?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The report for {toDelete?.company} will be deleted permanently{toDelete?.status === "running" ? " and the research that is still running will be stopped" : ""}. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError && <p role="alert" className="text-sm font-medium text-destructive">{deleteError}</p>}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <SubmitChoiceDialog
         open={choiceOpen}

@@ -40,7 +40,7 @@ Nothing here is shared with the assistant: you create and store every secret you
 
 ## How a report runs
 
-A report takes 5-7 minutes; an edge function lives about 150 seconds. The job therefore runs in slices: every research
+A report takes 6-10 minutes; an edge function lives about 150 seconds. The job therefore runs in slices: every research
 call is saved (`client_insight_steps`), a slice replays the pipeline (saved calls return instantly), starts new calls for
 about 40 seconds, then starts the next slice. Cron resumes any job whose slice died. A job stops after 30 minutes or 30 slices.
 
