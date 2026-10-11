@@ -26,6 +26,7 @@ const cases = [
   ["a competitor that is a business the company owns", (r) => { r.entity.owned = [{ name: "JELD-WEN", what: "doors" }]; }, /owned/],
   ["a brand listed on its own and under its parent", (r) => { r.competitiveLandscape.directCompetitors.push("CertainTeed [1]"); }, /not also listed on its own/],
   ["an uncited SWOT item", (r) => { r.strategicFrameworks.swot.weaknesses.push("An uncited weakness."); }, /carries a citation/],
+  ["an executive summary that opens with a placeholder", (r) => { r.executiveSummary.tldr = "Not found in public sources."; }, /executive summary opens/],
   ["a conclusion drawn from absence", (r) => { r.executiveSummary.tldr += " A product not mentioned in the portfolio."; }, /absence/],
 ];
 for (const [name, mutate, expect] of cases) {

@@ -241,7 +241,7 @@ globalThis.fetch = async (url, init) => {
     seen.consistency = prompt;
     const lines = [...prompt.matchAll(/^(\d+)\. (.*)$/gm)].map((m) => ({ i: Number(m[1]), t: m[2] }));
     const a = lines.find((l) => /130 mph/.test(l.t)), b = lines.find((l) => /110 mph/.test(l.t));
-    return gem(JSON.stringify(a && b ? [{ a: a.i, b: b.i, reason: "two different wind ratings for the same shingle" }] : []));
+    return gem(JSON.stringify(a && b ? [{ a: a.i, b: b.i, kind: "conflict", valueA: "130 mph", valueB: "110 mph", reason: "two different wind ratings for the same shingle" }] : []));
   }
   if (prompt.includes("For each numbered CLAIM")) {
     const n = [...prompt.matchAll(/^CLAIM (\d+):/gm)].length;

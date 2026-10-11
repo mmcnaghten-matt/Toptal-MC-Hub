@@ -171,6 +171,7 @@ export function checkReport(report, opts = {}) {
       (label === "Insufficient evidence" || /\[\d+\]/.test(report.executiveSummary?.positioningRationale ?? "")), label);
 
   // 9. What the page needs to show the method and the log
+  check("the executive summary opens with a statement, never a placeholder", typeof report.executiveSummary?.tldr === "string" && !/^\s*(not found in public sources|not generated|insufficient evidence)\.?\s*$/i.test(report.executiveSummary.tldr) && report.executiveSummary.tldr.trim().length > 20, String(report.executiveSummary?.tldr ?? "missing"));
   check("report carries the method numbers and the cited-domain list", typeof q.methodStats?.evidenceFound === "number" && Array.isArray(q.sourceDomains) && q.sourceDomains.length > 0, JSON.stringify(Object.keys(q)));
   check("report carries the date-check log", !!q.dateChecks && Array.isArray(q.dateChecks.dropped), "");
 
