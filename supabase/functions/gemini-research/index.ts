@@ -3165,9 +3165,23 @@ function readSegments(raw: Any): Pick<Entity, "segments" | "divested" | "footpri
 }
 
 // Request 1: resolve the company.
+/** "https://www.Example.com/about" -> "example.com"; undefined when it cannot be a company website. */
+function normalizeWebsite(input: string): string | undefined {
+  const raw = input.trim();
+  if (!raw || /\s/.test(raw)) return undefined;
+  const host = raw.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "").split(/[/?#]/)[0].replace(/:\d+$/, "").toLowerCase().replace(/^www\./, "").replace(/\.$/, "");
+  if (!host || host.length > 253 || !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(host)) return undefined;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) return undefined;
+  return host;
+}
+
 async function v2Entity(apiKey: string, body: Any, clock: ReturnType<typeof makeClock>) {
   const companyName = typeof body?.companyName === "string" ? body.companyName.trim() : "";
-  const website = typeof body?.companyWebsite === "string" && body.companyWebsite.trim() ? body.companyWebsite.trim() : undefined;
+  // The page normalises the website, and it is checked again here: only a plain domain is passed on to the search prompts.
+  const website = typeof body?.companyWebsite === "string" ? normalizeWebsite(body.companyWebsite) : undefined;
+  if (typeof body?.companyWebsite === "string" && body.companyWebsite.trim() && !website) {
+    return json({ error: "companyWebsite must be a website such as example.com" }, 400);
+  }
   if (!companyName || companyName.length > 200) return json({ error: "companyName is required (max 200 characters)" }, 400);
   const t0 = Date.now();
   const ent = await resolveEntity(apiKey, companyName, website, todayStr(), clock.timeout(60_000, 10_000));
@@ -3776,7 +3790,7 @@ Deno.serve(async (req) => {
     }
 
     const companyName = typeof body?.companyName === "string" ? body.companyName.trim() : "";
-    const companyWebsite = typeof body?.companyWebsite === "string" && body.companyWebsite.trim() ? body.companyWebsite.trim() : undefined;
+    const companyWebsite = typeof body?.companyWebsite === "string" ? normalizeWebsite(body.companyWebsite) : undefined;
     if (!companyName || companyName.length > 200) return json({ error: "companyName is required (max 200 characters)" }, 400);
 
     if (step === "research") {
