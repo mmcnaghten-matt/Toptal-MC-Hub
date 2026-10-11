@@ -3718,9 +3718,28 @@ function readState(raw: Any, allowEmpty = false): State | null {
   };
 }
 
+// Constant-time comparison so the secret cannot be guessed from response timing.
+function sameSecret(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 // Only signed-in Toptal accounts may run research. The page sends the user's Supabase session token;
 // we ask Supabase Auth who it belongs to. Set REQUIRE_SIGN_IN=false to switch the check off.
 async function authorize(req: Request): Promise<Response | null> {
+  // Emailed reports run on the server (client-insights-job), which has no user session. It proves itself with the shared
+  // JOB_SECRET and names the person who asked; that person must still be on an allowed domain.
+  const jobHeader = req.headers.get("x-job-secret");
+  if (jobHeader !== null) {
+    const secret = Deno.env.get("JOB_SECRET") ?? "";
+    if (!secret || !sameSecret(jobHeader, secret)) return json({ error: "Not authorised." }, 401);
+    const who = (req.headers.get("x-job-user") ?? "").toLowerCase();
+    const allowed = (Deno.env.get("ALLOWED_EMAIL_DOMAINS") ?? "toptal.com").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean);
+    if (!allowed.some((d) => who.endsWith("@" + d))) return json({ error: "Client Insights research is limited to Toptal accounts." }, 403);
+    return null;
+  }
   if (Deno.env.get("REQUIRE_SIGN_IN") === "false") return null;
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const apikey = req.headers.get("apikey") ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "";
