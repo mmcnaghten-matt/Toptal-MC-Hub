@@ -172,7 +172,8 @@ export async function performResearch(
   companyName: string,
   deepResearch: boolean = true,
   onProgress?: (chips: ProgressChip[]) => void,
+  companyWebsite?: string,
 ): Promise<ResearchResult> {
-  return (await runResearch({ call: callStep, companyName, deepResearch, onProgress })) as ResearchResult;
+  return (await runResearch({ call: callStep, companyName, companyWebsite, deepResearch, onProgress })) as ResearchResult;
 }
 // Testing pipeline automation fix

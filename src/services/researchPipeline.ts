@@ -20,6 +20,8 @@ export interface ProgressChip {
 export interface PipelineOptions {
   call: StepCall;
   companyName: string;
+  /** Optional official website (already normalised, e.g. "owenscorning.com"): resolves same-name companies. */
+  companyWebsite?: string;
   deepResearch: boolean;
   onProgress?: (chips: ProgressChip[]) => void;
   /** Max requests in flight at once (keeps Gemini rate limits happy). */
@@ -60,7 +62,7 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const retryable = (e: any) => e?.status === undefined || [429, 502, 503, 504].includes(e.status);
 
 export async function runResearch(opts: PipelineOptions): Promise<any> {
-  const { call, companyName, deepResearch, onProgress } = opts;
+  const { call, companyName, companyWebsite, deepResearch, onProgress } = opts;
   const retryDelay = opts.retryDelayMs ?? 1500;
   const limit = opts.concurrency ?? 5;
 
@@ -117,7 +119,7 @@ export async function runResearch(opts: PipelineOptions): Promise<any> {
   begin("company");
   let entityRes: any;
   try {
-    entityRes = (await attempt({ step: "entity", companyName })).data;
+    entityRes = (await attempt({ step: "entity", companyName, ...(companyWebsite ? { companyWebsite } : {}) })).data;
   } catch (e) {
     end("company", { failed: true });
     throw e;

@@ -109,6 +109,7 @@ import { performResearch, type ProgressChip, type ResearchResult } from "@/servi
 import ToptalLogo from "@/components/ToptalLogo";
 import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/components/ResearchMethod";
 import { cn } from "@/lib/utils";
+import { normalizeWebsite } from "@/lib/website";
 import { planCutsFromImage, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
 const SECTIONS = [
@@ -126,6 +127,8 @@ const SECTIONS = [
 export default function AccountMarketIntel() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [website, setWebsite] = useState("");
+  const [websiteError, setWebsiteError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [chips, setChips] = useState<ProgressChip[]>([]);
   const [logCopied, setLogCopied] = useState(false);
@@ -270,11 +273,18 @@ export default function AccountMarketIntel() {
     async (e?: React.FormEvent) => {
       e?.preventDefault();
       if (!query.trim()) return;
+      // The website is optional; when given it must look like one (the function checks it again).
+      const site = normalizeWebsite(website);
+      if (site === null) {
+        setWebsiteError("Enter a website such as example.com, or leave it blank.");
+        return;
+      }
+      setWebsiteError(null);
       setLoading(true);
       setError(null);
       setResult(null);
       try {
-        const data = await performResearch(query, deepResearch, setChips);
+        const data = await performResearch(query, deepResearch, setChips, site);
         setResult(data);
         setActiveSection("executive");
       } catch (err) {
@@ -283,7 +293,7 @@ export default function AccountMarketIntel() {
         setLoading(false);
       }
     },
-    [query, deepResearch]
+    [query, website, deepResearch]
   );
 
   const scrollToSection = (id: string) => {
@@ -375,6 +385,29 @@ export default function AccountMarketIntel() {
               </button>
             </div>
 
+            <div className="mt-3 text-left">
+              <label htmlFor="company-website" className="mb-1 block text-xs font-medium text-primary-foreground/80">
+                Company website <span className="font-normal text-primary-foreground/60">(optional: helps when several companies share a name)</span>
+              </label>
+              <input
+                id="company-website"
+                type="text"
+                inputMode="url"
+                value={website}
+                onChange={(e) => {
+                  setWebsite(e.target.value);
+                  if (websiteError) setWebsiteError(null);
+                }}
+                placeholder="e.g. owenscorning.com"
+                aria-invalid={!!websiteError}
+                aria-describedby={websiteError ? "company-website-error" : undefined}
+                className="w-full rounded-lg bg-card px-4 py-3 text-sm text-foreground shadow-md focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              {websiteError && (
+                <p id="company-website-error" role="alert" className="mt-1 text-xs font-medium text-red-200">{websiteError}</p>
+              )}
+            </div>
+
             <div className="mt-4 flex items-center justify-center gap-6">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <div
@@ -400,6 +433,8 @@ export default function AccountMarketIntel() {
                 </div>
               </label>
             </div>
+            {/* What kind of output this is, before it is run */}
+            <p className="mx-auto mt-5 max-w-xl text-xs leading-relaxed text-primary-foreground/75">{AI_CAVEAT}</p>
           </motion.form>
         </div>
       </section>
@@ -415,8 +450,8 @@ export default function AccountMarketIntel() {
             >
               {[
                 { icon: Globe, title: "Global Reach", desc: "Scan markets across borders and industries in real-time." },
-                { icon: Target, title: "Precision Data", desc: "Get accurate competitive landscapes and SWOT breakdowns." },
-                { icon: Zap, title: "Instant Insights", desc: "Turn hours of manual research into seconds of AI analysis." },
+                { icon: Target, title: "Sourced analysis", desc: "Competitive landscapes and SWOT breakdowns, each statement tied to its sources." },
+                { icon: Zap, title: "Hours to minutes", desc: "A full research pass takes minutes instead of hours of manual work." },
               ].map((feature, i) => (
                 <div
                   key={i}
