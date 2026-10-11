@@ -17,17 +17,18 @@ Nothing here is shared with the assistant: you create and store every secret you
 4. **Deploy both functions** (Dashboard > Edge Functions, paste each file):
    - `gemini-research`: `npm run copy:client-insights` (adds support for the server's internal calls).
    - `client-insights-job`: `npm run copy:client-insights-job` (generates the file from the app source, stamps the build, copies it). Create the function with that name.
-5. **Cron.** In the SQL editor (replace the placeholders; this is the only place the secret appears, and it is not committed):
+5. **Cron.** In the SQL editor (replace the placeholders; this is the only place the secret appears, and it is not committed). The key is the public anon/publishable key the web app already uses (Project Settings > API), which is enough to reach the function; the real check is `x-job-secret`:
    ```sql
    select cron.schedule(
      'client-insights-resume',
      '*/2 * * * *',
      $$
      select net.http_post(
-       url := 'https://<project-ref>.supabase.co/functions/v1/client-insights-job',
+       url := 'https://upivmjklhgpmvhpqnjml.supabase.co/functions/v1/client-insights-job',
        headers := jsonb_build_object(
          'Content-Type', 'application/json',
-         'Authorization', 'Bearer <service-role key>',
+         'Authorization', 'Bearer <anon / publishable key>',
+         'apikey', '<anon / publishable key>',
          'x-job-secret', '<JOB_SECRET>'
        ),
        body := '{"action":"resume"}'::jsonb
