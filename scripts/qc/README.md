@@ -26,7 +26,6 @@ second command. Exit code 1 means at least one assertion failed; each failure pr
 | No colour, SKU, award or report-publication item in initiatives, recommendations or MC rows | Shingle colours, "Color of the Year" |
 | No strategic initiative older than 24 months; no forecast whose quarter has ended | Stale evidence presented as current |
 | Litigation statements cite a filing or major press, or are worded as a law firm's claim | zlk.com securities suit stated as fact |
-| Positioning is "Leader/Challenger/Niche in <segment>" with a cited rank | Label flipped Leader/Challenger between runs |
 | The executive summary opens with a statement, never "Not found" / "Not generated" | Round 8: summary dropped by a false contradiction, left empty |
 | Method numbers, cited-domain list and date-check log present | Caveat and method section |
 
@@ -43,7 +42,7 @@ at 2026-10-10 (`fixed-date.mjs`). Add a case here whenever a QC round finds a ne
 | `release-a.test.mjs` | Look-alike domains never cited, evidence about a sold business dropped even from the segments research, stock-data and peer-list sources, public-company financials, competitor classification, segments and TAM ranges, balanced customer evidence, source hygiene |
 | `dates.test.mjs` | Dated evidence checked against the cited page (2007 article reported as 2026), corroboration of material events, expired forecasts, law-firm sources, asbestos misfiled as customer themes, unreadable pages kept as unverified, forecast edge cases, sold-business list |
 | `round7.test.mjs` | Round 7: owned businesses (Masonite) from acquisition evidence, parent grouping, classification retry and coverage, market title check (late and early), page support for citations, report-dated events, continuing-operations logic, uncited figures, absence as evidence, slogan initiatives, one headcount, stale competitor evidence, blocked stock-data and peer-list pages, contradiction pass, method numbers, build stamp, redirect links |
-| `round6.test.mjs` | Sold-business footprint, market sanity checks, competitor name merging, rank-based positioning, litigation and materiality rules, evidence-id stripping, per-topic drop counts |
+| `round6.test.mjs` | Sold-business footprint, market sanity checks, competitor name merging, litigation and materiality rules, evidence-id stripping, per-topic drop counts |
 | `summary.test.mjs` | The executive summary never opens empty: a restatement ("flat" vs "in line with") or equal values is not a contradiction, a real conflict still drops the weaker statement, and any loss of the summary (consistency pass, validator, failed analysis step) is replaced by a company profile from the verified entity (current business lines only, no sold businesses, cited, logged) |
 | `faults.test.mjs` | Failed scans, sections and analysis parts degrade without failing the report; gateway errors are retried; unknown company stops with a 422 |
 | `tiers.test.mjs` | Source tiers, excluded domains, three-citation cap, financial-statement rules |

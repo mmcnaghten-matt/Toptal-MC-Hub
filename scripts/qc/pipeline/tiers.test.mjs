@@ -64,7 +64,6 @@ const raw={core:{executiveSummary:{tldr:item("Owens Corning is growing with net 
 r=await post({step:"report",state:st,parts:[],raw,deepResearch:false,clientWarnings:[],scanLog:[]}); const rep=await r.json(); console.log("report",r.status,rep.error||"");
 console.log("tldr:",rep.executiveSummary.tldr);
 console.log("bigOpportunity:",rep.executiveSummary.bigOpportunity);
-console.log("positioning:",rep.executiveSummary.competitivePositioning,"|",rep.executiveSummary.positioningRationale);
 console.log("perf paragraphs:",rep.businessPerformance.financialHighlights);
 console.log("swot strengths:",JSON.stringify(rep.strategicFrameworks.swot.strengths));
 console.log("sources:",JSON.stringify(rep.sources.map(s=>({id:s.id,t:s.tier,title:s.title}))));

@@ -21,7 +21,6 @@ const cases = [
   ["a segment twice in the market table", (r) => { r.marketOverview.metrics.tamRows.push({ ...r.marketOverview.metrics.tamRows[0] }); }, /each market segment appears once/],
   ["a market smaller than the company's own sales", (r) => { r.marketOverview.metrics.tamRows.push({ segment: "Doors", geography: "Global", year: 2025, value: "$1.5B", publisher: "x", cite: "[1]" }); }, /never smaller/],
   ["an unbacked litigation statement", (r) => { r.customerInsights.unmetNeeds = "Owens Corning faces a class action lawsuit."; }, /litigation statements/],
-  ["a free-text positioning label", (r) => { r.executiveSummary.competitivePositioning = "Leader"; }, /positioning/],
   ["a report from an older function (no method numbers)", (r) => { delete r.quality.methodStats; }, /method numbers/],
   ["a competitor that is a business the company owns", (r) => { r.entity.owned = [{ name: "JELD-WEN", what: "doors" }]; }, /owned/],
   ["a brand listed on its own and under its parent", (r) => { r.competitiveLandscape.directCompetitors.push("CertainTeed [1]"); }, /not also listed on its own/],

@@ -300,6 +300,12 @@ const NF = "Not found in public sources.";
 const isFallback = (r) => r.quality.executiveSummaryFallback === true;
 const tldr = (r) => r.executiveSummary.tldr;
 
+// ---- competitive positioning is not part of the executive summary ----
+{
+  const rp = await go();
+  check("the executive summary has no competitive positioning, and the model is not asked for market ranks", !("competitivePositioning" in rp.executiveSummary) && !("positioningRationale" in rp.executiveSummary) && !/segmentRanks|competitivePositioning/.test(seen.corePrompt ?? ""), JSON.stringify(Object.keys(rp.executiveSummary)));
+}
+
 // ---- a normal run: the analysed summary stands and no fallback is used ----
 let r = await go();
 check("a normal report keeps its analysed summary and does not use the fallback", /sells roofing, insulation and doors/.test(tldr(r)) && !isFallback(r) && !r.quality.warnings.some((w) => /company profile is shown/.test(w)), tldr(r));

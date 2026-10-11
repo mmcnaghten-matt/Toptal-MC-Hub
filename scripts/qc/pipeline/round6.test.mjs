@@ -1,5 +1,5 @@
 import "./fixed-date.mjs";
-// Round 6: sold-business footprint, market sanity checks, competitor merging, rank-based positioning, litigation and materiality rules.
+// Round 6: sold-business footprint, market sanity checks, competitor merging, litigation and materiality rules.
 // Release A checks: aggregators, public-company financials, competitor classification, segments, balanced customer evidence, hygiene.
 let handler; const env = { GEMINI_API_KEY: "k", SUPABASE_URL: "https://sb.test" };
 globalThis.Deno = { env: { get: (k) => env[k] }, serve: (h) => { handler = h; } };
@@ -268,7 +268,6 @@ const droppedAll = [...dc.dropped.map((d) => `${d.reason} :: ${d.text}`), ...q.d
 const has = (re) => droppedAll.some((d) => re.test(d));
 console.log("   initiatives:", JSON.stringify(rep.businessPerformance.strategicInitiatives.map((i) => i.name)));
 console.log("   tam:", JSON.stringify(rep.marketOverview.metrics.tamRows.map((r) => [r.segment, r.value])));
-console.log("   position:", rep.executiveSummary.competitivePositioning, "|", rep.executiveSummary.positioningRationale);
 
 // 1.2 sold-business footprint
 check("plant of a sold business (Taloja) is not offered as a current initiative", has(/refers to a business the company has sold :: .*Taloja plant digital/) && !/Taloja plant digital/.test(body), droppedAll.filter((d) => /Taloja/.test(d)).join(" | "));
@@ -287,9 +286,6 @@ const hosts = rep.sources.map((s) => s.url).join(" ");
 check("blocked domains never reach the sources (owler, comparably, indeed)", !/owler|comparably|indeed/.test(hosts) && !q.sourceDomains.some((d) => /owler|comparably|indeed/.test(d.domain)), hosts);
 const jw = rep.competitorDeepDives.find((d) => d.name === "JELD-WEN");
 check("competitor pricing resting on a roofer blog is dropped, a T2-backed strength is kept", !!jw && !/10-20%/.test(JSON.stringify(jw)) && jw.strengths.some((x) => /distribution reach/.test(x)), JSON.stringify(jw));
-// 1.6 positioning
-check("positioning derived from explicit rank evidence, with its segment", rep.executiveSummary.competitivePositioning === "Challenger in Roofing" && /second-largest/.test(rep.executiveSummary.positioningRationale), rep.executiveSummary.competitivePositioning);
-const label1 = rep.executiveSummary.competitivePositioning;
 // 1.7 litigation
 check("litigation statement resting on a plaintiff-firm page alone is dropped", has(/law-firm claim needs attribution :: .*multiple class-action lawsuits over its impairment/) && !/multiple class-action lawsuits over its impairment/.test(body), droppedAll.filter((d) => /class-action/.test(d)).join(" | "));
 check("the same litigation with a 10-K alongside is kept; the bare SWOT claim is dropped", /related to its impairment/.test(JSON.stringify(rep.strategicFrameworks.swot)) && !/multiple class-action lawsuits\./.test(JSON.stringify(rep.strategicFrameworks.swot)), JSON.stringify(rep.strategicFrameworks.swot.weaknesses));
@@ -311,12 +307,6 @@ check("a business the company owns (Masonite) is never a competitor", !q.competi
 check("a candidate the classifier did not cover is not kept by default", q.competitorFilter.some((c) => c.name === "Pella" && !c.kept && c.classification === "unclassified") && !JSON.stringify(rep.competitiveLandscape).includes("Pella"), JSON.stringify(q.competitorFilter.filter((c) => /Pella/.test(c.name))));
 check("sold-business terms do not remove evidence that merely mentions a place (London, Ontario)", seen.stratEv.some((e) => /London, Ontario/.test(e.text)) && !dc.dropped.some((d) => /London, Ontario/.test(d.text)), JSON.stringify(dc.dropped.map((d) => d.text.slice(0, 50))));
 check("a brand of a sold business (Norandex) is still removed", dc.dropped.some((d) => /refers to a business the company has sold/.test(d.reason) && /Norandex stores/.test(d.text)), JSON.stringify(dc.dropped.map((d) => d.text.slice(0, 50))));
-// stable label
-rep = await go2();
-check("the same evidence gives the same label on a second run", rep.executiveSummary.competitivePositioning === label1, rep.executiveSummary.competitivePositioning);
-// rank not stated
-rep = await go2({ badRank: true });
-check("a rank the cited evidence does not state is dropped (label stays 'Insufficient evidence')", rep.executiveSummary.competitivePositioning === "Insufficient evidence" && rep.quality.dropped.some((d) => /rank not stated/.test(d.reason)), rep.executiveSummary.competitivePositioning);
 
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);

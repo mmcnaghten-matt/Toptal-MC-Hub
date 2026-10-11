@@ -158,17 +158,8 @@ export function checkReport(report, opts = {}) {
   const uncited = listItems.filter((t) => !/\[\d+\]/.test(t));
   check("every competitor strength and SWOT item carries a citation", uncited.length === 0, uncited.slice(0, 3).join(" || "));
   check("no conclusion drawn from absence ('not mentioned in ...')", !sentences(texts).some((t) => /\b(not mentioned (?:in|by)|no mention of|absent from)\b/i.test(t)), sentences(texts).find((t) => /\bnot mentioned (?:in|by)\b/i.test(t)) ?? "");
-  const rankSources = [...String(report.executiveSummary?.positioningRationale ?? "").matchAll(/\[(\d+)\]/g)].map((m) => sources[Number(m[1]) - 1]).filter(Boolean);
-  check("positioning rests on a primary or major-press source", rankSources.length === 0 || rankSources.some((x) => (x.tier ?? 3) <= 2), rankSources.map((x) => x.url).join(" "));
   check("method numbers add up to the cited sources", q.methodStats && q.methodStats.primarySources + q.methodStats.majorSources + q.methodStats.otherSources === sources.length, JSON.stringify(q.methodStats ?? {}));
   if (opts.expectBuild) check(`the running function is build ${opts.expectBuild}`, q.build === opts.expectBuild, `report says ${q.build ?? "no build stamp (older function)"}`);
-
-  // 8. Positioning
-  const label = report.executiveSummary?.competitivePositioning ?? "";
-  const needsSegment = (entity.segments ?? []).length > 0;
-  check("positioning is 'Leader/Challenger/Niche in <segment>' with a cited rank, or 'Insufficient evidence'",
-    (label === "Insufficient evidence" || (needsSegment ? /^(Leader|Challenger|Niche) in .+/ : /^(Leader|Challenger|Niche)( in .+)?$/).test(label)) &&
-      (label === "Insufficient evidence" || /\[\d+\]/.test(report.executiveSummary?.positioningRationale ?? "")), label);
 
   // 9. What the page needs to show the method and the log
   check("the executive summary opens with a statement, never a placeholder", typeof report.executiveSummary?.tldr === "string" && !/^\s*(not found in public sources|not generated|insufficient evidence)\.?\s*$/i.test(report.executiveSummary.tldr) && report.executiveSummary.tldr.trim().length > 20, String(report.executiveSummary?.tldr ?? "missing"));
