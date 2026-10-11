@@ -21,7 +21,7 @@ import {
   ChevronLeft,
   Menu,
   X,
-  Mail,
+  Server,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown, Rich, SourcesProvider, toStr } from "@/components/Cited";
@@ -112,7 +112,7 @@ import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/compo
 import { cn } from "@/lib/utils";
 import { normalizeWebsite } from "@/lib/website";
 import { SubmitChoiceDialog } from "@/components/SubmitChoiceDialog";
-import { getReportEmail, listMyJobs, loadReport, startEmailedReport, type ClientInsightJob } from "@/services/clientInsightJobs";
+import { getSignedInToptalEmail, listMyJobs, loadReport, startBackgroundReport, type ClientInsightJob } from "@/services/clientInsightJobs";
 import { planCutsFromImage, sliceImageToDataUrl } from "@/lib/pdfPagination";
 
 const SECTIONS = [
@@ -145,14 +145,14 @@ export default function AccountMarketIntel() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Wait here or email me; emailed reports run on the server and are listed under "Your recent reports".
+  // Wait here or run in the background; background reports run on the server and are listed under "Your recent reports".
   const [searchParams, setSearchParams] = useSearchParams();
   const reportId = searchParams.get("report");
   const [choiceOpen, setChoiceOpen] = useState(false);
-  const [reportEmail, setReportEmail] = useState<string | null>(null);
-  const [emailBusy, setEmailBusy] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [emailed, setEmailed] = useState<{ id: string; email: string; company: string } | null>(null);
+  const [toptalEmail, setToptalEmail] = useState<string | null>(null);
+  const [bgBusy, setBgBusy] = useState(false);
+  const [bgError, setBgError] = useState<string | null>(null);
+  const [bgStarted, setBgStarted] = useState<{ id: string; company: string } | null>(null);
   const [jobs, setJobs] = useState<ClientInsightJob[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [savedMissing, setSavedMissing] = useState(false);
@@ -293,7 +293,7 @@ export default function AccountMarketIntel() {
       return;
     }
     setWebsiteError(null);
-    setEmailError(null);
+    setBgError(null);
     setChoiceOpen(true);
   };
 
@@ -309,7 +309,7 @@ export default function AccountMarketIntel() {
       }
       setWebsiteError(null);
       setChoiceOpen(false);
-      setEmailed(null);
+      setBgStarted(null);
       setSavedMissing(false);
       if (reportId) setSearchParams({}, { replace: true });
       setLoading(true);
@@ -328,31 +328,31 @@ export default function AccountMarketIntel() {
     [query, website, deepResearch, reportId, setSearchParams]
   );
 
-  // "Email me": the server runs the research and emails the signed-in person's own address.
-  const handleEmail = async () => {
+  // "Run in the background": the server runs the research; the report is saved for the signed-in person.
+  const handleBackground = async () => {
     const site = normalizeWebsite(website);
     if (site === null || !query.trim()) return;
-    setEmailBusy(true);
-    setEmailError(null);
+    setBgBusy(true);
+    setBgError(null);
     try {
-      const job = await startEmailedReport({ companyName: query.trim(), ...(site ? { companyWebsite: site } : {}), deepResearch });
+      const job = await startBackgroundReport({ companyName: query.trim(), ...(site ? { companyWebsite: site } : {}), deepResearch });
       setChoiceOpen(false);
       setResult(null);
       setError(null);
       setSavedMissing(false);
       if (reportId) setSearchParams({}, { replace: true });
-      setEmailed({ id: job.id, email: job.email, company: query.trim() });
+      setBgStarted({ id: job.id, company: query.trim() });
       listMyJobs().then(setJobs).catch(() => {});
     } catch (err) {
-      setEmailError(err instanceof Error ? err.message : "Could not start the emailed report. Try again.");
+      setBgError(err instanceof Error ? err.message : "Could not start the bgStarted report. Try again.");
     } finally {
-      setEmailBusy(false);
+      setBgBusy(false);
     }
   };
 
   // The signed-in address and the person's recent reports (refreshed while one is running).
   useEffect(() => {
-    getReportEmail().then(setReportEmail).catch(() => setReportEmail(null));
+    getSignedInToptalEmail().then(setToptalEmail).catch(() => setToptalEmail(null));
     listMyJobs().then(setJobs).catch(() => {});
   }, []);
   const anyRunning = jobs.some((j) => j.status === "running");
@@ -362,7 +362,7 @@ export default function AccountMarketIntel() {
     return () => clearInterval(t);
   }, [anyRunning]);
 
-  // A link from the email (?report=<id>) opens the saved report.
+  // A link with ?report=<id> opens the saved report.
   useEffect(() => {
     if (!reportId) return;
     let cancelled = false;
@@ -374,7 +374,7 @@ export default function AccountMarketIntel() {
         if (cancelled) return;
         if (saved) {
           setResult(saved);
-          setEmailed(null);
+          setBgStarted(null);
           setActiveSection("executive");
         } else {
           setResult(null);
@@ -532,7 +532,7 @@ export default function AccountMarketIntel() {
       </section>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        {/* Emailed report: confirmation, a saved report that cannot be opened, and the person's recent reports */}
+        {/* Background report: confirmation, a saved report that cannot be opened, and the person's recent reports */}
         {!loading && loadingSaved && (
           <div className="mx-auto mb-6 flex max-w-2xl items-center justify-center gap-2 rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground" role="status">
             <Loader2 className="h-4 w-4 animate-spin" /> Opening your saved report...
@@ -546,18 +546,18 @@ export default function AccountMarketIntel() {
             </p>
           </div>
         )}
-        {!loading && !result && emailed && (
-          <div className="mx-auto mb-6 max-w-2xl rounded-lg border-l-4 border-primary bg-card p-6 shadow" role="status" data-testid="emailed-confirmation">
+        {!loading && !result && bgStarted && (
+          <div className="mx-auto mb-6 max-w-2xl rounded-lg border-l-4 border-primary bg-card p-6 shadow" role="status" data-testid="bgStarted-confirmation">
             <p className="flex items-center gap-2 font-bold text-foreground">
-              <Mail className="h-5 w-5 text-primary" /> We will email you when it is ready
+              <Server className="h-5 w-5 text-primary" /> Running in the background
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              The research for <span className="font-medium text-foreground">{emailed.company}</span> is running. It takes about 5 to 7 minutes, and the email goes to{" "}
-              <span className="font-medium text-foreground">{emailed.email}</span>. You can close this page.
+              The research for <span className="font-medium text-foreground">{bgStarted.company}</span> takes about 5 to 7 minutes. You can close this page. Come back to
+              this page and open the report from <span className="font-medium text-foreground">Your recent reports</span> when it shows as finished.
             </p>
             <button
               type="button"
-              onClick={() => setEmailed(null)}
+              onClick={() => setBgStarted(null)}
               className="mt-3 text-sm font-medium text-primary hover:underline"
             >
               Start another report
@@ -600,7 +600,7 @@ export default function AccountMarketIntel() {
 
         <AnimatePresence mode="wait">
           {/* Empty State */}
-          {!result && !loading && !error && !emailed && !savedMissing && !loadingSaved && (
+          {!result && !loading && !error && !bgStarted && !savedMissing && !loadingSaved && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1551,11 +1551,11 @@ export default function AccountMarketIntel() {
         onOpenChange={setChoiceOpen}
         company={query.trim()}
         website={normalizeWebsite(website) || undefined}
-        email={reportEmail}
-        emailBusy={emailBusy}
-        emailError={emailError}
+        eligible={!!toptalEmail}
+        busy={bgBusy}
+        error={bgError}
         onWait={handleSearch}
-        onEmail={handleEmail}
+        onBackground={handleBackground}
       />
     </div>
     </SourcesProvider>

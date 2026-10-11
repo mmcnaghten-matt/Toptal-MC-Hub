@@ -284,6 +284,20 @@ r = await callResearch({ "x-job-secret": "", "x-job-user": "a@toptal.com", autho
 check("research refuses job calls when no secret is configured", r.status === 401, String(r.status));
 env.JOB_SECRET = saved;
 
+// ===== 9b. email is optional: without a mailer configured the report is simply saved =====
+reset();
+const savedUrl = env.APPS_SCRIPT_URL; env.APPS_SCRIPT_URL = "";
+let scriptHits = 0; const realFetch = globalThis.fetch;
+globalThis.fetch = async (u, i) => { if (String(u).startsWith(savedUrl)) scriptHits++; return realFetch(u, i); };
+rb = await start({ companyName: "Quiet Co" });
+const qid = (await rb.json()).id;
+await drive();
+await post({ action: "resume" }, internal);
+const qrow = db.client_insight_jobs.find((x) => x.id === qid);
+check("with no mailer configured the job finishes and the report is saved", qrow?.status === "done" && db.client_insight_reports.some((x) => x.job_id === qid));
+check("nothing is sent and nothing is retried", mails.length === 0 && scriptHits === 0 && !qrow.emailed_at, `${mails.length} ${scriptHits}`);
+globalThis.fetch = realFetch; env.APPS_SCRIPT_URL = savedUrl;
+
 // ===== 10. the committed function matches the source =====
 check("the committed client-insights-job is generated from the current pipeline source", readFileSync(new URL("../../../supabase/functions/client-insights-job/index.ts", import.meta.url), "utf8") === buildJobFunction(), "run: npm run build:job-function");
 

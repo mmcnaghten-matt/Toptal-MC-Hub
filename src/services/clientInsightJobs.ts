@@ -1,4 +1,4 @@
-// Emailed Client Insights reports: starting a server-side job, listing the person's own jobs, loading a saved report.
+// Background Client Insights reports: starting a server-side job, listing the person's own jobs, loading a saved report.
 // The research itself runs in the client-insights-job edge function; the browser only starts it and reads results
 // back through row-level security (a person can read only their own jobs and reports).
 import { supabase } from "@/integrations/supabase/client";
@@ -23,21 +23,21 @@ export interface ClientInsightJob {
 const tables = () => supabase as unknown as { from: (table: string) => any };
 
 /** The signed-in person's Toptal address, or null if there is none (not signed in, or not a toptal.com account). */
-export async function getReportEmail(): Promise<string | null> {
+export async function getSignedInToptalEmail(): Promise<string | null> {
   if (!supabase) return null;
   const { data } = await supabase.auth.getSession();
   const email = data.session?.user?.email ?? null;
   return isToptalEmail(email) ? email.toLowerCase() : null;
 }
 
-export async function startEmailedReport(input: { companyName: string; companyWebsite?: string; deepResearch: boolean }): Promise<{ id: string; email: string; expiresAt: string }> {
+export async function startBackgroundReport(input: { companyName: string; companyWebsite?: string; deepResearch: boolean }): Promise<{ id: string; email: string; expiresAt: string }> {
   if (!supabase) throw new Error("Backend not configured. This feature requires a published deployment with Lovable Cloud enabled.");
-  // Only the company, website and mode are sent. The recipient is never part of the request: the server takes it from the sign-in.
+  // Only the company, website and mode are sent. Who the report belongs to is never part of the request: the server takes it from the sign-in.
   const { data, error } = await supabase.functions.invoke("client-insights-job", { body: { action: "start", ...input } });
   if (error) {
     const res = (error as { context?: Response }).context;
     const detail = await res?.json?.().catch(() => null);
-    throw new Error(detail?.error || error.message || "Could not start the emailed report");
+    throw new Error(detail?.error || error.message || "Could not start the background report");
   }
   if (data?.error) throw new Error(data.error);
   return data;

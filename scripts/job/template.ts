@@ -13,11 +13,11 @@
 //   * A cron job calls `resume` every 2 minutes and restarts any job whose slice died.
 //
 // Routes (POST, JSON body with `action`):
-//   start   browser, signed-in user's token. Creates the job; the recipient is the token's own toptal.com address.
+//   start   browser, signed-in user's token. Creates the job for the token's own toptal.com address.
 //   run     internal (x-job-secret). Runs one slice of one job.
 //   resume  internal (x-job-secret), from cron. Restarts stalled jobs, retries unsent emails, purges expired rows.
 //
-// Secrets: JOB_SECRET, APPS_SCRIPT_URL, APPS_SCRIPT_SECRET, optional APP_URL. SUPABASE_URL, SUPABASE_ANON_KEY and
+// Secrets: JOB_SECRET. Optional email: APPS_SCRIPT_URL, APPS_SCRIPT_SECRET, APP_URL (without them nothing is emailed). SUPABASE_URL, SUPABASE_ANON_KEY and
 // SUPABASE_SERVICE_ROLE_KEY are provided by Supabase.
 
 type Any = any;
@@ -184,8 +184,11 @@ function jobFailedEmail(job: Any, reason: string) {
   };
 }
 
+// Email is optional: without APPS_SCRIPT_URL the report is simply saved and shown under "Your recent reports".
+const jobEmailEnabled = () => !!jobEnv("APPS_SCRIPT_URL");
+
 async function jobNotify(job: Any, mail: { subject: string; html: string }) {
-  if (job.emailed_at) return;
+  if (job.emailed_at || !jobEmailEnabled()) return;
   if (await jobSendEmail(job.email, mail.subject, mail.html)) {
     await jobPatch(job.id, { emailed_at: new Date().toISOString() }).catch(() => {});
   }
@@ -369,9 +372,9 @@ async function jobResume(): Promise<Response> {
     (await jobDb("GET", `client_insight_jobs?status=eq.running&updated_at=lt.${stalledBefore}&or=(lock_until.is.null,lock_until.lt.${lockBefore})&select=id&limit=20`)) ?? [];
   for (const j of stalled) await jobTriggerRun(j.id);
 
-  // Reports that finished but whose email was not accepted: try again for an hour.
+  // Reports that finished but whose email was not accepted: try again for an hour (only when email is set up).
   const hourAgo = new Date(now - 3_600_000).toISOString();
-  const unsent = (await jobDb("GET", `client_insight_jobs?status=in.(done,failed)&emailed_at=is.null&finished_at=gte.${hourAgo}&select=*&limit=20`)) ?? [];
+  const unsent = !jobEmailEnabled() ? [] : (await jobDb("GET", `client_insight_jobs?status=in.(done,failed)&emailed_at=is.null&finished_at=gte.${hourAgo}&select=*&limit=20`)) ?? [];
   for (const j of unsent) {
     await jobNotify(j, j.status === "done" ? jobReadyEmail(j) : jobFailedEmail(j, j.error || "The research could not be completed."));
   }
