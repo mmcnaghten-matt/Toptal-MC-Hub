@@ -862,22 +862,9 @@ export default function AccountMarketIntel() {
                         ))}
                       </ul>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="p-5 bg-secondary/30 rounded-lg border border-border md:col-span-1">
-                        <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Competitive Positioning</h4>
-                        <span className="text-xl font-bold text-foreground">
-                          {result.executiveSummary.competitivePositioning}
-                        </span>
-                        {!isEmptyText(result.executiveSummary.positioningRationale) && (
-                          <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                            <Rich>{result.executiveSummary.positioningRationale}</Rich>
-                          </p>
-                        )}
-                      </div>
-                      <div className="p-5 bg-primary text-primary-foreground rounded-lg shadow-lg md:col-span-2">
-                        <h4 className="text-xs font-bold text-primary-foreground/70 uppercase tracking-widest mb-3">The Big Opportunity</h4>
-                        <p className="text-sm font-bold leading-relaxed"><Rich>{result.executiveSummary.bigOpportunity}</Rich></p>
-                      </div>
+                    <div className="p-5 bg-primary text-primary-foreground rounded-lg shadow-lg">
+                      <h4 className="text-xs font-bold text-primary-foreground/70 uppercase tracking-widest mb-3">The Big Opportunity</h4>
+                      <p className="text-sm font-bold leading-relaxed"><Rich>{result.executiveSummary.bigOpportunity}</Rich></p>
                     </div>
                   </div>
                 </section>
