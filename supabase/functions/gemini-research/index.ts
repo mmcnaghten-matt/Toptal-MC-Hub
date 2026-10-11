@@ -458,6 +458,26 @@ const entityBlock = (e: Entity) =>
     ? `\nSOLD OR DISCONTINUED (no longer part of the company; never present these as current businesses or markets it serves): ${e.divested.map((x) => `${x.name}${x.date ? ` (${x.date})` : ""}${(x.terms?.length ?? 0) > 1 ? `, including ${(x.terms ?? []).slice(1, 6).join(", ")}` : ""}`).join("; ")}`
     : "");
 
+// The executive summary never opens empty: when no analysed summary survives the checks, it opens with a plain description of the
+// company from the verified entity (what it does, where it is based, who owns it, its CURRENT business lines). Sold or discontinued
+// businesses are never listed. It cites the grounded profile evidence so the sources list works as usual.
+const known = (v: unknown): v is string => typeof v === "string" && v.trim() !== "" && v.trim().toUpperCase() !== "UNKNOWN";
+function companyProfileItem(e: Entity, evidence: Evidence[]): Item | null {
+  if (!known(e.name) || !known(e.description)) return null;
+  const sentence = (t: string) => t.trim().replace(/\s+/g, " ").replace(/[.\s]*$/, ".");
+  const parts = [sentence(e.description)];
+  if (known(e.headquarters)) parts.push(`Headquarters: ${sentence(e.headquarters)}`);
+  if (known(e.ownership)) parts.push(`Ownership: ${sentence(e.ownership)}`);
+  const lines = (e.segments ?? []).map((x) => x.name).filter(known).slice(0, 8);
+  if (lines.length) parts.push(`Current business lines: ${lines.join(", ")}.`);
+  const basis = evidence
+    .filter((x) => x.topic === "profile" || x.topic === "segments")
+    .sort((a, b) => Number(!!a.flags?.length) - Number(!!b.flags?.length) || (a.tier ?? 3) - (b.tier ?? 3) || a.id - b.id)
+    .slice(0, 3)
+    .map((x) => x.id);
+  return { text: parts.join(" ").slice(0, 700), basedOn: basis };
+}
+
 const researchPrompt = (ask: string, e: Entity, today: string) => `Today is ${today}.
 ${entityBlock(e)}
 Every fact must be about this exact company, not a similarly named organisation.
@@ -3405,17 +3425,22 @@ async function dropContradictions(apiKey: string, ctx: Ctx, timeoutMs: number): 
   const items = ctx.items.filter((x) => !x.item.rejected).slice(0, 160);
   if (items.length < 4) return [];
   const prompt = `Below are numbered statements from one report. List every PAIR that contradicts each other on a specific fact (a number, rating, date, ranking or yes/no fact about the same thing). Do NOT list pairs that differ only because one adds a condition, scope or qualifier (for example standard versus enhanced installation, one region versus another, one period versus another), or that are about different things.
+Two statements that say the same thing in different words are NOT a contradiction: a restatement or duplicate, a paraphrase (for example "flat" versus "in line with the prior year", "about $10 billion" versus "$10.1 billion"), or a summary that repeats a figure given in another statement. Only list a pair when the two give DIFFERENT values for the same measure; give both values in valueA and valueB, and set kind to "conflict". If a pair only restates the same fact, set kind to "restatement".
 
 ${items.map((x, i) => `${i}. ${x.item.text}`).join("\n")}
 
-Return one {"a", "b", "reason"} per contradicting pair; an empty list if there are none.`;
-  const schema = arr(obj({ a: { type: "INTEGER" }, b: { type: "INTEGER" }, reason: STR }));
+Return one {"a", "b", "kind", "valueA", "valueB", "reason"} per pair; an empty list if there are none.`;
+  const schema = arr(obj({ a: { type: "INTEGER" }, b: { type: "INTEGER" }, kind: { type: "STRING", format: "enum", enum: ["conflict", "restatement"] }, valueA: STR, valueB: STR, reason: STR }));
   const r = await callGemini(apiKey, { model: FLASH_MODEL, prompt, schema, timeoutMs, temperature: 0, thinkingBudget: 0, attempts: 1 });
   const weakness = (it: Item) => Math.max(...it.basedOn.map((id) => ctx.byId.get(id)?.tier ?? 3), 0);
   const out: Contradiction[] = [];
   for (const pair of list(safeJson(r.text)).slice(0, 12)) {
     const a = items[Number(pair?.a)], b = items[Number(pair?.b)];
     if (!a || !b || a === b || a.item.rejected || b.item.rejected) continue;
+    // Only a real conflict removes anything: a restatement, or two "different" values that are the same once case and punctuation are ignored, does not.
+    if (pair?.kind !== "conflict") continue;
+    const norm = (v: unknown) => String(v ?? "").toLowerCase().replace(/[^a-z0-9%.]+/g, "").replace(/^\.+|\.+$/g, "");
+    if (!norm(pair?.valueA) || !norm(pair?.valueB) || norm(pair?.valueA) === norm(pair?.valueB)) continue;
     // Higher tier number = weaker; then fewer cited facts; then the later statement.
     const aWeaker = weakness(a.item) !== weakness(b.item) ? weakness(a.item) > weakness(b.item) : a.item.basedOn.length !== b.item.basedOn.length ? a.item.basedOn.length < b.item.basedOn.length : items.indexOf(a) > items.indexOf(b);
     const [keep, lose] = aWeaker ? [b, a] : [a, b];
@@ -3496,6 +3521,16 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
 
   const placeholders: Placeholders = { facts: NF, core: NF, recs: rawRecs ? NF : NOT_GENERATED };
   const cov = sectionCoverage(facts, analysis, mc);
+  // Whatever removed the summary (a validator, the verifier, the consistency check, a failed analysis step), the report still opens with the profile.
+  let summaryFallback = false;
+  if (!analysis.executiveSummary.tldr) {
+    const profile = companyProfileItem(state.entity, state.evidence);
+    if (profile) {
+      analysis.executiveSummary.tldr = profile;
+      summaryFallback = true;
+      warnings.push("The executive summary could not be written from the evidence; a company profile is shown instead.");
+    }
+  }
   const sourcedClaims = parts.reduce((n, p) => n + (Number(p?.sourcedClaims) || 0), 0);
   const verifiers = parts.map((p) => (typeof p?.verifier === "string" ? `${p.section}: ${p.verifier}` : "")).filter(Boolean);
   const scanLog = list(body?.scanLog).slice(0, 40).map((x) => ({
@@ -3533,6 +3568,7 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
       dropped,
       verifier: [...verifiers, `analysis: ${analysisVerifier}`].join("; "),
       warnings,
+      executiveSummaryFallback: summaryFallback,
       searchQueries: state.queries,
       models: { research: FLASH_MODEL, facts: FLASH_MODEL, analysis: deepResearch ? `${PRO_MODEL} (falls back to ${FLASH_MODEL})` : FLASH_MODEL },
     },
