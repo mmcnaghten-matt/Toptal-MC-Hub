@@ -845,6 +845,11 @@ export default function AccountMarketIntel() {
                   <div className="p-8 space-y-8">
                     <div className="prose prose-neutral max-w-none text-foreground leading-relaxed">
                       <Markdown>{result.executiveSummary.tldr}</Markdown>
+                      {result.quality?.executiveSummaryFallback && (
+                        <p className="mt-2 text-xs italic text-muted-foreground" data-testid="summary-fallback-note">
+                          Company profile. An analysed summary could not be supported by the sources.
+                        </p>
+                      )}
                     </div>
                     <div className="p-5 bg-secondary/30 rounded-lg border border-border">
                       <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-3">Key Market Trends</h4>

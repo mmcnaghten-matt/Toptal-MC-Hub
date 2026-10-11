@@ -147,6 +147,8 @@ export interface ResearchResult {
     evidenceCount?: number;
     sourceCount?: number;
     sectionsOk?: Record<string, boolean>;
+    /** The executive summary could not be written from the evidence: it opens with a company profile instead. */
+    executiveSummaryFallback?: boolean;
     verifier?: string;
   };
 }
