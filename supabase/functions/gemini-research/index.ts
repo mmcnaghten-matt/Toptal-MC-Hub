@@ -743,8 +743,14 @@ function buildLedger(
       const key = normUrl(url);
       let id = srcIndex.get(key);
       if (!id) {
-        id = sources.length + 1;
         const kinds = sourceKinds(url, c.web?.title, companyRoot, topic.startsWith("competitor:") ? topic.slice(11) : companyName);
+        // A look-alike domain (the brand's name on a site that is not the brand's) is usually a seller or SEO site posing as the
+        // company; nothing is cited from it.
+        if (kinds.includes("lookalike")) {
+          excludedChunks.add(ci);
+          return null;
+        }
+        id = sources.length + 1;
         sources.push({ id, title: plainTitle(c.web?.title ?? "") || new URL(url).host, url, tier, ...(kinds.length ? { kinds } : {}) });
         tierOfSource.set(id, tier);
         kindsOfSource.set(id, kinds);
@@ -2190,7 +2196,9 @@ async function v2VerifyEvidence(apiKey: string, body: Any, clock: ReturnType<typ
     const re = new RegExp(`\\b(?:${footprint.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/s$/, "")).join("|")})s?\\b`, "i");
     const SALE_RE = /\b(sold|sale|sell|selling|divest\w*|spin[- ]?off|spun off|agreed to sell|completed the sale|buyer|acquired by|transferred to|exited?)\b/i;
     for (const e of todo) {
-      if (drop.has(e.id) || e.topic === "segments" || e.topic.startsWith("competitor:")) continue;
+      // The segments research is included: it is where "the glass reinforcements business had about 4,000 employees" would come from.
+      // Only statements about the sale itself (sold, divested, buyer ...) are kept.
+      if (drop.has(e.id) || e.topic.startsWith("competitor:")) continue;
       if (re.test(e.text) && !SALE_RE.test(e.text)) drop.set(e.id, "refers to a business the company has sold");
     }
   }
