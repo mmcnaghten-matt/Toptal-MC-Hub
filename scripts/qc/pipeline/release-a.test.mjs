@@ -92,7 +92,7 @@ globalThis.fetch = async (url, init) => {
   }
   if (prompt.includes("SEGMENT: <segment name>")) {
     if (F.noSegments) return gem("NOT FOUND", metaOf([["Owens Corning reports segments.", "www.sec.gov"]]));
-    return gem("SEGMENT: Roofing | asphalt shingles\nSEGMENT: Insulation | building insulation\nSEGMENT: Doors | Masonite interior and exterior doors\nDIVESTED: Glass Reinforcements | April 2026", metaOf([["Owens Corning reports Roofing, Insulation and Doors segments.", "www.sec.gov"], ["Owens Corning sold its glass reinforcements business in April 2026.", "www.businesswire.com"]]));
+    return gem("SEGMENT: Roofing | asphalt shingles\nSEGMENT: Insulation | building insulation\nSEGMENT: Doors | Masonite interior and exterior doors\nDIVESTED: Glass Reinforcements | April 2026", metaOf([["Owens Corning reports Roofing, Insulation and Doors segments.", "www.sec.gov"], ["Owens Corning sold its glass reinforcements business in April 2026.", "www.businesswire.com"], ["The glass reinforcements business had about 4,000 employees in 2024, according to its Form 10-K.", "www.sec.gov"]]));
   }
   if (prompt.includes("RESEARCH TASK: Profile ")) {
     const name = prompt.match(/RESEARCH TASK: Profile (.+?) using/)[1];
@@ -137,7 +137,7 @@ globalThis.fetch = async (url, init) => {
           cl("Owens Corning had total revenue of $9.9 billion in 2025.", "total revenue of $9.9 billion"),
           cl("Owens Corning reported second-quarter 2026 adjusted EBITDA of $660 million on revenue of $2.8 billion.", "adjusted EBITDA of $660"),
         ],
-        recentMetrics: [cl("Owens Corning employed about 25,000 people in 2025.", "employed about 25,000")],
+        recentMetrics: [cl("Owens Corning employed about 25,000 people in 2025.", "employed about 25,000"), cl("The glass reinforcements business had about 4,000 employees in 2024.", "about 4,000 employees")],
       } }));
     }
     if (prompt.includes("6. strategicInitiatives")) {
@@ -229,6 +229,7 @@ check("public company: Reuters-only financial claim dropped", dropped.some((d) =
 check("T1 adjusted EBITDA claim kept", /660 million/.test(rep.businessPerformance.financialHighlights), rep.businessPerformance.financialHighlights);
 check("SWOT financial statement resting on a T2 source dropped for a public company", dropped.some((d) => d.startsWith("swot.weaknesses") && /financial statement needs a primary source/.test(d)), dropped.join(" | "));
 check("analysis prompt carries the acquisition/adjusted-basis rules", /2b\. Financial interpretation/.test(seen.corePrompt) && /acquisition or divestiture/.test(seen.corePrompt));
+check("evidence about a sold business (its headcount) is dropped even when it comes from the segments research", !/4,000 employees/.test(JSON.stringify({ ...rep, quality: undefined, claims: undefined })) && rep.quality.dateChecks.dropped.some((d) => /refers to a business the company has sold/.test(d.reason) && /4,000 employees/.test(d.text)), JSON.stringify(rep.quality.dateChecks.dropped.map((d) => d.reason + ": " + d.text.slice(0, 60))));
 check("entities and non-breaking spaces cleaned in evidence", !/&#174;|&nbsp;/.test(JSON.stringify(rep)) && /employed about 25,000 people in 2025/.test(rep.businessPerformance.recentMetrics.join(" ")), rep.businessPerformance.recentMetrics.join(" "));
 
 // A2 competitors
@@ -269,7 +270,7 @@ console.log("   sources:", srcTitles);
 check("source titles are plain ASCII punctuation, entities decoded", !/[–—“”]|&[a-z#0-9]+;/.test(srcTitles) && /Owens Corning "10-K" & results - 2025/.test(srcTitles), srcTitles);
 check("bot-check source ('Human verification') removed and not cited", !rep.sources.some((s) => /consumerreports/.test(s.url)) && !/Human verification/.test(srcTitles));
 check("citations stay consecutive after removal", (() => { const nums = [...JSON.stringify(rep.businessPerformance).matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])); return nums.every((n) => n >= 1 && n <= rep.sources.length); })());
-check("look-alike domain flagged in the research log", (q.sourceFlags ?? []).some((f) => /owenscorningroofing-pros/.test(f.url) && f.flags.includes("lookalike")), JSON.stringify(q.sourceFlags));
+check("a look-alike domain (the brand's name on a site that is not the brand's) is never cited, and counts as a blocked hit", !rep.sources.some((x) => /owenscorningroofing-pros/.test(x.url)) && !(q.sourceFlags ?? []).some((f) => (f.flags ?? []).includes("lookalike")) && !/Duration Flex/.test(JSON.stringify({ ...rep, quality: undefined, claims: undefined })) && q.methodStats.blockedSourceHits >= 1, JSON.stringify({ s: rep.sources.map((x) => x.url), f: q.sourceFlags, b: q.methodStats.blockedSourceHits }));
 check("bot-check evidence is removed in the date check and logged", q.dateChecks.dropped.some((d) => /bot-check page/.test(d.reason)), JSON.stringify(q.dateChecks.dropped.map((d) => d.reason)));
 
 // ---------- B: complaints come back empty -> one-sided ----------
