@@ -834,10 +834,6 @@ const ANALYSIS_SCHEMA = obj({
   executiveSummary: obj({
     tldr: OPT_ITEM,
     keyTrends: arr(ITEM),
-    // The label is derived in code from explicit market ranks, so the same evidence always gives the same label.
-    competitivePositioning: obj({
-      segmentRanks: arr(obj({ segment: STR, rank: { type: "INTEGER" }, basis: STR, basedOn: INTS })),
-    }),
     bigOpportunity: OPT_ITEM,
   }),
   performanceSummary: arr(ITEM),
@@ -926,9 +922,8 @@ Rules:
   if (part === "core") {
     return `${head}
 3. executiveSummary.tldr: 3-4 sentences for leadership on the company's position, recent performance and priorities.
-4. competitivePositioning.segmentRanks: ONLY where the evidence explicitly states the company's market rank in a segment ("largest", "second-largest", "number one in ...", "#3"). One entry per segment: segment (the exact current segment name), rank (1 = largest or number one, 2 = second-largest, 3 = third...), basis (the evidence's statement of that rank, restated in one sentence), basedOn. Never infer a rank from revenue size, share figures or adjectives such as "strong" or "leading player". An empty list is correct when the evidence states no rank.
-5. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.
-6. performanceSummary: 2-3 short paragraphs (at most 130 words in total), each its own array item with basedOn. Paragraph 1: scale and growth (revenue and revenue growth, with fiscal period). Paragraph 2: profitability (net income or margins). Paragraph 3: valuation and funding (market capitalization, valuation, funding). Weave in one clause on what this implies for the company's position. Write flowing prose, not a list, and omit a paragraph the evidence cannot support. Use only figures present in the cited evidence, with their periods; never compute totals or ratios.`;
+4. competitorGaps: one per competitor named in the evidence, contrasting it with ${e.name} on evidenced differences only.
+5. performanceSummary: 2-3 short paragraphs (at most 130 words in total), each its own array item with basedOn. Paragraph 1: scale and growth (revenue and revenue growth, with fiscal period). Paragraph 2: profitability (net income or margins). Paragraph 3: valuation and funding (market capitalization, valuation, funding). Weave in one clause on what this implies for the company's position. Write flowing prose, not a list, and omit a paragraph the evidence cannot support. Use only figures present in the cited evidence, with their periods; never compute totals or ratios.`;
   }
   if (part === "frameworks") {
     return `${head}
@@ -1531,40 +1526,6 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
   const one = (x: unknown, p: string) => checkItem(x, p, ctx);
   const many = (x: unknown, p: string) => list(x).map((it, i) => one(it, `${p}[${i}]`)).filter((it): it is Item => !!it);
   const es = a.executiveSummary ?? {};
-  const pos = es.competitivePositioning ?? {};
-  // Positioning comes only from explicit rank evidence: #1 Leader, #2-3 Challenger, otherwise Niche, for the company's largest
-  // ranked segment. The cited basis of that rank is the rationale.
-  const RANK_WORDS: [(r: number) => boolean, RegExp][] = [
-    [(r) => r === 1, /(?<!(?:second|third|fourth|fifth)[- ])\b(?:largest|biggest)\b|\b(?:number one|no\.? ?1|#\s?1|market leader)\b/i],
-    [(r) => r === 2, /\b(second|number two|no\.? ?2|#\s?2)\b/i],
-    [(r) => r === 3, /\b(third|number three|no\.? ?3|#\s?3)\b/i],
-    [(r) => r >= 4, /\b(fourth|fifth|sixth|seventh|no\.? ?\d+|#\s?\d+)\b/i],
-  ];
-  const segDefs = ctx.entity?.segments ?? [];
-  const ranks = list(pos.segmentRanks).flatMap((r, i) => {
-    const path = `executiveSummary.competitivePositioning.segmentRanks[${i}]`;
-    const rank = Number(r?.rank);
-    const item = checkItem({ text: r?.basis, basedOn: r?.basedOn }, path, ctx);
-    if (!item) return [];
-    // A rank is a claim about market position: stock-data and blog pages cannot carry it.
-    if (!item.basedOn.some((id) => (ctx.byId.get(id)?.tier ?? 3) <= 2)) {
-      ctx.dropped.push({ path, reason: "rank needs a primary or major-press source", text: item.text });
-      ctx.items = ctx.items.filter((x) => x.item !== item);
-      return [];
-    }
-    if (!Number.isInteger(rank) || rank < 1 || rank > 20 || !RANK_WORDS.some(([ok, re]) => ok(rank) && re.test(item.text))) {
-      ctx.dropped.push({ path, reason: "rank not stated in the cited evidence", text: item.text });
-      ctx.items = ctx.items.filter((x) => x.item !== item);
-      return [];
-    }
-    const sg = segDefs.find((x) => typeof r?.segment === "string" && sameSegment(r.segment, [x.name]));
-    return [{ segment: sg ? capFirst(sg.name) : String(r?.segment ?? "").trim(), revenue: sg?.revenue ?? 0, rank, item }];
-  });
-  // Largest ranked segment by revenue; without revenue figures, the best rank.
-  const primary: (typeof ranks)[number] | undefined = [...ranks].sort((x, y) => y.revenue - x.revenue || x.rank - y.rank)[0];
-  const rationale: Item | null = primary ? primary.item : null;
-  const tier = !primary ? "Insufficient evidence" : primary.rank === 1 ? "Leader" : primary.rank <= 3 ? "Challenger" : "Niche";
-  const label: string = primary && primary.segment ? `${tier} in ${primary.segment}` : tier;
   const pf = a.portersFiveForces ?? {};
   const pe = a.pestle ?? {};
   const sw = a.swot ?? {};
@@ -1574,7 +1535,6 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
     executiveSummary: {
       tldr: one(es.tldr, "executiveSummary.tldr"),
       keyTrends: many(es.keyTrends, "executiveSummary.keyTrends"),
-      competitivePositioning: { label, rationale, ranks: ranks.map((x) => ({ segment: x.segment, rank: x.rank, basis: x.item.text })) },
       bigOpportunity: one(es.bigOpportunity, "executiveSummary.bigOpportunity"),
     },
     performanceSummary: many(a.performanceSummary, "performanceSummary").slice(0, 3),
@@ -1739,8 +1699,6 @@ function applyRejections(a: Analysis): void {
   es.tldr = keep(es.tldr);
   es.bigOpportunity = keep(es.bigOpportunity);
   es.keyTrends = keepAll(es.keyTrends);
-  es.competitivePositioning.rationale = keep(es.competitivePositioning.rationale);
-  if (!es.competitivePositioning.rationale) es.competitivePositioning.label = "Insufficient evidence";
   a.performanceSummary = keepAll(a.performanceSummary);
   a.competitorGaps = a.competitorGaps.filter((g) => !g.rejected);
   for (const k of ["strengths", "weaknesses", "opportunities", "threats"] as const) a.swot[k] = keepAll(a.swot[k]);
@@ -2323,8 +2281,6 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
     executiveSummary: {
       tldr: fi(a.executiveSummary.tldr),
       keyTrends: fis(a.executiveSummary.keyTrends),
-      competitivePositioning: a.executiveSummary.competitivePositioning.label,
-      positioningRationale: fi(a.executiveSummary.competitivePositioning.rationale, ""),
       bigOpportunity: fi(a.executiveSummary.bigOpportunity),
     },
     businessPerformance: {
