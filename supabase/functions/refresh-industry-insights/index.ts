@@ -67,6 +67,52 @@ const VALID_OFFERS: string[] = CATALOG.map(offerKey);
 const VALID_SET = new Set(VALID_OFFERS);
 const L2_ORDER = [...new Set(CATALOG.map((c) => c.l2))];
 
+// The storefront's client agendas: three per MC service area. A need is placed under one agenda (and so one area).
+// `l2` is the area's name in the CATALOG; `areaId` is the id the app groups by (src/data/mcStorefront.ts holds the same list;
+// scripts/qc/pipeline/industry.test.mjs fails if the two differ).
+const AGENDAS: { id: string; areaId: string; l2: string; label: string }[] = [
+  { id: "ai-into-pl-value", areaId: "strategy", l2: "Strategy & Transformation", label: "Turn AI into P&L value" },
+  { id: "ai-first-operating-model", areaId: "strategy", l2: "Strategy & Transformation", label: "Build an AI-first operating model" },
+  { id: "portfolio-through-ma", areaId: "strategy", l2: "Strategy & Transformation", label: "Reshape the portfolio through M&A" },
+  { id: "modernize-finance", areaId: "finance", l2: "Finance", label: "Modernize finance with AI and automation" },
+  { id: "plan-forecast-ai", areaId: "finance", l2: "Finance", label: "Plan and forecast with AI" },
+  { id: "cost-margin-cash", areaId: "finance", l2: "Finance", label: "Improve cost, margin and cash" },
+  { id: "reshape-work-skills", areaId: "people", l2: "People & Organization", label: "Reshape work and skills for AI" },
+  { id: "ai-era-organization", areaId: "people", l2: "People & Organization", label: "Design the AI-era organization" },
+  { id: "leaders-and-change", areaId: "people", l2: "People & Organization", label: "Build leaders and lead change" },
+  { id: "modernize-planning", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Modernize planning with AI and automation" },
+  { id: "resilient-sourcing-footprint", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Build resilient sourcing and footprint" },
+  { id: "cut-procurement-ops-cost", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Cut procurement and operations cost" },
+  { id: "modernize-customer-service", areaId: "customer-growth", l2: "Customer & Growth", label: "Modernize customer service with AI" },
+  { id: "pricing-commercial-excellence", areaId: "customer-growth", l2: "Customer & Growth", label: "Sharpen pricing and commercial excellence" },
+  { id: "marketing-sales-effectiveness", areaId: "customer-growth", l2: "Customer & Growth", label: "Lift marketing and sales effectiveness" },
+  { id: "govern-ai-regulation", areaId: "risk", l2: "Risk & Compliance", label: "Govern AI and meet new regulation" },
+  { id: "modernize-risk-compliance", areaId: "risk", l2: "Risk & Compliance", label: "Modernize risk and compliance with AI and automation" },
+  { id: "third-party-operational-resilience", areaId: "risk", l2: "Risk & Compliance", label: "Strengthen third-party and operational resilience" },
+];
+const AGENDA_BY_ID = new Map(AGENDAS.map((a) => [a.id, a]));
+const AREA_ID_BY_L2 = new Map(AGENDAS.map((a) => [a.l2, a.areaId]));
+const NO_AGENDA = "none";
+const AGENDA_PROMPT = L2_ORDER.map(
+  (l2) => `${l2.toUpperCase()}\n` + AGENDAS.filter((a) => a.l2 === l2).map((a) => `- ${a.id}: ${a.label}`).join("\n"),
+).join("\n\n");
+
+/**
+ * Where a need sits: the agenda picked by the model (checked against the list), the service area that follows from it, and the
+ * offerings with one from that area first. An agenda none of the offerings fits is dropped and the need keeps the area of its
+ * first offering. The area is always derived in code, never taken from the model.
+ */
+function placeNeed(offers: string[], agendaId: unknown): { mcOffers: string[]; agenda?: string; area?: string } {
+  const agenda = typeof agendaId === "string" ? AGENDA_BY_ID.get(agendaId) : undefined;
+  const l2Of = (o: string) => o.split(" > ")[0];
+  if (agenda) {
+    const inArea = offers.filter((o) => l2Of(o) === agenda.l2);
+    if (inArea.length) return { mcOffers: [inArea[0], ...offers.filter((o) => o !== inArea[0])], agenda: agenda.id, area: agenda.areaId };
+  }
+  const area = AREA_ID_BY_L2.get(l2Of(offers[0] ?? ""));
+  return { mcOffers: offers, ...(area ? { area } : {}) };
+}
+
 // Catalog as shown to the model: grouped by L2, each exact offer string followed by its
 // description so the model matches on meaning, not just on the name.
 const CATALOG_PROMPT = L2_ORDER.map(
@@ -1005,6 +1051,7 @@ ${initiatives.map((c, i) => `I${i + 1}. ${c}`).join("\n") || "(none)"}
 const OFFERS_SCHEMA = obj({
   rows: arr(obj({
     index: { type: "INTEGER" },
+    agenda: { type: "STRING", format: "enum", enum: [...AGENDAS.map((a) => a.id), NO_AGENDA] },
     mcOffers: { type: "ARRAY", items: { type: "STRING", format: "enum", enum: VALID_OFFERS } },
     offerNarrative: STR,
   })),
@@ -1018,9 +1065,13 @@ async function v2Offers(apiKey: string, body: Any, clock: ReturnType<typeof make
   }));
   if (!needs.length) return json({ ok: true, offers: [], warnings: [] });
   const warnings: string[] = [];
-  const result: Record<number, { mcOffers: string[]; offerNarrative: string }> = {};
+  const result: Record<number, { mcOffers: string[]; offerNarrative: string; agenda?: string; area?: string }> = {};
   const ask = async (indexes: number[]) => {
-    const prompt = `For each numbered client need below, choose the Toptal Management Consulting offerings that address it, and write one short sentence on how they help.
+    const prompt = `For each numbered client need below, choose the client agenda it belongs to, then the Toptal Management Consulting offerings that address it, and write one short sentence on how they help.
+
+CLIENT AGENDAS (three per MC practice): the priorities clients bring to us. Choose the ONE agenda the need falls under most directly, using its id exactly as written. Use "${NO_AGENDA}" only when the need fits none of the 18.
+
+${AGENDA_PROMPT}
 
 MC SERVICE OFFERING CATALOG
 Offerings are listed as "Practice > Offering": description. Use the quoted string EXACTLY as written (including the "Practice > " prefix) in mcOffers.
@@ -1028,6 +1079,7 @@ Offerings are listed as "Practice > Offering": description. Use the quoted strin
 ${CATALOG_PROMPT}
 
 Matching rules:
+- Choose the agenda first, then the offerings. List first an offering from the agenda's own practice (the practice named above the agenda). Further offerings may come from other practices when the need clearly spans them.
 - Select the offerings whose DESCRIPTION most directly covers the need. Do not choose on name alone.
 - Choose 1-3 offerings per need. Prefer the most specific offering over a generic one.
 - "Change Management" and "Program & Portfolio Management" appear under every practice. Use them only as a secondary add-on to a more specific offering (at most one such generic offering per need), under the practice that fits the need.
@@ -1039,10 +1091,10 @@ ${indexes.map((i) => `${i}. ${needs[i].name} | signals: ${needs[i].signals.join(
     for (const row of list(safeJson(r.text)?.rows)) {
       const i = Number(row?.index);
       if (!indexes.includes(i)) continue;
-      const mcOffers = [...new Set(list(row?.mcOffers).filter((o) => VALID_SET.has(o)))].slice(0, MAX_OFFERS_PER_NEED);
-      if (!mcOffers.length) continue;
+      const picked = [...new Set(list(row?.mcOffers).filter((o) => VALID_SET.has(o)))].slice(0, MAX_OFFERS_PER_NEED);
+      if (!picked.length) continue;
       const narr = typeof row?.offerNarrative === "string" ? row.offerNarrative.trim() : "";
-      result[i] = { mcOffers, offerNarrative: /\d/.test(narr) ? "" : narr.replace(/\b[A-Z][A-Za-z &]+ > /g, "") };
+      result[i] = { ...placeNeed(picked, row?.agenda), offerNarrative: /\d/.test(narr) ? "" : narr.replace(/\b[A-Z][A-Za-z &]+ > /g, "") };
     }
   };
   try {
@@ -1287,13 +1339,15 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
   let needs = list(body?.needs).slice(0, 10).flatMap((n, i) => {
     const need = checkNeed(n, `needs[${i}]`, byId, dropped, reg);
     const o = offers[i];
-    const mcOffers = [...new Set(list(o?.mcOffers).filter((x) => VALID_SET.has(x)))].slice(0, MAX_OFFERS_PER_NEED);
+    const valid = [...new Set(list(o?.mcOffers).filter((x) => VALID_SET.has(x)))].slice(0, MAX_OFFERS_PER_NEED);
     if (!need) return [];
-    if (!mcOffers.length) {
+    if (!valid.length) {
       dropped.push({ path: `needs[${i}]`, reason: "no valid catalog offer", text: need.name });
       return [];
     }
-    return [{ ...need, mcOffers, offerNarrative: typeof o?.offerNarrative === "string" ? o.offerNarrative.trim() : "" }];
+    // The page is not trusted for the placement either: the agenda is checked again and the area derived from it.
+    const placed = placeNeed(valid, o?.agenda);
+    return [{ ...need, ...placed, offerNarrative: typeof o?.offerNarrative === "string" ? o.offerNarrative.trim() : "" }];
   });
 
   // Statements were already verified in the synth parts (and rewritten once if a figure was the only problem);
@@ -1336,6 +1390,8 @@ async function v2Report(apiKey: string, body: Any, clock: ReturnType<typeof make
     initiatives: initiatives.map(fmt),
     needs: needs.map((n) => ({
       name: n.name,
+      ...(n.agenda ? { agenda: n.agenda } : {}),
+      ...(n.area ? { area: n.area } : {}),
       signals: n.signals,
       mcOffers: n.mcOffers,
       narrative: `${n.narrative}${cite(n.basedOn)}${n.offerNarrative ? " " + n.offerNarrative : ""}`,

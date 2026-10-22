@@ -17,6 +17,7 @@ const metaOf = (items) => {
   };
 };
 const F = {};
+const seen = {};
 
 const SEG = {
   market: [
@@ -116,7 +117,15 @@ globalThis.fetch = async (url, init) => {
   }
   if (prompt.includes("For each numbered client need")) {
     const idx = [...prompt.matchAll(/^(\d+)\. /gm)].map((m) => Number(m[1]));
-    return gem(JSON.stringify({ rows: idx.map((i) => ({ index: i, mcOffers: ["Finance > Finance Strategy"], offerNarrative: "" })) }));
+    seen.offersPrompt = prompt;
+    // The model answers with an agenda; "area: risk" is a field the model is not asked for and must be ignored.
+    const row = (i) =>
+      F.agendaMismatch ? { index: i, agenda: "govern-ai-regulation", mcOffers: ["Finance > Finance Strategy", "Risk & Compliance > Risk AI"] }
+      : F.agendaNoFit ? { index: i, agenda: "govern-ai-regulation", mcOffers: ["Finance > Finance Strategy"] }
+      : F.agendaInvalid ? { index: i, agenda: "made-up-agenda", mcOffers: ["Finance > Finance Strategy"] }
+      : F.agendaNone ? { index: i, agenda: "none", mcOffers: ["Finance > Finance Strategy"] }
+      : { index: i, agenda: "modernize-finance", area: "risk", mcOffers: ["Finance > Finance Strategy"] };
+    return gem(JSON.stringify({ rows: idx.map((i) => ({ ...row(i), offerNarrative: "" })) }));
   }
   if (prompt.includes("For each numbered CLAIM")) {
     const n = [...prompt.matchAll(/^CLAIM (\d+):/gm)].length;
@@ -167,6 +176,38 @@ check("the Checking dates chip finished", last.find((c) => c.label === "Checking
 
 const failed = await run({ verifyFails: true });
 check("if the date check cannot run, the refresh still completes with a warning", failed.rep.quality.warnings.some((w) => /Date check could not run/.test(w)) && failed.rep.initiatives.length >= 1 && failed.last.find((c) => c.label === "Checking dates")?.status === "failed", failed.rep.quality.warnings.join(" | "));
+
+// ---- needs are placed under one of the 18 client agendas (storefront), with the area derived in code ----
+check("the offers step asks the model to choose one of the 18 agendas and lists them", /CLIENT AGENDAS/.test(seen.offersPrompt ?? "") && (seen.offersPrompt.match(/^- [a-z-]+: /gm) ?? []).length === 18 + 0 && /modernize-finance: Modernize finance with AI and automation/.test(seen.offersPrompt), (seen.offersPrompt ?? "").slice(0, 300));
+check("every need carries its agenda, and the area follows from the agenda (a model-supplied area is ignored)", rep.needs.length >= 5 && rep.needs.every((n) => n.agenda === "modernize-finance" && n.area === "finance"), JSON.stringify(rep.needs.map((n) => [n.agenda, n.area])));
+{
+  const r = (await run({ agendaMismatch: true })).rep;
+  check("an offering from the agenda's own area is moved first", r.needs.every((n) => n.agenda === "govern-ai-regulation" && n.area === "risk" && n.mcOffers[0] === "Risk & Compliance > Risk AI" && n.mcOffers.length === 2), JSON.stringify(r.needs.map((n) => [n.agenda, n.area, n.mcOffers])));
+}
+{
+  const r = (await run({ agendaNoFit: true })).rep;
+  check("an agenda none of the offerings fits is dropped; the need keeps the area of its first offering", r.needs.length >= 5 && r.needs.every((n) => n.agenda === undefined && n.area === "finance"), JSON.stringify(r.needs.map((n) => [n.agenda, n.area])));
+}
+{
+  const r = (await run({ agendaInvalid: true })).rep;
+  check("an agenda that is not in the list is ignored", r.needs.every((n) => n.agenda === undefined && n.area === "finance"), JSON.stringify(r.needs.map((n) => [n.agenda, n.area])));
+  const r2 = (await run({ agendaNone: true })).rep;
+  check("'none' leaves the need in its first offering's area with no agenda, and the need is kept", r2.needs.length >= 5 && r2.needs.every((n) => n.agenda === undefined && n.area === "finance"), JSON.stringify(r2.needs.map((n) => [n.agenda, n.area])));
+}
+
+// ---- the function's agenda list is the app's agenda list ----
+{
+  const { readFileSync } = await import("node:fs");
+  const { AGENDAS, SERVICE_AREAS } = await import("../../../src/data/mcStorefront.ts");
+  const src = readFileSync(new URL("../../../supabase/functions/refresh-industry-insights/index.ts", import.meta.url), "utf8");
+  const block = src.slice(src.indexOf("const AGENDAS:"), src.indexOf("const AGENDA_BY_ID"));
+  const fn = [...block.matchAll(/\{ id: "([^"]+)", areaId: "([^"]+)", l2: "([^"]+)", label: "([^"]+)" \}/g)].map((m) => ({ id: m[1], areaId: m[2], l2: m[3], label: m[4] }));
+  const l2Of = new Map(SERVICE_AREAS.map((a) => [a.id, a.catalogL2]));
+  const same = fn.length === 18 && fn.every((a, i) => a.id === AGENDAS[i].id && a.label === AGENDAS[i].label && a.areaId === AGENDAS[i].area && a.l2 === l2Of.get(AGENDAS[i].area));
+  check("the function's 18 agendas equal src/data/mcStorefront.ts (ids, labels, areas, catalog names)", same, JSON.stringify(fn.map((a) => a.id)));
+  const catalogL2 = new Set([...src.slice(src.indexOf("const CATALOG:"), src.indexOf("const offerKey")).matchAll(/l2: "([^"]+)"/g)].map((m) => m[1]));
+  check("the six areas' catalog names are exactly the catalog's six practices", catalogL2.size === 6 && SERVICE_AREAS.every((a) => catalogL2.has(a.catalogL2)), JSON.stringify([...catalogL2]));
+}
 
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);
