@@ -25,19 +25,19 @@ function ItemText({ text }: { text: string }) {
   );
 }
 
-function NeedCards({ needs, onSelectNeed }: { needs: Need[]; onSelectNeed: (need: Need) => void }) {
+// One compact card per need: the title, with an arrow that appears on hover. `wide` lays the cards out in columns (for needs that have no
+// agenda column to sit in); otherwise they stack in the agenda's column.
+function NeedCards({ needs, onSelectNeed, wide = false }: { needs: Need[]; onSelectNeed: (need: Need) => void; wide?: boolean }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className={wide ? "grid gap-3 sm:grid-cols-2 lg:grid-cols-3" : "grid gap-2"}>
       {needs.map((need) => (
         <button
           key={need.name}
           onClick={() => onSelectNeed(need)}
-          className="card-hover group flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-5 text-left"
+          className="card-hover group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left"
         >
           <h5 className="font-medium text-card-foreground leading-snug">{need.name}</h5>
-          <span className="mt-auto flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100">
-            View details <ArrowRight className="h-3.5 w-3.5" />
-          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-primary opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden />
         </button>
       ))}
     </div>
@@ -141,7 +141,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                   <span className="font-semibold">Buyers:</span> {area.buyers.join(" · ")}
                 </p>
               </div>
-              <div className="space-y-5 p-5">
+              <div className="grid gap-x-8 gap-y-6 p-5 lg:grid-cols-2">
                 {agendas.map(({ agenda, needs }) => (
                   <div key={agenda?.id ?? "other"}>
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -160,7 +160,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                 <p className="mt-1 text-sm text-muted-foreground">Not yet placed in a service area.</p>
               </div>
               <div className="p-5">
-                <NeedCards needs={grouped.other} onSelectNeed={onSelectNeed} />
+                <NeedCards needs={grouped.other} onSelectNeed={onSelectNeed} wide />
               </div>
             </div>
           )}
