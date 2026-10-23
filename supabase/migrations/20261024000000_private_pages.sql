@@ -1,8 +1,8 @@
 -- Safe to run more than once.
 -- Private standalone pages: HTML documents (for example a client plan) that open at /p/<slug> on the hub for signed-in Toptal accounts only.
 -- They are stored here instead of in the code repository, which is public.
---   read:  only an account that signed in with Google, whose Google-verified email is @toptal.com (an email/password sign-up that merely
---          claims a toptal.com address is refused)
+--   read:  only an account that has Google linked (app_metadata.providers includes google) and whose verified email is @toptal.com. An
+--          email/password sign-up that merely claims a toptal.com address, with no Google identity behind it, is refused.
 --   write: admins only (rows are normally added from the SQL editor, which bypasses these rules)
 create table if not exists public.private_pages (
   slug text primary key check (slug ~ '^[a-z0-9][a-z0-9-]{0,80}$'),
@@ -21,7 +21,7 @@ create policy "Toptal accounts can read private pages"
   to authenticated
   using (
     lower(coalesce(auth.jwt() ->> 'email', '')) like '%@toptal.com'
-    and coalesce(auth.jwt() -> 'app_metadata' ->> 'provider', '') = 'google'
+    and jsonb_exists(coalesce(auth.jwt() -> 'app_metadata' -> 'providers', '[]'::jsonb), 'google')
     and coalesce(auth.jwt() -> 'user_metadata' ->> 'email_verified', '') = 'true'
   );
 
