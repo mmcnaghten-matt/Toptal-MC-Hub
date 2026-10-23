@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import MCServices from "./pages/MCServices";
 import WayOfWorking from "./pages/WayOfWorking";
 import AccountMarketIntel from "./pages/AccountMarketIntel";
+import PrivatePage from "./pages/PrivatePage";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminIndustryInsights from "./pages/AdminIndustryInsights";
@@ -56,6 +57,7 @@ const App = () => (
                 <Route path="/client-insights" element={<AccountMarketIntel />} />
                 <Route path="/diagnostics-hub" element={<DiagnosticsHub />} />
                 <Route path="/admin/industry-insights" element={<AdminIndustryInsights />} />
+                <Route path="/p/:slug" element={<PrivatePage />} />
                 <Route path="/mc-plan" element={<MCPlan />} />
                 <Route path="/mc-plan-archive" element={<MCPlanArchive />} />
                 <Route path="/mc-plan-archive-jun-2026" element={<MCPlanArchiveJun2026 />} />
