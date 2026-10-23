@@ -97,20 +97,59 @@ const AGENDA_PROMPT = L2_ORDER.map(
   (l2) => `${l2.toUpperCase()}\n` + AGENDAS.filter((a) => a.l2 === l2).map((a) => `- ${a.id}: ${a.label}`).join("\n"),
 ).join("\n\n");
 
+const isGenericOffer = (o: string) => /> (Change Management|Program & Portfolio Management)$/.test(o);
+
 /**
- * Where a need sits: the agenda picked by the model (checked against the list), the service area that follows from it, and the
- * offerings with one from that area first. An agenda none of the offerings fits is dropped and the need keeps the area of its
- * first offering. The area is always derived in code, never taken from the model.
+ * Where a need sits. `offers` is [primary, secondary?]. The agenda picked by the model is checked against the list and the service
+ * area follows from it in code, never from the model. The primary must be in that area: if only the secondary is, the two swap; if
+ * neither is, the agenda is dropped and the need keeps the area of its primary. A generic offering (Change Management, Program &
+ * Portfolio Management) is never the primary when a specific one is available in the same area. At most two offerings are kept.
  */
 function placeNeed(offers: string[], agendaId: unknown): { mcOffers: string[]; agenda?: string; area?: string } {
   const agenda = typeof agendaId === "string" ? AGENDA_BY_ID.get(agendaId) : undefined;
   const l2Of = (o: string) => o.split(" > ")[0];
+  let list2 = [...new Set(offers)].slice(0, MAX_OFFERS_PER_NEED);
+  let agendaOut: string | undefined;
   if (agenda) {
-    const inArea = offers.filter((o) => l2Of(o) === agenda.l2);
-    if (inArea.length) return { mcOffers: [inArea[0], ...offers.filter((o) => o !== inArea[0])], agenda: agenda.id, area: agenda.areaId };
+    if (l2Of(list2[0] ?? "") === agenda.l2) agendaOut = agenda.id;
+    else if (list2[1] && l2Of(list2[1]) === agenda.l2) {
+      list2 = [list2[1], list2[0]];
+      agendaOut = agenda.id;
+    }
   }
-  const area = AREA_ID_BY_L2.get(l2Of(offers[0] ?? ""));
-  return { mcOffers: offers, ...(area ? { area } : {}) };
+  const area = agendaOut ? agenda!.areaId : AREA_ID_BY_L2.get(l2Of(list2[0] ?? ""));
+  if (list2.length === 2 && isGenericOffer(list2[0]) && !isGenericOffer(list2[1]) && l2Of(list2[1]) === l2Of(list2[0])) list2 = [list2[1], list2[0]];
+  return { mcOffers: list2, ...(agendaOut ? { agenda: agendaOut } : {}), ...(area ? { area } : {}) };
+}
+
+// What the MC team's hand corrections taught us about where needs belong (agenda ids as listed above). New corrections are sent with
+// each refresh as worked examples (see cleanExamples).
+const PLACEMENT_GUIDANCE = `PLACEMENT GUIDANCE (from the MC team's corrections to earlier placements):
+- Cybersecurity, data-security and cyber-defence needs go under third-party-operational-resilience (modernize-risk-compliance when the need is about deploying technology against fraud).
+- Workforce, talent, skills and retention needs go under reshape-work-skills, even when they do not mention AI; use ai-era-organization when the need is about redesigning the organization or the work itself.
+- Customer journey, customer experience and service-delivery needs go under modernize-customer-service.
+- Growth and market-expansion needs belong to the Customer & Growth practice, not Strategy; technology, infrastructure and platform modernization needs belong to Strategy & Transformation.
+- "Portfolio" is portfolio-through-ma only when the need is about transactions (acquisitions, divestitures, mergers). Store-footprint, brand-portfolio and asset-portfolio reviews are "${NO_AGENDA}".
+- Financial-crime regulation needs are "${NO_AGENDA}", not govern-ai-regulation. R&D productivity needs are "${NO_AGENDA}". Cost-control needs about networks and partners belong under cut-procurement-ops-cost; value-based care and reimbursement models are ai-first-operating-model.`;
+
+/** Corrections sent with the request: only valid agendas and catalog offerings, trimmed, at most 12. */
+function cleanExamples(raw: unknown): string[] {
+  const clean = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
+  const out: string[] = [];
+  for (const e of list(raw).slice(0, 60)) {
+    if (out.length >= 12) break;
+    const primary = typeof e?.primary === "string" ? e.primary : "";
+    if (!VALID_SET.has(primary)) continue;
+    const agenda = typeof e?.agenda === "string" ? AGENDA_BY_ID.get(e.agenda) : undefined;
+    const areaL2 = AGENDAS.find((a) => a.areaId === e?.area)?.l2;
+    if (!agenda && !areaL2) continue;
+    const secondary = typeof e?.secondary === "string" && VALID_SET.has(e.secondary) && e.secondary !== primary ? e.secondary : "";
+    const need = clean(e?.need, 140);
+    if (!need) continue;
+    const text = clean(e?.text, 300);
+    out.push(`- "${need}"${text ? ` (${text})` : ""} -> agenda: ${agenda ? agenda.id : `${NO_AGENDA} (in ${areaL2})`}; primary: ${primary}; secondary: ${secondary || "none"}`);
+  }
+  return out;
 }
 
 // Catalog as shown to the model: grouped by L2, each exact offer string followed by its
@@ -138,7 +177,7 @@ const RESPONSE_SCHEMA = {
           signals: { type: "ARRAY", items: { type: "STRING" } },
           mcOffers: {
             type: "ARRAY",
-            description: "1-3 offerings from the catalog whose description most directly covers this need",
+            description: "1-2 offerings from the catalog whose description most directly covers this need: the primary first, then an optional secondary",
             items: { type: "STRING", format: "enum", enum: VALID_OFFERS },
           },
           narrative: { type: "STRING" },
@@ -152,7 +191,8 @@ const RESPONSE_SCHEMA = {
   propertyOrdering: ["overview", "challenges", "initiatives", "needs"],
 };
 
-const MAX_OFFERS_PER_NEED = 3;
+// A need holds a primary offering (from its service area) and at most one secondary offering (any area).
+const MAX_OFFERS_PER_NEED = 2;
 
 type Need = { name: string; signals: string[]; mcOffers: string[]; narrative: string };
 
@@ -1048,11 +1088,13 @@ ${initiatives.map((c, i) => `I${i + 1}. ${c}`).join("\n") || "(none)"}
 }
 
 // 4. Map validated needs to the MC catalog (separate from writing the needs, so offers cannot shape them).
+const NO_OFFER = "none";
 const OFFERS_SCHEMA = obj({
   rows: arr(obj({
     index: { type: "INTEGER" },
     agenda: { type: "STRING", format: "enum", enum: [...AGENDAS.map((a) => a.id), NO_AGENDA] },
-    mcOffers: { type: "ARRAY", items: { type: "STRING", format: "enum", enum: VALID_OFFERS } },
+    primary: { type: "STRING", format: "enum", enum: VALID_OFFERS },
+    secondary: { type: "STRING", format: "enum", enum: [...VALID_OFFERS, NO_OFFER] },
     offerNarrative: STR,
   })),
 });
@@ -1064,25 +1106,27 @@ async function v2Offers(apiKey: string, body: Any, clock: ReturnType<typeof make
     basedOn: [],
   }));
   if (!needs.length) return json({ ok: true, offers: [], warnings: [] });
+  const examples = cleanExamples(body?.examples);
   const warnings: string[] = [];
   const result: Record<number, { mcOffers: string[]; offerNarrative: string; agenda?: string; area?: string }> = {};
   const ask = async (indexes: number[]) => {
-    const prompt = `For each numbered client need below, choose the client agenda it belongs to, then the Toptal Management Consulting offerings that address it, and write one short sentence on how they help.
+    const prompt = `For each numbered client need below, choose the client agenda it belongs to, then the Toptal Management Consulting offerings that address it (a primary and, if the need clearly calls for it, a secondary), and write one short sentence on how they help.
 
-CLIENT AGENDAS (three per MC practice): the priorities clients bring to us. Choose the ONE agenda the need falls under most directly, using its id exactly as written. Use "${NO_AGENDA}" only when the need fits none of the 18.
+CLIENT AGENDAS (three per MC practice): the priorities clients bring to us. Choose the ONE agenda the need falls under most directly, using its id exactly as written. Use "${NO_AGENDA}" only when the need fits none of the 18; the need then stays in the practice of its primary offering.
 
 ${AGENDA_PROMPT}
 
+${PLACEMENT_GUIDANCE}
+${examples.length ? `\nCORRECTIONS FROM THE MC TEAM (needs the team re-placed by hand; follow the same reasoning for similar needs):\n${examples.join("\n")}\n` : ""}
 MC SERVICE OFFERING CATALOG
-Offerings are listed as "Practice > Offering": description. Use the quoted string EXACTLY as written (including the "Practice > " prefix) in mcOffers.
+Offerings are listed as "Practice > Offering": description. Use the quoted string EXACTLY as written (including the "Practice > " prefix) in primary and secondary.
 
 ${CATALOG_PROMPT}
 
 Matching rules:
-- Choose the agenda first, then the offerings. List first an offering from the agenda's own practice (the practice named above the agenda). Further offerings may come from other practices when the need clearly spans them.
-- Select the offerings whose DESCRIPTION most directly covers the need. Do not choose on name alone.
-- Choose 1-3 offerings per need. Prefer the most specific offering over a generic one.
-- "Change Management" and "Program & Portfolio Management" appear under every practice. Use them only as a secondary add-on to a more specific offering (at most one such generic offering per need), under the practice that fits the need.
+- Choose the agenda first. Then choose ONE primary offering from that agenda's own practice (the practice named above the agenda): the offering whose DESCRIPTION most directly covers the need. Do not choose on name alone.
+- Then optionally choose ONE secondary offering from ANY practice, only when the need clearly also calls for it; otherwise "${NO_OFFER}". The secondary must differ from the primary.
+- Prefer the most specific offering. "Change Management" and "Program & Portfolio Management" appear under every practice: use them only as the secondary, never as the primary when a specific offering fits.
 - offerNarrative: 1-2 sentences on how the chosen offerings address the need. Refer to offerings by their offering name only (e.g. "Finance AI"), without the "Practice > " prefix. Include no figures and no facts. Never mention an offering that is not in the catalog.
 
 NEEDS:
@@ -1091,7 +1135,7 @@ ${indexes.map((i) => `${i}. ${needs[i].name} | signals: ${needs[i].signals.join(
     for (const row of list(safeJson(r.text)?.rows)) {
       const i = Number(row?.index);
       if (!indexes.includes(i)) continue;
-      const picked = [...new Set(list(row?.mcOffers).filter((o) => VALID_SET.has(o)))].slice(0, MAX_OFFERS_PER_NEED);
+      const picked = [...new Set([row?.primary, row?.secondary].filter((o): o is string => typeof o === "string" && VALID_SET.has(o)))].slice(0, MAX_OFFERS_PER_NEED);
       if (!picked.length) continue;
       const narr = typeof row?.offerNarrative === "string" ? row.offerNarrative.trim() : "";
       result[i] = { ...placeNeed(picked, row?.agenda), offerNarrative: /\d/.test(narr) ? "" : narr.replace(/\b[A-Z][A-Za-z &]+ > /g, "") };
@@ -1482,7 +1526,7 @@ ${CATALOG_PROMPT}
 
 Matching rules:
 - For each need, select the offerings whose DESCRIPTION most directly covers that need. Do not choose on name alone.
-- Choose 1-3 offerings per need. Prefer the most specific offering over a generic one.
+- Choose 1-2 offerings per need: the primary first, then at most one secondary. Prefer the most specific offering over a generic one.
 - "Change Management" and "Program & Portfolio Management" appear under every practice. Use them only as a secondary add-on to a more specific offering (at most one such generic offering per need), and pick the one under the practice that fits the need.
 - In the narrative, refer to offerings by their offering name only (e.g. "Finance AI"), without the "Practice > " prefix. Never mention any offering that is not in the catalog.
 
@@ -1504,7 +1548,7 @@ Return a JSON object with this exact structure:
 Requirements:
 - 3-5 challenges, each with a bold title followed by a colon and description
 - 3-5 initiatives, each with a bold title followed by a colon and description
-- 5-8 needs, each with 3-5 signals, 1-3 mcOffers (exact catalog strings ONLY), and a compelling narrative
+- 5-8 needs, each with 3-5 signals, 1-2 mcOffers (exact catalog strings ONLY: the primary first, then an optional secondary), and a compelling narrative
 - Use current 2025-2026 market data, trends, and statistics where possible
 - Focus on actionable intelligence that helps sales teams position consulting services`;
 
