@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      industry_need_feedback: {
+        Row: {
+          created_at: string
+          created_by: string
+          final_agenda: string | null
+          final_area: string
+          final_primary: string
+          final_secondary: string | null
+          id: string
+          need_name: string
+          need_text: string
+          proposed_agenda: string | null
+          proposed_area: string | null
+          proposed_primary: string | null
+          proposed_secondary: string | null
+          source: string
+          sub_industry_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          final_agenda?: string | null
+          final_area: string
+          final_primary: string
+          final_secondary?: string | null
+          id?: string
+          need_name: string
+          need_text?: string
+          proposed_agenda?: string | null
+          proposed_area?: string | null
+          proposed_primary?: string | null
+          proposed_secondary?: string | null
+          source: string
+          sub_industry_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          final_agenda?: string | null
+          final_area?: string
+          final_primary?: string
+          final_secondary?: string | null
+          id?: string
+          need_name?: string
+          need_text?: string
+          proposed_agenda?: string | null
+          proposed_area?: string | null
+          proposed_primary?: string | null
+          proposed_secondary?: string | null
+          source?: string
+          sub_industry_id?: string
+        }
+        Relationships: []
+      }
       industry_scopes: {
         Row: {
           scope: string

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { industries, SubIndustry, SourceRef } from "@/data/industryData";
 import { runIndustryResearch, type IndustryResearchResult, type ProgressChip } from "@/services/industryResearchPipeline";
 import { toast } from "sonner";
+import { fetchPlacementExamples } from "@/hooks/useNeedFeedback";
 
 export interface DbSubIndustryContent {
   id: string;
@@ -15,6 +16,8 @@ export interface DbSubIndustryContent {
   initiatives: string[];
   needs: Array<{
     name: string;
+    agenda?: string;
+    area?: string;
     signals: string[];
     mcOffers: string[];
     narrative: string;
@@ -298,8 +301,11 @@ export function useRefreshContent() {
       industryName: string;
       scope?: string;
       onProgress?: (chips: ProgressChip[]) => void;
-    }): Promise<IndustryResearchResult> =>
-      runIndustryResearch({ call: callRefreshStep, subIndustryName, industryName, scope, onProgress }),
+    }): Promise<IndustryResearchResult> => {
+      // The admin's earlier corrections to where needs sit go along as worked examples (none if they cannot be loaded).
+      const examples = await fetchPlacementExamples();
+      return runIndustryResearch({ call: callRefreshStep, subIndustryName, industryName, scope, onProgress, examples });
+    },
   });
 }
 

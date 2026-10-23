@@ -2,6 +2,7 @@ import { SubIndustry, Need } from "@/data/industryData";
 import { AlertTriangle, Rocket, ArrowRight, Target } from "lucide-react";
 import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 import { AiResearchNote } from "@/components/AiResearchNote";
+import { groupNeeds } from "@/lib/needGrouping";
 
 interface Props {
   subIndustry: SubIndustry & { updatedAt?: string };
@@ -24,7 +25,27 @@ function ItemText({ text }: { text: string }) {
   );
 }
 
+function NeedCards({ needs, onSelectNeed }: { needs: Need[]; onSelectNeed: (need: Need) => void }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {needs.map((need) => (
+        <button
+          key={need.name}
+          onClick={() => onSelectNeed(need)}
+          className="card-hover group flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-5 text-left"
+        >
+          <h5 className="font-medium text-card-foreground leading-snug">{need.name}</h5>
+          <span className="mt-auto flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100">
+            View details <ArrowRight className="h-3.5 w-3.5" />
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
+  const grouped = groupNeeds(subIndustry.needs);
   const researchedDate = subIndustry.researchedAt
     ? new Date(subIndustry.researchedAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })
     : null;
@@ -105,36 +126,44 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
             {subIndustry.needs.length}
           </span>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {subIndustry.needs.map((need, i) => (
-            <button
-              key={i}
-              onClick={() => onSelectNeed(need)}
-              className="card-hover group flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-5 text-left"
-            >
-              <h4 className="font-medium text-card-foreground leading-snug">
-                {need.name}
-              </h4>
-              <div className="flex flex-wrap gap-1">
-                {need.mcOffers.slice(0, 2).map((offer) => (
-                  <span
-                    key={offer}
-                    className="rounded-full bg-primary/8 px-2.5 py-0.5 text-xs font-medium text-primary"
-                  >
-                    {offer}
+        <div className="space-y-6">
+          {grouped.areas.map(({ area, agendas, count }) => (
+            <div key={area.id} className="rounded-lg border border-border bg-card" data-testid={`needs-area-${area.id}`}>
+              <div className="border-b border-border px-5 py-4" style={{ borderLeft: `4px solid ${area.color.text}`, borderTopLeftRadius: 8 }}>
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h4 className="text-lg font-bold tracking-tight" style={{ color: area.color.text }}>{area.name}</h4>
+                  <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: area.color.bg, color: area.color.text }}>
+                    {count}
                   </span>
-                ))}
-                {need.mcOffers.length > 2 && (
-                  <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs text-muted-foreground">
-                    +{need.mcOffers.length - 2}
-                  </span>
-                )}
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">{area.description}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  <span className="font-semibold">Buyers:</span> {area.buyers.join(" · ")}
+                </p>
               </div>
-              <span className="mt-auto flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                View details <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </button>
+              <div className="space-y-5 p-5">
+                {agendas.map(({ agenda, needs }) => (
+                  <div key={agenda?.id ?? "other"}>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {agenda ? agenda.label : "Other agenda"}
+                    </p>
+                    <NeedCards needs={needs} onSelectNeed={onSelectNeed} />
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
+          {grouped.other.length > 0 && (
+            <div className="rounded-lg border border-border bg-card" data-testid="needs-other">
+              <div className="border-b border-border px-5 py-4">
+                <h4 className="text-lg font-bold tracking-tight text-card-foreground">Other needs</h4>
+                <p className="mt-1 text-sm text-muted-foreground">Not yet placed in a service area.</p>
+              </div>
+              <div className="p-5">
+                <NeedCards needs={grouped.other} onSelectNeed={onSelectNeed} />
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

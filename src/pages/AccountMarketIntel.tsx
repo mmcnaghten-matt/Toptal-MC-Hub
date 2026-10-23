@@ -27,41 +27,6 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown, Rich, SourcesProvider, toStr } from "@/components/Cited";
 
-// MC taxonomy practice colors (match the Services page cards). serviceOffering arrives as "L2 > L3".
-const L2_COLORS: Record<string, { text: string; bg: string }> = {
-  "Strategy & Transformation": { text: "#2B44D4", bg: "#EEF2FF" },
-  "Finance": { text: "#0CA678", bg: "#ECFDF5" },
-  "Supply Chain & Operations": { text: "#E86B4A", bg: "#FFF7ED" },
-  "Customer & Growth": { text: "#D6336C", bg: "#FDF2F8" },
-  "People & Organization": { text: "#5C6BC0", bg: "#EDE9FE" },
-  "Risk & Compliance": { text: "#9C2B2B", bg: "#FEF2F2" },
-};
-
-function OfferingPill({ value }: { value: string }) {
-  const [l2, l3] = value.split(" > ");
-  const colors = l3 ? L2_COLORS[l2] : undefined;
-  if (!colors) {
-    return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-        {value}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex flex-col items-start gap-1">
-      <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.text }}>
-        {l2}
-      </span>
-      <span
-        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-        style={{ backgroundColor: colors.bg, color: colors.text }}
-      >
-        {l3}
-      </span>
-    </span>
-  );
-}
-
 // Placeholder text the research function uses when it has no evidence for a field.
 const isEmptyText = (v?: string) => !v || /^\s*(not found in public sources|not generated)/i.test(v);
 
@@ -113,6 +78,7 @@ import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/compo
 import { cn } from "@/lib/utils";
 import { normalizeWebsite } from "@/lib/website";
 import { SubmitChoiceDialog } from "@/components/SubmitChoiceDialog";
+import { OfferingPill } from "@/components/OfferingPill";
 import {
   AlertDialog,
   AlertDialogAction,

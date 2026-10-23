@@ -1,6 +1,8 @@
 import { Need, SourceRef } from "@/data/industryData";
 import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 import { AiResearchNote } from "@/components/AiResearchNote";
+import { OfferingPill } from "@/components/OfferingPill";
+import { placementOf } from "@/lib/needGrouping";
 import { ChevronLeft, Radio, Briefcase, MessageSquareText } from "lucide-react";
 
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export function NeedDetail({ need, onBack, sources }: Props) {
+  const { area, agenda } = placementOf(need);
   return (
     <SourcesProvider sources={sources}>
     <div className="fade-in space-y-6">
@@ -23,8 +26,15 @@ export function NeedDetail({ need, onBack, sources }: Props) {
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div>
-          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Industry Need
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground" data-testid="need-breadcrumb">
+            {area ? (
+              <>
+                <span style={{ color: area.color.text }}>{area.name}</span>
+                {agenda && <> › {agenda.label}</>}
+              </>
+            ) : (
+              "Industry Need"
+            )}
           </p>
           <h2 className="text-2xl font-bold text-foreground tracking-tight">{need.name}</h2>
         </div>
@@ -64,11 +74,8 @@ export function NeedDetail({ need, onBack, sources }: Props) {
           </p>
           <div className="space-y-2">
             {need.mcOffers.map((offer) => (
-              <div
-                key={offer}
-                className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-medium text-primary"
-              >
-                {offer}
+              <div key={offer} className="rounded-md border border-border bg-card px-4 py-3">
+                <OfferingPill value={offer} />
               </div>
             ))}
           </div>

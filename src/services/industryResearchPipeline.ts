@@ -9,6 +9,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import type { PlacementExample } from "@/lib/needFeedback";
+
 export type StepCall = (body: Record<string, unknown>) => Promise<any>;
 export type ChipStatus = "pending" | "running" | "done" | "retried" | "failed";
 export interface ProgressChip {
@@ -24,6 +26,8 @@ export interface IndustryResearchOptions {
   /** Plain-words definition of what the sub-sector means in our model; overrides other readings of the name. */
   scope?: string;
   onProgress?: (chips: ProgressChip[]) => void;
+  /** Earlier admin corrections to where needs sit, sent to the offers step as worked examples. */
+  examples?: PlacementExample[];
   /** Max requests in flight at once. */
   concurrency?: number;
   /** Wait before a retry. */
@@ -34,7 +38,7 @@ export interface IndustryResearchResult {
   overview: string;
   challenges: string[];
   initiatives: string[];
-  needs: { name: string; signals: string[]; mcOffers: string[]; narrative: string }[];
+  needs: { name: string; agenda?: string; area?: string; signals: string[]; mcOffers: string[]; narrative: string }[];
   sources: { id: number; title: string; url: string }[];
   researchedAt: string;
   quality?: {
@@ -223,7 +227,7 @@ export async function runIndustryResearch(opts: IndustryResearchOptions): Promis
   if (needs.length) {
     begin("offers");
     try {
-      const r = await attempt({ step: "offers", needs });
+      const r = await attempt({ step: "offers", needs, ...(opts.examples?.length ? { examples: opts.examples } : {}) });
       if (r.data?.warnings?.length) warnings.push(...r.data.warnings);
       offers = r.data?.offers ?? [];
       end("offers", { retried: r.retried, failed: !r.data?.ok });

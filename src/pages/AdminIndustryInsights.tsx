@@ -11,6 +11,11 @@ import {
   useSaveScope,
   ContentVersion,
 } from "@/hooks/useIndustryContent";
+import { placementOf } from "@/lib/needGrouping";
+import { NeedPlacementEditor } from "@/components/NeedPlacementEditor";
+import { placementChanged, placementErrors } from "@/lib/needPlacement";
+import { feedbackRowsFor } from "@/lib/needFeedback";
+import { recordNeedFeedback, useFeedbackCount } from "@/hooks/useNeedFeedback";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -24,6 +29,16 @@ import { MultiRefreshDialog } from "@/components/MultiRefreshDialog";
 import type { IndustryResearchResult, ProgressChip } from "@/services/industryResearchPipeline";
 import { useAdminRole } from "@/hooks/useAdminRole";
 
+function PlacementLine({ need }: { need: SubIndustry["needs"][number] }) {
+  const { area, agenda } = placementOf(need);
+  if (!area) return <p className="text-xs text-muted-foreground mt-1">Not placed</p>;
+  return (
+    <p className="text-xs mt-1" style={{ color: area.color.text }}>
+      {area.name}{agenda ? ` › ${agenda.label}` : ""}
+    </p>
+  );
+}
+
 export default function AdminIndustryInsights() {
   const navigate = useNavigate();
   const { isAdmin, loading: roleLoading } = useAdminRole();
@@ -34,6 +49,10 @@ export default function AdminIndustryInsights() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewContent, setPreviewContent] = useState<IndustryResearchResult | null>(null);
   const [chips, setChips] = useState<ProgressChip[]>([]);
+  // The needs as the refresh proposed them / as they were saved, to record what the admin corrects.
+  const [proposedNeeds, setProposedNeeds] = useState<SubIndustry["needs"]>([]);
+  const [savedNeeds, setSavedNeeds] = useState<SubIndustry["needs"]>([]);
+  const feedbackCount = useFeedbackCount();
   const [multiOpen, setMultiOpen] = useState(false);
 
   // Edit state
@@ -85,13 +104,33 @@ export default function AdminIndustryInsights() {
     setEditChallenges([...currentContent.challenges]);
     setEditInitiatives([...currentContent.initiatives]);
     setEditNeeds(currentContent.needs.map((n) => ({ ...n, signals: [...n.signals], mcOffers: [...n.mcOffers] })));
+    setSavedNeeds(currentContent.needs.map((n) => ({ ...n, signals: [...n.signals], mcOffers: [...n.mcOffers] })));
     setEditMode(true);
     setShowHistory(false);
     setShowPreview(false);
   };
 
+  // Needs whose placement was changed (or added) must have a service area and a valid primary/secondary offering.
+  const needsToFix = (needs: SubIndustry["needs"], before: SubIndustry["needs"]) =>
+    needs.filter((n) => {
+      const was = before.find((b) => b.name === n.name);
+      return (!was || placementChanged(was, n)) && placementErrors(n).length > 0;
+    });
+
+  const recordCorrections = (subId: string, before: SubIndustry["needs"], after: SubIndustry["needs"], source: "refresh-preview" | "editor") => {
+    recordNeedFeedback(feedbackRowsFor(subId, before, after, source))
+      .then(() => feedbackCount.refetch())
+      .catch((e) => toast.warning("Saved, but the corrections could not be remembered for future refreshes: " + (e instanceof Error ? e.message : e)));
+  };
+
   const handleSave = () => {
     if (!selectedSubId || !selectedIndustry || !selectedSub) return;
+    const fix = needsToFix(editNeeds, savedNeeds);
+    if (fix.length) {
+      toast.error(`${fix.length} need(s) still need a service area and a primary offering: ${fix.map((n) => n.name || "(unnamed)").slice(0, 3).join("; ")}`);
+      return;
+    }
+    const subId = selectedSubId;
     saveContent.mutate(
       {
         subIndustryId: selectedSubId,
@@ -108,7 +147,12 @@ export default function AdminIndustryInsights() {
           researchedAt: currentContent?.researchedAt,
         },
       },
-      { onSuccess: () => setEditMode(false) }
+      {
+        onSuccess: () => {
+          recordCorrections(subId, savedNeeds, editNeeds, "editor");
+          setEditMode(false);
+        },
+      }
     );
   };
 
@@ -125,6 +169,7 @@ export default function AdminIndustryInsights() {
       {
         onSuccess: (data) => {
           setPreviewContent(data);
+          setProposedNeeds(data.needs.map((n) => ({ ...n, signals: [...n.signals], mcOffers: [...n.mcOffers] })));
           setShowPreview(true);
           setShowHistory(false);
           toast.success("Research complete — review the preview below");
@@ -138,6 +183,7 @@ export default function AdminIndustryInsights() {
 
   const applyPreview = () => {
     if (!previewContent || !selectedSubId || !selectedIndustry || !selectedSub) return;
+    const subId = selectedSubId;
     saveContent.mutate(
       {
         subIndustryId: selectedSubId,
@@ -155,6 +201,7 @@ export default function AdminIndustryInsights() {
       },
       {
         onSuccess: () => {
+          recordCorrections(subId, proposedNeeds, previewContent.needs, "refresh-preview");
           setShowPreview(false);
           setPreviewContent(null);
         },
@@ -239,6 +286,9 @@ export default function AdminIndustryInsights() {
                 {refreshContent.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
                 AI Refresh
               </Button>
+              <span className="self-center text-xs text-muted-foreground" title="Corrections you make to where a need sits are sent with each refresh as worked examples">
+                Learning from {feedbackCount.data ?? 0} saved correction{(feedbackCount.data ?? 0) === 1 ? "" : "s"}
+              </span>
               <Button variant="outline" size="sm" onClick={startEdit} disabled={editMode || contentLoading}>
                 <Edit3 className="h-4 w-4 mr-1" /> Edit
               </Button>
@@ -288,6 +338,8 @@ export default function AdminIndustryInsights() {
                 content={previewContent}
                 applying={saveContent.isPending}
                 onApply={applyPreview}
+                onChangeNeeds={(needs) => setPreviewContent({ ...previewContent, needs })}
+                proposedNeeds={proposedNeeds}
                 onDiscard={() => { setShowPreview(false); setPreviewContent(null); }}
               />
             )}
@@ -414,6 +466,17 @@ export default function AdminIndustryInsights() {
                         </Button>
                       </div>
 
+                      <NeedPlacementEditor
+                        idPrefix={`edit-${ni}`}
+                        need={need}
+                        proposed={savedNeeds.find((b) => b.name === need.name)}
+                        onChange={(next) => {
+                          const updated = [...editNeeds];
+                          updated[ni] = next;
+                          setEditNeeds(updated);
+                        }}
+                      />
+
                       <div>
                         <label className="text-xs text-muted-foreground">Signals (one per line)</label>
                         <Textarea
@@ -424,19 +487,6 @@ export default function AdminIndustryInsights() {
                             setEditNeeds(updated);
                           }}
                           rows={3}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="text-xs text-muted-foreground">MC Offers (one per line)</label>
-                        <Textarea
-                          value={need.mcOffers.join("\n")}
-                          onChange={(e) => {
-                            const updated = [...editNeeds];
-                            updated[ni] = { ...updated[ni], mcOffers: e.target.value.split("\n") };
-                            setEditNeeds(updated);
-                          }}
-                          rows={2}
                         />
                       </div>
 
@@ -458,7 +508,7 @@ export default function AdminIndustryInsights() {
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      setEditNeeds([...editNeeds, { name: "", signals: [""], mcOffers: [""], narrative: "" }])
+                      setEditNeeds([...editNeeds, { name: "", signals: [""], mcOffers: [], narrative: "" }])
                     }
                   >
                     <Plus className="h-3.5 w-3.5 mr-1" /> Add Need
@@ -490,6 +540,7 @@ export default function AdminIndustryInsights() {
                     {currentContent.needs.map((need, i) => (
                       <div key={i} className="rounded border border-border p-3">
                         <p className="font-medium text-sm text-foreground">{need.name}</p>
+                        <PlacementLine need={need} />
                         <p className="text-xs text-primary mt-1">{need.mcOffers.join(", ")}</p>
                       </div>
                     ))}

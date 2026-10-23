@@ -1,5 +1,9 @@
 export interface Need {
   name: string;
+  /** Storefront agenda id (see mcStorefront.ts); the service area follows from it. */
+  agenda?: string;
+  /** Storefront service area id, for a need that fits none of the area's three agendas. */
+  area?: string;
   signals: string[];
   mcOffers: string[];
   narrative: string;

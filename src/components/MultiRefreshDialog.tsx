@@ -9,6 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProgressChips } from "@/components/ProgressChips";
 import { RefreshPreview } from "@/components/RefreshPreview";
+import { placementErrors } from "@/lib/needPlacement";
+import { feedbackRowsFor } from "@/lib/needFeedback";
+import { recordNeedFeedback } from "@/hooks/useNeedFeedback";
 
 type Status = "queued" | "running" | "draft" | "failed" | "applied" | "skipped";
 interface Row {
@@ -18,6 +21,8 @@ interface Row {
   industryName: string;
   status: Status;
   content?: IndustryResearchResult;
+  /** The needs as the refresh proposed them, to record what the admin corrects. */
+  proposedNeeds?: IndustryResearchResult["needs"];
   error?: string;
 }
 
@@ -25,7 +30,7 @@ const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleDateString
 
 // A draft is "clean" when it has no warnings and the usual amount of content.
 const isClean = (c?: IndustryResearchResult) =>
-  !!c && (c.quality?.warnings?.length ?? 0) === 0 && c.challenges.length >= 3 && c.initiatives.length >= 3 && c.needs.length >= 5;
+  !!c && (c.quality?.warnings?.length ?? 0) === 0 && c.challenges.length >= 3 && c.initiatives.length >= 3 && c.needs.length >= 5 && c.needs.every((n) => placementErrors(n).length === 0);
 
 export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const { data: stored } = useAllIndustryContent();
@@ -91,7 +96,7 @@ export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOp
         const content = await refresh.mutateAsync({
           subIndustryId: q.subId, subIndustryName: q.subName, industryName: q.industryName, scope: scopes?.get(q.subId), onProgress: setChips,
         });
-        patch(q.subId, { status: "draft", content });
+        patch(q.subId, { status: "draft", content, proposedNeeds: content.needs.map((n) => ({ ...n, signals: [...n.signals], mcOffers: [...n.mcOffers] })) });
       } catch (e) {
         patch(q.subId, { status: "failed", error: e instanceof Error ? e.message : String(e) });
       }
@@ -102,6 +107,11 @@ export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOp
 
   const apply = async (r: Row) => {
     if (!r.content) return;
+    const bad = r.content.needs.filter((n) => placementErrors(n).length > 0);
+    if (bad.length) {
+      toast.error(`${r.subName}: ${bad.length} need(s) still need a service area and a primary offering. Open Review to fix them.`);
+      return false;
+    }
     try {
       await save.mutateAsync({
         subIndustryId: r.subId, industryId: r.industryId, subIndustryName: r.subName, industryName: r.industryName,
@@ -112,6 +122,7 @@ export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOp
         silent: true,
       });
       patch(r.subId, { status: "applied" });
+      if (r.proposedNeeds) recordNeedFeedback(feedbackRowsFor(r.subId, r.proposedNeeds, r.content.needs, "refresh-preview")).catch(() => {});
       return true;
     } catch (e) {
       patch(r.subId, { error: e instanceof Error ? e.message : String(e) });
@@ -150,6 +161,8 @@ export function MultiRefreshDialog({ open, onOpenChange }: { open: boolean; onOp
             <RefreshPreview
               content={reviewing.content}
               applying={save.isPending}
+              onChangeNeeds={(needs) => patch(reviewing.subId, { content: { ...reviewing.content!, needs } })}
+              proposedNeeds={reviewing.proposedNeeds}
               onApply={async () => {
                 if (await apply(reviewing)) setReviewId(null);
               }}

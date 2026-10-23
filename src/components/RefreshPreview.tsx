@@ -2,17 +2,25 @@ import { Eye, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 import type { IndustryResearchResult } from "@/services/industryResearchPipeline";
+import { placementOf } from "@/lib/needGrouping";
+import { NeedPlacementEditor } from "@/components/NeedPlacementEditor";
+import { placementErrors } from "@/lib/needPlacement";
 
 interface Props {
   content: IndustryResearchResult;
   applying: boolean;
   onApply: () => void;
   onDiscard: () => void;
+  /** When given, each need can be remapped (service area, agenda, primary and secondary offering) before it is applied. */
+  onChangeNeeds?: (needs: IndustryResearchResult["needs"]) => void;
+  /** The needs as the refresh proposed them, to show which ones were changed. */
+  proposedNeeds?: IndustryResearchResult["needs"];
 }
 
 // Admin preview of a refresh: the new content with citations and sources, plus what was dropped and why.
-export function RefreshPreview({ content, applying, onApply, onDiscard }: Props) {
+export function RefreshPreview({ content, applying, onApply, onDiscard, onChangeNeeds, proposedNeeds }: Props) {
   const q = content.quality;
+  const invalid = onChangeNeeds ? content.needs.filter((n) => placementErrors(n).length > 0).length : 0;
   return (
     <SourcesProvider sources={content.sources}>
     <div className="rounded-lg border-2 border-primary bg-primary/5 p-6 space-y-4">
@@ -26,7 +34,7 @@ export function RefreshPreview({ content, applying, onApply, onDiscard }: Props)
           )}
         </h3>
         <div className="flex gap-2">
-          <Button size="sm" onClick={onApply} disabled={applying}>
+          <Button size="sm" onClick={onApply} disabled={applying || invalid > 0} title={invalid > 0 ? `${invalid} need(s) still need a service area and a primary offering` : undefined}>
             {applying ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
             Apply & Save
           </Button>
@@ -56,8 +64,25 @@ export function RefreshPreview({ content, applying, onApply, onDiscard }: Props)
           {content.needs.map((need, i) => (
             <div key={i} className="rounded border border-border p-3 space-y-1">
               <p className="font-medium text-sm text-foreground">{need.name}</p>
+              {onChangeNeeds ? (
+                <NeedPlacementEditor
+                  idPrefix={`preview-${i}`}
+                  need={need}
+                  proposed={proposedNeeds?.find((p) => p.name === need.name)}
+                  onChange={(next) => onChangeNeeds(content.needs.map((n, j) => (j === i ? next : n)))}
+                />
+              ) : (
+                (() => {
+                  const { area, agenda } = placementOf(need);
+                  return (
+                    <p className="text-xs font-medium" style={area ? { color: area.color.text } : undefined}>
+                      {area ? `${area.name}${agenda ? ` › ${agenda.label}` : ""}` : "Not placed"}
+                    </p>
+                  );
+                })()
+              )}
               <p className="text-xs text-muted-foreground">Signals: {need.signals.join(", ")}</p>
-              <p className="text-xs text-primary">Offers: {need.mcOffers.join(", ")}</p>
+              {!onChangeNeeds && <p className="text-xs text-primary">Offers: {need.mcOffers.join(", ")}</p>}
               <p className="text-xs text-muted-foreground italic"><Rich>{need.narrative}</Rich></p>
             </div>
           ))}
