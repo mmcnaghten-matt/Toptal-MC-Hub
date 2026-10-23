@@ -1,8 +1,9 @@
 // Builds the SQL that writes the reviewed placement into the saved needs (industry_content) and remembers the corrections for future refreshes.
-//   node scripts/build-apply-sql.mjs <reviewed.xlsx> <suggested.json> <outDir> [<round1Dir>]
+//   node scripts/build-apply-sql.mjs <reviewed.xlsx> <suggested.json> <outDir> [<round1Dir> [<overrides.json>]]
 //   reviewed.xlsx  the spreadsheet after the review (read by header names, so extra columns are fine)
 //   suggested.json what was proposed before the review (needs-placement.json from build-live-needs-placement.mjs)
 //   round1Dir      optional: folder holding the first review's needs-placement.json (as proposed) and needs-placement.xlsx (as corrected)
+//   overrides.json optional: [{ "sub", "need", "area", "agenda" }] decisions made after the review (for example to resolve a primary outside its service area)
 // Writes apply-needs-placement.sql (snapshot, update, checks) and feedback.sql (corrections as worked examples).
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -10,7 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const [reviewedPath, suggestedPath, outDir, round1Dir] = process.argv.slice(2);
+const [reviewedPath, suggestedPath, outDir, round1Dir, overridesPath] = process.argv.slice(2);
 if (!reviewedPath || !suggestedPath || !outDir) { console.error("usage: build-apply-sql.mjs <reviewed.xlsx> <suggested.json> <outDir> [<round1Dir>]"); process.exit(2); }
 const { AGENDAS, SERVICE_AREAS } = await import(path.join(root, "src/data/mcStorefront.ts"));
 const fnSrc = readFileSync(path.join(root, "supabase/functions/refresh-industry-insights/index.ts"), "utf8");
@@ -30,6 +31,13 @@ const norm = (r, where) => {
   return { sub: r["Sub-sector"], need: r["Need"], area: area?.id ?? "", agenda: agenda?.id ?? "", primary: r["Primary offering"] ?? "", secondary: r["Secondary offering (optional)"] ?? "" };
 };
 const reviewed = readXlsx(reviewedPath).map((r) => norm(r, "reviewed"));
+for (const o of overridesPath ? JSON.parse(readFileSync(overridesPath, "utf8")) : []) {
+  const r = reviewed.find((x) => x.sub === o.sub && x.need === o.need);
+  if (!r) { problems.push(`override: ${o.sub} / ${o.need} not found`); continue; }
+  if (o.area && !areaByName.has(SERVICE_AREAS.find((a) => a.id === o.area)?.name)) problems.push(`override: unknown area ${o.area}`);
+  r.area = o.area ?? r.area;
+  r.agenda = o.agenda ?? "";
+}
 const suggested = JSON.parse(readFileSync(suggestedPath, "utf8")).map((r) => ({ sub: r.subSector, need: r.need, area: r.area, agenda: r.agenda ?? "", primary: r.primary, secondary: r.secondary ?? "" }));
 if (reviewed.length !== suggested.length) problems.push(`reviewed has ${reviewed.length} rows, suggested has ${suggested.length}`);
 const sugg = new Map(suggested.map((r) => [`${r.sub}|${r.need}`, r]));
@@ -82,11 +90,12 @@ set needs = (
     updated_at = now()
 where ic.sub_industry_id in (select distinct sub from placement);
 
--- 3. Checks. Expected: needs ${reviewed.length}, with_area ${reviewed.length}, with_agenda ${reviewed.filter((r) => r.agenda).length}, too_many_offers 0.
+-- 3. Checks. Expected: needs ${reviewed.length}, with_area ${reviewed.length}, with_agenda ${reviewed.filter((r) => r.agenda).length}, too_many_offers 0, needs_without_area none.
 select count(*) as needs,
        count(*) filter (where n ? 'area') as with_area,
        count(*) filter (where n ? 'agenda') as with_agenda,
-       count(*) filter (where jsonb_array_length(n->'mcOffers') > 2) as too_many_offers
+       count(*) filter (where jsonb_array_length(n->'mcOffers') > 2) as too_many_offers,
+       coalesce(string_agg(n->>'name', '; ') filter (where not n ? 'area'), 'none') as needs_without_area
 from industry_content, jsonb_array_elements(needs) as n;
 `);
 
