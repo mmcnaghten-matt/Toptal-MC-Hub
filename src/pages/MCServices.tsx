@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ServiceFinder from "@/components/ServiceFinder";
+import { AGENDAS, AREA_BY_CATALOG_L2 } from "@/data/mcStorefront";
 
 interface ServiceCategory {
   pillar: string;
@@ -825,6 +826,18 @@ export default function MCServices() {
                   <span className="font-semibold">Key buyers: </span>{domain.buyers}
                 </p>
                 <p className="mb-3 min-h-24 text-sm leading-relaxed text-muted-foreground">{domain.description}</p>
+                {/* The client agendas this practice leads with (the storefront), before the offerings that deliver them */}
+                <div className="mb-4 min-h-[6.25rem]">
+                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: domain.color }}>Client agendas</p>
+                  <ul className="space-y-1">
+                    {AGENDAS.filter((a) => a.area === AREA_BY_CATALOG_L2.get(domain.name)?.id).map((a) => (
+                      <li key={a.id} className="flex items-start gap-2 text-sm leading-snug text-foreground">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: domain.color }} aria-hidden />
+                        {a.label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {domain.l3s.map((t) => (
                     <span
