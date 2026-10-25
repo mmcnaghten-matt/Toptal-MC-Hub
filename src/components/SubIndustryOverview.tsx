@@ -36,7 +36,7 @@ function NeedCards({ needs, onSelectNeed, wide = false }: { needs: Need[]; onSel
           onClick={() => onSelectNeed(need)}
           className="card-hover group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left"
         >
-          <h5 className="font-medium text-card-foreground leading-snug">{need.name}</h5>
+          <h6 className="font-medium text-card-foreground leading-snug">{need.name}</h6>
           <ArrowRight className="h-4 w-4 shrink-0 text-primary opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden />
         </button>
       ))}
@@ -141,14 +141,40 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                   <span className="font-semibold">Buyers:</span> {area.buyers.join(" · ")}
                 </p>
               </div>
-              <div className="grid gap-x-8 gap-y-6 p-5 lg:grid-cols-2">
+              <div className="grid gap-4 p-5 lg:grid-cols-2">
                 {agendas.map(({ agenda, needs }) => (
-                  <div key={agenda?.id ?? "other"}>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {agenda ? agenda.label : "Other agenda"}
-                    </p>
+                  // The client agenda is the priority the practice leads with: a tinted panel in the service area's colour with a real heading.
+                  // "Other agenda" is the catch-all, so it stays neutral and quiet.
+                  <section
+                    key={agenda?.id ?? "other"}
+                    className={agenda ? "rounded-lg p-4" : "rounded-lg border border-dashed border-border bg-muted/30 p-4"}
+                    style={agenda ? { backgroundColor: `${area.color.text}14`, border: `1px solid ${area.color.text}33`, borderLeft: `4px solid ${area.color.text}` } : undefined}
+                    data-testid={`agenda-${area.id}-${agenda?.id ?? "other"}`}
+                  >
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <p
+                          className={agenda ? "text-[10px] font-semibold uppercase tracking-widest" : "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"}
+                          style={agenda ? { color: area.color.text } : undefined}
+                        >
+                          {agenda ? "Client agenda" : "Not tied to an agenda"}
+                        </p>
+                        <h5
+                          className={agenda ? "text-base font-bold leading-snug sm:text-lg" : "text-base font-semibold leading-snug text-muted-foreground sm:text-lg"}
+                          style={agenda ? { color: area.color.text } : undefined}
+                        >
+                          {agenda ? agenda.label : "Other agenda"}
+                        </h5>
+                      </div>
+                      <span
+                        className={agenda ? "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium" : "shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground"}
+                        style={agenda ? { backgroundColor: area.color.bg, color: area.color.text } : undefined}
+                      >
+                        {needs.length}
+                      </span>
+                    </div>
                     <NeedCards needs={needs} onSelectNeed={onSelectNeed} />
-                  </div>
+                  </section>
                 ))}
               </div>
             </div>
