@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { industries, Industry, SubIndustry, Need } from "@/data/industryData";
 import { useSubIndustryContent } from "@/hooks/useIndustryContent";
@@ -18,7 +18,19 @@ const Index = () => {
   const { data: dbContent } = useSubIndustryContent(selectedSubIndustry?.id ?? null);
   const displaySub = dbContent || selectedSubIndustry;
 
+  // Opening a need replaces a long page with a shorter one, which would leave the window scrolled part-way down (on the sources list).
+  // The need opens at the top, and going back returns to where the overview was.
+  const overviewScroll = useRef(0);
+  useLayoutEffect(() => {
+    window.scrollTo(0, selectedNeed ? 0 : overviewScroll.current);
+  }, [selectedNeed]);
+  const openNeed = (need: Need) => {
+    overviewScroll.current = window.scrollY;
+    setSelectedNeed(need);
+  };
+
   const handleSelectIndustry = (industry: Industry) => {
+    overviewScroll.current = 0;
     setSelectedIndustry(industry);
     setSelectedSubIndustry(industry.subIndustries[0]);
     setSelectedNeed(null);
@@ -77,6 +89,7 @@ const Index = () => {
             subIndustries={selectedIndustry.subIndustries}
             selected={selectedSubIndustry}
             onSelect={(sub) => {
+              overviewScroll.current = 0;
               setSelectedSubIndustry(sub);
               setSelectedNeed(null);
             }}
@@ -86,7 +99,7 @@ const Index = () => {
             {displaySub && !selectedNeed &&
           <SubIndustryOverview
             subIndustry={displaySub}
-            onSelectNeed={setSelectedNeed}
+            onSelectNeed={openNeed}
             colorVar={selectedIndustry.colorVar} />
           }
 
