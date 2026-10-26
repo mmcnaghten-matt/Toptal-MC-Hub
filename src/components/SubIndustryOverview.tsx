@@ -36,7 +36,7 @@ function NeedCards({ needs, onSelectNeed, wide = false }: { needs: Need[]; onSel
           onClick={() => onSelectNeed(need)}
           className="card-hover group flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left"
         >
-          <h6 className="font-medium text-card-foreground leading-snug">{need.name}</h6>
+          <h6 className="text-sm font-medium text-card-foreground leading-snug">{need.name}</h6>
           <ArrowRight className="h-4 w-4 shrink-0 text-primary opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden />
         </button>
       ))}
@@ -160,7 +160,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                           {agenda ? "Client agenda" : "Not tied to an agenda"}
                         </p>
                         <h5
-                          className={agenda ? "text-base font-bold leading-snug sm:text-lg" : "text-base font-semibold leading-snug text-muted-foreground sm:text-lg"}
+                          className={agenda ? "text-base font-bold leading-snug" : "text-base font-semibold leading-snug text-muted-foreground"}
                           style={agenda ? { color: area.color.text } : undefined}
                         >
                           {agenda ? agenda.label : "Other agenda"}
