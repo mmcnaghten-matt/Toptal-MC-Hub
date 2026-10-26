@@ -161,7 +161,7 @@ const gtmMaterials: GTMRow[] = [
     isHub: true,
     seq: 1,
     practice: "Strategy & Transformation",
-    service: "Strategy & Transformation",
+    service: "Strategy & AI Transformation",
     keyBuyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
     subRows: [
       { service: "Corporate Strategy", description: "Enterprise-level strategy that defines where and how the company competes, including strategic planning, business portfolio choices, market entry, and enterprise growth strategy." },
@@ -413,7 +413,7 @@ const gtmMaterials: GTMRow[] = [
     isHub: true,
     seq: 6,
     practice: "Risk & Compliance",
-    service: "Risk & Compliance",
+    service: "Risk, Compliance & AI Governance",
     keyBuyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
     subRows: [
       { service: "Enterprise Risk Management", description: "Design and operation of enterprise risk management, including risk strategy and framework, risk appetite, risk operating model, enterprise risk assessments, risk registers, and monitoring and reporting." },
@@ -625,6 +625,8 @@ const HUB_OFFERING_COLORS: Record<Practice, { text: string; bg: string }> = {
 
 interface MCDomain {
   name: string;
+  /** Heading shown on the card, where it differs from the catalog name above. */
+  title?: string;
   buyers: string;
   description: string;
   l3s: string[];
@@ -635,6 +637,7 @@ interface MCDomain {
 const mcDomains: MCDomain[] = [
   {
     name: "Strategy & Transformation",
+    title: "Strategy & AI Transformation",
     buyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
     description: "Help executive leadership define enterprise strategy, prioritize transformation investments, design operating models, and coordinate cross-functional value creation.",
     l3s: ["Corporate Strategy", "Operating Model", "M&A & Divestitures", "Performance Improvement", "Transformation Management", "Enterprise AI", "Enterprise Digital & Technology", "Change Management", "Program & Portfolio Management"],
@@ -675,6 +678,7 @@ const mcDomains: MCDomain[] = [
   },
   {
     name: "Risk & Compliance",
+    title: "Risk, Compliance & AI Governance",
     buyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
     description: "Improve enterprise risk management, governance, controls, compliance, and internal audit effectiveness, including risk technology and AI governance.",
     l3s: ["Enterprise Risk Management", "Third-Party Risk Management", "Operational Risk & Resilience", "Governance & Controls", "Compliance & Regulatory", "Internal Audit", "Risk Technology", "Risk AI", "Change Management", "Program & Portfolio Management"],
@@ -821,7 +825,7 @@ export default function MCServices() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {mcDomains.map((domain) => (
               <div key={domain.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
-                <h3 className="mb-1 text-xl font-bold" style={{ color: domain.color }}>{domain.name}</h3>
+                <h3 className="mb-1 text-xl font-bold" style={{ color: domain.color }}>{domain.title ?? domain.name}</h3>
                 <p className="mb-2 min-h-8 text-xs text-muted-foreground">
                   <span className="font-semibold">Key buyers: </span>{domain.buyers}
                 </p>
