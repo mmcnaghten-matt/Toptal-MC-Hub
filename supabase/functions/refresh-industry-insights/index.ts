@@ -8,15 +8,16 @@ const corsHeaders = {
 // An offer is stored on a need as the string "L2 > L3" (see offerKey) because
 // Change Management and Program & Portfolio Management repeat under every L2.
 const CATALOG: { l2: string; l3: string; description: string }[] = [
-  { l2: "Strategy & Transformation", l3: "Corporate Strategy", description: "Enterprise-level strategy that defines where and how the company competes, including strategic planning, business portfolio choices, market entry, and enterprise growth strategy." },
-  { l2: "Strategy & Transformation", l3: "Enterprise Digital & Technology", description: "Enterprise-level advisory on how digital and technology investments enable corporate strategy, including enterprise technology strategy, digital roadmaps, and investment prioritization; technical delivery coordinated with Technology Services." },
-  { l2: "Strategy & Transformation", l3: "Enterprise AI", description: "Enterprise-level AI business strategy spanning multiple functions, including AI ambition, enterprise use case prioritization, and AI adoption roadmaps; technical build coordinated with AI Services." },
-  { l2: "Strategy & Transformation", l3: "Operating Model", description: "Design of the enterprise target operating model across business units and functions, including decision rights, shared services strategy, and global business services design." },
-  { l2: "Strategy & Transformation", l3: "M&A & Divestitures", description: "Transaction support across the deal lifecycle, including commercial and operational due diligence, integration strategy, post-merger integration, Day One readiness, and carve-outs and separations." },
-  { l2: "Strategy & Transformation", l3: "Performance Improvement", description: "Enterprise-wide cost and productivity improvement, including cost transformation, productivity assessments, operating margin improvement, and value creation roadmaps." },
-  { l2: "Strategy & Transformation", l3: "Transformation Management", description: "Design of the enterprise transformation architecture, including transformation assessments, roadmaps, transformation office and governance design, and benefits frameworks." },
-  { l2: "Strategy & Transformation", l3: "Change Management", description: "Change management for enterprise, cross-functional transformations, including change strategy, change readiness assessments, stakeholder alignment, and communications and adoption." },
-  { l2: "Strategy & Transformation", l3: "Program & Portfolio Management", description: "Delivery and governance of enterprise programs, including enterprise PMO, program leadership, portfolio prioritization, Integration Management Offices, and benefits tracking." },
+  { l2: "Strategy & AI Transformation", l3: "Corporate Strategy", description: "Enterprise-level strategy that defines where and how the company competes, including strategic planning, business portfolio choices, market entry, and enterprise growth strategy." },
+  { l2: "Strategy & AI Transformation", l3: "Growth Strategy", description: "Defines the enterprise growth direction and go-to-market choices, including growth strategy, go-to-market and channel strategy, and market expansion." },
+  { l2: "Strategy & AI Transformation", l3: "Enterprise Digital & Technology", description: "Enterprise-level advisory on how digital and technology investments enable corporate strategy, including enterprise technology strategy, digital roadmaps, and investment prioritization; technical delivery coordinated with Technology Services." },
+  { l2: "Strategy & AI Transformation", l3: "Enterprise AI", description: "Enterprise-level AI business strategy spanning multiple functions, including AI ambition, enterprise use case prioritization, and AI adoption roadmaps; technical build coordinated with AI Services." },
+  { l2: "Strategy & AI Transformation", l3: "Operating Model", description: "Design of the enterprise target operating model across business units and functions, including decision rights, shared services strategy, and global business services design." },
+  { l2: "Strategy & AI Transformation", l3: "M&A & Divestitures", description: "Transaction support across the deal lifecycle, including commercial and operational due diligence, integration strategy, post-merger integration, Day One readiness, and carve-outs and separations." },
+  { l2: "Strategy & AI Transformation", l3: "Performance Improvement", description: "Enterprise-wide cost and productivity improvement, including cost transformation, productivity assessments, operating margin improvement, and value creation roadmaps." },
+  { l2: "Strategy & AI Transformation", l3: "Transformation Management", description: "Design of the enterprise transformation architecture, including transformation assessments, roadmaps, transformation office and governance design, and benefits frameworks." },
+  { l2: "Strategy & AI Transformation", l3: "Change Management", description: "Change management for enterprise, cross-functional transformations, including change strategy, change readiness assessments, stakeholder alignment, and communications and adoption." },
+  { l2: "Strategy & AI Transformation", l3: "Program & Portfolio Management", description: "Delivery and governance of enterprise programs, including enterprise PMO, program leadership, portfolio prioritization, Integration Management Offices, and benefits tracking." },
   { l2: "Finance", l3: "Finance Strategy", description: "Defines the direction of the finance function, including CFO strategy assessments, finance vision and priorities, finance transformation roadmaps, and value cases." },
   { l2: "Finance", l3: "Finance Operating Model", description: "Design of how the finance function is organized and delivered, including the finance target operating model, organization design, shared services, and global business services." },
   { l2: "Finance", l3: "Finance Processes & Operations", description: "Improvement and ongoing execution of core finance processes, including record-to-report, procure-to-pay, order-to-cash, and close management and optimization." },
@@ -34,32 +35,30 @@ const CATALOG: { l2: string; l3: string; description: string }[] = [
   { l2: "Supply Chain & Operations", l3: "Supply Chain & Operations AI", description: "AI-specific strategy and solution design for supply chain and operations, including AI use cases, AI-enabled demand planning and procurement, inventory optimization, and predictive operations." },
   { l2: "Supply Chain & Operations", l3: "Change Management", description: "Change management for supply chain and operations programs, including site readiness and impact assessment, frontline adoption, and supplier and partner change enablement." },
   { l2: "Supply Chain & Operations", l3: "Program & Portfolio Management", description: "Project, program, and portfolio management for supply chain and operations initiatives, including supply chain PMO, network program leadership, operations portfolio management, and benefits tracking." },
-  { l2: "Customer & Growth", l3: "Growth Strategy", description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion." },
-  { l2: "Customer & Growth", l3: "Customer Experience", description: "Design and improvement of the end-to-end customer experience, including CX strategy, customer journey design, voice of customer, experience measurement, and loyalty experience design." },
-  { l2: "Customer & Growth", l3: "Customer Service & Success", description: "Design and ongoing delivery of customer service and success, including service strategy, contact center operating model, service and success operations, and retention and renewal management." },
-  { l2: "Customer & Growth", l3: "Customer & Growth Technology", description: "Advisory on commercial platforms, including CRM strategy and selection, marketing platform strategy, customer service platform advisory, and commercial systems roadmaps." },
-  { l2: "Customer & Growth", l3: "Customer & Growth AI", description: "AI-specific strategy and solution design for commercial functions, including commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service." },
-  { l2: "Customer & Growth", l3: "Change Management", description: "Change management for commercial programs, including commercial change strategy, sales and marketing readiness, stakeholder communications, and commercial adoption and enablement." },
-  { l2: "Customer & Growth", l3: "Program & Portfolio Management", description: "Project, program, and portfolio management for commercial initiatives, including customer transformation PMO, commercial program leadership, growth portfolio management, and benefits tracking." },
+  { l2: "Customer", l3: "Pricing & Monetization Strategy", description: "Defines how the company prices and monetizes its offerings, including pricing strategy, packaging and value-based pricing, revenue and monetization model design, and pricing governance and execution." },
+  { l2: "Customer", l3: "Customer Experience & Journey Design", description: "Design and improvement of the end-to-end customer experience, including CX strategy, customer journey design, voice of customer, experience measurement, and loyalty experience design." },
+  { l2: "Customer", l3: "Customer Service & Success", description: "Design and ongoing delivery of customer service and success, including service strategy, contact center operating model, service and success operations, and retention and renewal management." },
+  { l2: "Customer", l3: "Customer Technology & AI", description: "Advisory on commercial platforms and AI for commercial functions, including CRM strategy and selection, marketing and customer service platform advisory, commercial systems roadmaps, commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service." },
+  { l2: "Customer", l3: "Change Management", description: "Change management for commercial programs, including commercial change strategy, sales and marketing readiness, stakeholder communications, and commercial adoption and enablement." },
+  { l2: "Customer", l3: "Program & Portfolio Management", description: "Project, program, and portfolio management for commercial initiatives, including customer transformation PMO, commercial program leadership, growth portfolio management, and benefits tracking." },
   { l2: "People & Organization", l3: "Organization Strategy", description: "Aligns people and the HR function to business priorities, including people strategy, strategic people planning, future of work strategy, HR function strategy, and organization effectiveness assessment." },
   { l2: "People & Organization", l3: "Organization Design", description: "HR-led design of organization structures, including roles and decision rights, job architecture, HR operating model, and organization effectiveness design." },
   { l2: "People & Organization", l3: "Talent & Leadership", description: "Strategies and programs to attract, develop, and retain talent, including talent strategy, leadership and executive development, succession planning, and culture and leadership alignment." },
-  { l2: "People & Organization", l3: "Learning & Capability Development", description: "Design, improvement, and ongoing delivery of learning programs, including learning strategy, capability assessment, reskilling strategy, AI readiness and literacy, and learning operating model." },
   { l2: "People & Organization", l3: "HR Operations & Services", description: "Design, improvement, and ongoing delivery of HR services, including HR service delivery design, employee lifecycle administration, HR shared services, and HR process improvement." },
   { l2: "People & Organization", l3: "HR Technology", description: "Advisory on HR platforms, including HRIS strategy and selection, talent platform advisory, HR systems roadmaps, and people analytics design." },
   { l2: "People & Organization", l3: "HR AI", description: "AI-specific strategy and solution design for HR, including HR AI strategy, use case prioritization, AI-enabled talent and learning processes, and HR AI adoption roadmaps." },
   { l2: "People & Organization", l3: "Change Management", description: "Change management for people and organization programs, including change strategy, organization change readiness, culture and behavior adoption, and stakeholder communications." },
   { l2: "People & Organization", l3: "Program & Portfolio Management", description: "Project, program, and portfolio management for HR and people initiatives, including people transformation PMO, organization program leadership, HR portfolio management, and benefits tracking." },
-  { l2: "Risk & Compliance", l3: "Enterprise Risk Management", description: "Design and operation of enterprise risk management, including risk strategy and framework, risk appetite, risk operating model, enterprise risk assessments, risk registers, and monitoring and reporting." },
-  { l2: "Risk & Compliance", l3: "Third-Party Risk Management", description: "Management of supplier and third-party risk from design through ongoing operation, including frameworks, due diligence, onboarding and risk tiering, ongoing monitoring, remediation, and reporting." },
-  { l2: "Risk & Compliance", l3: "Operational Risk & Resilience", description: "Assessment and strengthening of operational resilience, including operational risk assessments, business continuity, scenario exercises, incident readiness, and resilience monitoring." },
-  { l2: "Risk & Compliance", l3: "Governance & Controls", description: "Design, testing, and modernization of governance and internal controls, including governance frameworks, SOX controls advisory, controls testing and monitoring, and remediation tracking." },
-  { l2: "Risk & Compliance", l3: "Compliance & Regulatory", description: "Design and operation of compliance programs, including compliance operating model, regulatory change management, policy frameworks, compliance monitoring and testing, financial crime compliance, and remediation." },
-  { l2: "Risk & Compliance", l3: "Internal Audit", description: "Strategy, transformation, and execution of internal audit, including audit operating model, planning and methodology, audit execution, continuous auditing, and issue follow-up." },
-  { l2: "Risk & Compliance", l3: "Risk Technology", description: "Advisory on risk and compliance platforms, including GRC platform strategy and selection, controls technology roadmaps, third-party risk platform advisory, and risk analytics design." },
-  { l2: "Risk & Compliance", l3: "Risk AI", description: "AI governance and AI-specific solution design for risk, including AI risk and controls frameworks, AI use cases for risk, intelligent controls design, and AI-enabled compliance and audit." },
-  { l2: "Risk & Compliance", l3: "Change Management", description: "Change management for risk and compliance programs, including change strategy, risk culture and adoption, policy change enablement, and controls training and adoption." },
-  { l2: "Risk & Compliance", l3: "Program & Portfolio Management", description: "Project, program, and portfolio management for risk and compliance initiatives, including regulatory program PMO, risk program leadership, risk portfolio management, and remediation governance." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Enterprise Risk Management", description: "Design and operation of enterprise risk management, including risk strategy and framework, risk appetite, risk operating model, enterprise risk assessments, risk registers, and monitoring and reporting." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Third-Party Risk Management", description: "Management of supplier and third-party risk from design through ongoing operation, including frameworks, due diligence, onboarding and risk tiering, ongoing monitoring, remediation, and reporting." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Operational Risk & Resilience", description: "Assessment and strengthening of operational resilience, including operational risk assessments, business continuity, scenario exercises, incident readiness, and resilience monitoring." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Governance & Controls", description: "Design, testing, and modernization of governance and internal controls, including governance frameworks, SOX controls advisory, controls testing and monitoring, and remediation tracking." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Compliance & Regulatory", description: "Design and operation of compliance programs, including compliance operating model, regulatory change management, policy frameworks, compliance monitoring and testing, financial crime compliance, and remediation." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Internal Audit", description: "Strategy, transformation, and execution of internal audit, including audit operating model, planning and methodology, audit execution, continuous auditing, and issue follow-up." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Risk Technology", description: "Advisory on risk and compliance platforms, including GRC platform strategy and selection, controls technology roadmaps, third-party risk platform advisory, and risk analytics design." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Risk AI", description: "AI governance and AI-specific solution design for risk, including AI risk and controls frameworks, AI use cases for risk, intelligent controls design, and AI-enabled compliance and audit." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Change Management", description: "Change management for risk and compliance programs, including change strategy, risk culture and adoption, policy change enablement, and controls training and adoption." },
+  { l2: "Risk, Compliance & AI Governance", l3: "Program & Portfolio Management", description: "Project, program, and portfolio management for risk and compliance initiatives, including regulatory program PMO, risk program leadership, risk portfolio management, and remediation governance." },
 ];
 
 const offerKey = (c: { l2: string; l3: string }) => `${c.l2} > ${c.l3}`;
@@ -71,9 +70,9 @@ const L2_ORDER = [...new Set(CATALOG.map((c) => c.l2))];
 // `l2` is the area's name in the CATALOG; `areaId` is the id the app groups by (src/data/mcStorefront.ts holds the same list;
 // scripts/qc/pipeline/industry.test.mjs fails if the two differ).
 const AGENDAS: { id: string; areaId: string; l2: string; label: string }[] = [
-  { id: "ai-into-pl-value", areaId: "strategy", l2: "Strategy & Transformation", label: "Turn AI into P&L value" },
-  { id: "ai-first-operating-model", areaId: "strategy", l2: "Strategy & Transformation", label: "Build an AI-first operating model" },
-  { id: "portfolio-through-ma", areaId: "strategy", l2: "Strategy & Transformation", label: "Reshape the portfolio through M&A" },
+  { id: "ai-into-pl-value", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Turn AI into P&L value" },
+  { id: "ai-first-operating-model", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Build an AI-first operating model" },
+  { id: "portfolio-through-ma", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Reshape the portfolio through M&A" },
   { id: "modernize-finance", areaId: "finance", l2: "Finance", label: "Modernize finance with AI and automation" },
   { id: "plan-forecast-ai", areaId: "finance", l2: "Finance", label: "Plan and forecast with AI" },
   { id: "cost-margin-cash", areaId: "finance", l2: "Finance", label: "Improve cost, margin and cash" },
@@ -83,12 +82,12 @@ const AGENDAS: { id: string; areaId: string; l2: string; label: string }[] = [
   { id: "modernize-planning", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Modernize planning with AI and automation" },
   { id: "resilient-sourcing-footprint", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Build resilient sourcing and footprint" },
   { id: "cut-procurement-ops-cost", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Cut procurement and operations cost" },
-  { id: "modernize-customer-service", areaId: "customer-growth", l2: "Customer & Growth", label: "Modernize customer service with AI" },
-  { id: "pricing-commercial-excellence", areaId: "customer-growth", l2: "Customer & Growth", label: "Sharpen pricing and commercial excellence" },
-  { id: "marketing-sales-effectiveness", areaId: "customer-growth", l2: "Customer & Growth", label: "Lift marketing and sales effectiveness" },
-  { id: "govern-ai-regulation", areaId: "risk", l2: "Risk & Compliance", label: "Govern AI and meet new regulation" },
-  { id: "modernize-risk-compliance", areaId: "risk", l2: "Risk & Compliance", label: "Modernize risk and compliance with AI and automation" },
-  { id: "third-party-operational-resilience", areaId: "risk", l2: "Risk & Compliance", label: "Strengthen third-party and operational resilience" },
+  { id: "modernize-customer-service", areaId: "customer-growth", l2: "Customer", label: "Modernize customer service with AI" },
+  { id: "pricing-commercial-excellence", areaId: "customer-growth", l2: "Customer", label: "Sharpen pricing and commercial excellence" },
+  { id: "marketing-sales-effectiveness", areaId: "customer-growth", l2: "Customer", label: "Lift marketing and sales effectiveness" },
+  { id: "govern-ai-regulation", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Govern AI and meet new regulation" },
+  { id: "modernize-risk-compliance", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Modernize risk and compliance with AI and automation" },
+  { id: "third-party-operational-resilience", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Strengthen third-party and operational resilience" },
 ];
 const AGENDA_BY_ID = new Map(AGENDAS.map((a) => [a.id, a]));
 const AREA_ID_BY_L2 = new Map(AGENDAS.map((a) => [a.l2, a.areaId]));
@@ -96,6 +95,27 @@ const NO_AGENDA = "none";
 const AGENDA_PROMPT = L2_ORDER.map(
   (l2) => `${l2.toUpperCase()}\n` + AGENDAS.filter((a) => a.l2 === l2).map((a) => `- ${a.id}: ${a.label}`).join("\n"),
 ).join("\n\n");
+
+// Offerings retired when the catalog changed (the three renamed areas, Growth Strategy moving to Strategy, Customer Experience
+// renamed, Customer Technology and AI merged, Learning folded into Talent & Leadership). Stored corrections written before the change
+// are read through this so they still count as worked examples.
+const RETIRED_OFFERS: Record<string, string> = {
+  "Customer & Growth > Growth Strategy": "Strategy & AI Transformation > Growth Strategy",
+  "Customer & Growth > Customer Experience": "Customer > Customer Experience & Journey Design",
+  "Customer & Growth > Customer & Growth Technology": "Customer > Customer Technology & AI",
+  "Customer & Growth > Customer & Growth AI": "Customer > Customer Technology & AI",
+  "People & Organization > Learning & Capability Development": "People & Organization > Talent & Leadership",
+};
+const RETIRED_L2: Record<string, string> = {
+  "Strategy & Transformation": "Strategy & AI Transformation",
+  "Customer & Growth": "Customer",
+  "Risk & Compliance": "Risk, Compliance & AI Governance",
+};
+function currentOffer(o: string): string {
+  if (RETIRED_OFFERS[o]) return RETIRED_OFFERS[o];
+  const [l2, l3] = o.split(" > ");
+  return l3 && RETIRED_L2[l2] ? `${RETIRED_L2[l2]} > ${l3}` : o;
+}
 
 const isGenericOffer = (o: string) => /> (Change Management|Program & Portfolio Management)$/.test(o);
 
@@ -128,7 +148,7 @@ const PLACEMENT_GUIDANCE = `PLACEMENT GUIDANCE (from the MC team's corrections t
 - Cybersecurity, data-security and cyber-defence needs go under third-party-operational-resilience (modernize-risk-compliance when the need is about deploying technology against fraud).
 - Workforce, talent, skills and retention needs go under reshape-work-skills, even when they do not mention AI; use ai-era-organization when the need is about redesigning the organization or the work itself.
 - Customer journey, customer experience and service-delivery needs go under modernize-customer-service.
-- Growth and market-expansion needs belong to the Customer & Growth practice, not Strategy; technology, infrastructure and platform modernization needs belong to Strategy & Transformation.
+- Growth Strategy is a Strategy & AI Transformation offering: use it as the primary for enterprise growth and market-expansion needs placed in that practice (under an agenda there, or "${NO_AGENDA}" in that practice). When such a need sits under a Customer agenda, use it only as the secondary. Pricing, monetization, customer experience, customer service and customer technology needs belong to Customer. Technology, infrastructure and platform modernization needs belong to Strategy & AI Transformation.
 - "Portfolio" is portfolio-through-ma only when the need is about transactions (acquisitions, divestitures, mergers). Store-footprint, brand-portfolio and asset-portfolio reviews are "${NO_AGENDA}".
 - Financial-crime regulation needs are "${NO_AGENDA}", not govern-ai-regulation. R&D productivity needs are "${NO_AGENDA}". Cost-control needs about networks and partners belong under cut-procurement-ops-cost; value-based care and reimbursement models are ai-first-operating-model.`;
 
@@ -138,12 +158,13 @@ function cleanExamples(raw: unknown): string[] {
   const out: string[] = [];
   for (const e of list(raw).slice(0, 60)) {
     if (out.length >= 12) break;
-    const primary = typeof e?.primary === "string" ? e.primary : "";
+    const primary = typeof e?.primary === "string" ? currentOffer(e.primary) : "";
     if (!VALID_SET.has(primary)) continue;
     const agenda = typeof e?.agenda === "string" ? AGENDA_BY_ID.get(e.agenda) : undefined;
     const areaL2 = AGENDAS.find((a) => a.areaId === e?.area)?.l2;
     if (!agenda && !areaL2) continue;
-    const secondary = typeof e?.secondary === "string" && VALID_SET.has(e.secondary) && e.secondary !== primary ? e.secondary : "";
+    const secondaryRaw = typeof e?.secondary === "string" ? currentOffer(e.secondary) : "";
+    const secondary = VALID_SET.has(secondaryRaw) && secondaryRaw !== primary ? secondaryRaw : "";
     const need = clean(e?.need, 140);
     if (!need) continue;
     const text = clean(e?.text, 300);
