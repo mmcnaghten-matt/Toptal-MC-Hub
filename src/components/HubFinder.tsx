@@ -47,7 +47,7 @@ interface Practice {
 const PRACTICES: Practice[] = [
   {
     id: "strategy",
-    name: "Strategy & Transformation",
+    name: "Strategy & AI Transformation",
     color: "#2B44D4",
     bg: "#EEF2FF",
     buyers: ["CEO", "Chief Strategy Officer", "Chief Transformation Officer", "business unit presidents"],
@@ -59,6 +59,15 @@ const PRACTICES: Practice[] = [
           "Our board keeps asking what our differentiation is, and every time we give a different answer.",
           "We're making major M&A and portfolio decisions, but we keep second-guessing ourselves on whether they align with where we're really going.",
           "Business units are pursuing totally different strategic directions with no clear parent strategy to guide them.",
+        ],
+      },
+      {
+        id: "st-growth", name: "Growth Strategy",
+        description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion.",
+        signals: [
+          "We've got ambitious revenue targets for next year but nobody can explain how we're going to get there.",
+          "We keep launching new products/markets but most don't take off. We have no systematic GTM strategy.",
+          "Our sales and marketing teams are misaligned on who we're selling to and what message resonates.",
         ],
       },
       {
@@ -306,22 +315,22 @@ const PRACTICES: Practice[] = [
   },
   {
     id: "customer",
-    name: "Customer & Growth",
+    name: "Customer",
     color: "#D6336C",
     bg: "#FDF2F8",
     buyers: ["Chief Revenue Officer", "CMO", "Chief Customer Officer"],
     l3s: [
       {
-        id: "cg-growth", name: "Growth Strategy",
-        description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion.",
+        id: "cg-pricing", name: "Pricing & Monetization Strategy",
+        description: "Defines how the company prices and monetizes its offerings, including pricing strategy, packaging and value-based pricing, revenue and monetization model design, and pricing governance and execution.",
         signals: [
-          "We've got ambitious revenue targets for next year but nobody can explain how we're going to get there.",
-          "We keep launching new products/markets but most don't take off. We have no systematic GTM strategy.",
-          "Our sales and marketing teams are misaligned on who we're selling to and what message resonates.",
+          "We keep discounting to win deals and nobody can say whether our prices reflect the value we deliver.",
+          "We've launched new products and services but we don't know how to package or price them, so we copy competitors.",
+          "Our revenue is growing but margins are shrinking. We suspect we're leaving money on the table in how we price and monetize.",
         ],
       },
       {
-        id: "cg-cx", name: "Customer Experience",
+        id: "cg-cx", name: "Customer Experience & Journey Design",
         description: "Design and improvement of the end-to-end customer experience, including CX strategy, customer journey design, voice of customer, experience measurement, and loyalty experience design.",
         signals: [
           "Our NPS has been sliding for two years. We've done random things to fix it, but nothing sticks.",
@@ -339,21 +348,13 @@ const PRACTICES: Practice[] = [
         ],
       },
       {
-        id: "cg-tech", name: "Customer & Growth Technology",
-        description: "Advisory on commercial platforms, including CRM strategy and selection, marketing platform strategy, customer service platform advisory, and commercial systems roadmaps.",
+        id: "cg-tech", name: "Customer Technology & AI",
+        description: "Advisory on commercial platforms and AI for commercial functions, including CRM strategy and selection, marketing and customer service platform advisory, commercial systems roadmaps, commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service.",
         signals: [
           "We've got three different CRM systems and they don't talk to each other. Sales and marketing can't see the same customer view.",
           "We want to replace our CRM but all the vendors say they do everything. We don't know what we actually need.",
           "Our marketing automation is set up, but we're not using it effectively. We need to figure out what the platform can actually do for us.",
-        ],
-      },
-      {
-        id: "cg-ai", name: "Customer & Growth AI",
-        description: "AI-specific strategy and solution design for commercial functions, including commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service.",
-        signals: [
           "Our sales team is curious about AI for things like lead scoring or email personalization, but we don't have a prioritized use case.",
-          "We have tons of customer data. I know there's value in it with AI, but I don't know where to start.",
-          "Our competitors are probably using AI to personalize customer experiences. We're not. We need to figure out how to get ahead.",
         ],
       },
       {
@@ -410,15 +411,6 @@ const PRACTICES: Practice[] = [
         ],
       },
       {
-        id: "po-learning", name: "Learning & Capability Development",
-        description: "Design, improvement, and ongoing delivery of learning programs, including learning strategy, capability assessment, reskilling strategy, AI readiness and literacy, and learning operating model.",
-        signals: [
-          "We're investing in learning but we can't point to any business impact. Are people actually getting better?",
-          "We need to upskill people on AI, digital, and modern tech. Our current learning approach isn't set up for that.",
-          "Our training programs are generic. They're not building the specific capabilities the business needs for the next five years.",
-        ],
-      },
-      {
         id: "po-hrops", name: "HR Operations & Services",
         description: "Design, improvement, and ongoing delivery of HR services, including HR service delivery design, employee lifecycle administration, HR shared services, and HR process improvement.",
         signals: [
@@ -466,7 +458,7 @@ const PRACTICES: Practice[] = [
   },
   {
     id: "risk",
-    name: "Risk & Compliance",
+    name: "Risk, Compliance & AI Governance",
     color: "#9C2B2B",
     bg: "#FEF2F2",
     buyers: ["Chief Risk Officer", "Chief Compliance Officer", "Chief Audit Executive"],

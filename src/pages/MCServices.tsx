@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ServiceFinder from "@/components/ServiceFinder";
-import { AGENDAS, AREA_BY_CATALOG_L2 } from "@/data/mcStorefront";
+import { AGENDAS } from "@/data/mcStorefront";
 
 interface ServiceCategory {
   pillar: string;
@@ -119,7 +119,7 @@ const servicePortfolio: ServiceCategory[] = [
   },
 ];
 
-type Practice = "Strategy & Transformation" | "Finance" | "Supply Chain & Operations" | "Customer & Growth" | "People & Organization" | "Risk & Compliance";
+type Practice = "Strategy & AI Transformation" | "Finance" | "Supply Chain & Operations" | "Customer" | "People & Organization" | "Risk, Compliance & AI Governance";
 
 interface SubRow {
   service: string;
@@ -153,18 +153,87 @@ interface GTMRow {
   subRows?: SubRow[];
 }
 
-const PRACTICE_ORDER: Practice[] = ["Strategy & Transformation", "Finance", "Supply Chain & Operations", "Customer & Growth", "People & Organization", "Risk & Compliance"];
+const PRACTICE_ORDER: Practice[] = ["Strategy & AI Transformation", "Finance", "Supply Chain & Operations", "Customer", "People & Organization", "Risk, Compliance & AI Governance"];
 
 const gtmMaterials: GTMRow[] = [
-  // Strategy & Transformation
+  // Strategy & AI Transformation
   {
     isHub: true,
     seq: 1,
-    practice: "Strategy & Transformation",
+    practice: "Strategy & AI Transformation",
     service: "Strategy & AI Transformation",
     keyBuyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
     subRows: [
       { service: "Corporate Strategy", description: "Enterprise-level strategy that defines where and how the company competes, including strategic planning, business portfolio choices, market entry, and enterprise growth strategy." },
+      {
+        service: "Growth Strategy",
+        docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
+        pdfUrl: "https://drive.google.com/file/d/1Ilu2WNeBBXj-Y_yEDaipkIkV0cpXUbzh/view?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1KQ4jH3CHvMQJ4xYRyBbqsMOBMHaUmznl_20J003HyZc/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1N8J9ejIBZNJWDf8eYl8vwl1QZB2vLCcI2xCuClEkOsQ/edit",
+        maturityDiagnosticUrl: "/diagnostics/growth-strategy",
+        firstCallDeckUrl: "https://docs.google.com/presentation/d/1SUHNZn93BQNkLlyXAZZUBWOuvaPK5kDy1g-pPJ3mI0Y/edit?usp=sharing",
+        exampleMaterials: [
+          { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
+        ],
+        description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion.",
+        subRows: [
+          {
+            service: "Go-to-Market",
+            docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/document/d/1BZFtld0jo68AGSexX8OyEWMgVh-6YrnHwAnrxwFt7LQ/edit?usp=sharing",
+            exampleMaterials: [
+              { label: "Oman Airports Loyalty Pgm", url: "https://docs.google.com/presentation/d/1X8w3PGoG7wk2aQwAGNYgAZobaOEvktDSx_WIys0KrfQ/edit" },
+            ],
+            description: "Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy.",
+          },
+          {
+            service: "Product Strategy",
+            docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
+            battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
+            sellersSheetUrl: "https://docs.google.com/document/d/19AUSpdMRueIZR70q64dCo6U3IKKbkPHVod6D4t_bIbw/edit?usp=sharing",
+            maturityModelUrl: "https://docs.google.com/document/d/1Eog-BhkRgRion8wH4jtoFq0TY4XB0LzkYpAu-tBU0_k/edit",
+            description: "Embeds strategic rigor into the product development life cycle to minimize risk and maximize successful market entry. Helps businesses define (or revise) their product vision and roadmap to ensure successful product development, launch, and maintenance.",
+          },
+        ],
+      },
+      {
+        service: "Enterprise Digital & Technology",
+        docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
+        description: "Enterprise-level advisory on how digital and technology investments enable corporate strategy, including enterprise technology strategy, digital roadmaps, and investment prioritization; technical delivery coordinated with Technology Services.",
+      },
+      {
+        service: "Enterprise AI",
+        docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
+        battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
+        sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
+        maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
+        maturityDiagnosticUrl: "/diagnostics/ai-maturity",
+        exampleMaterials: [
+          { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
+          { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
+        ],
+        description: "Enterprise-level AI business strategy spanning multiple functions, including AI ambition, enterprise use case prioritization, and AI adoption roadmaps; technical build coordinated with AI Services.",
+        subRows: [
+          {
+            service: "AI Core - Build AI Capability",
+            description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
+            exampleMaterials: [
+              { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
+            ],
+          },
+          {
+            service: "AI Value Realization",
+            description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
+            firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
+          },
+        ],
+      },
       { service: "Operating Model", description: "Design of the enterprise target operating model across business units and functions, including decision rights, shared services strategy, and global business services design." },
       {
         service: "M&A & Divestitures",
@@ -203,42 +272,6 @@ const gtmMaterials: GTMRow[] = [
           { label: "Ricoh 3D Healthcare", url: "https://docs.google.com/presentation/d/1IuixJLDm7pATex8t2t0C23DH5I2BRQIiyDzJn0TtFc0/edit" },
         ],
         description: "Design of the enterprise transformation architecture, including transformation assessments, roadmaps, transformation office and governance design, and benefits frameworks.",
-      },
-      {
-        service: "Enterprise AI",
-        docUrl: "https://docs.google.com/presentation/d/1P7sxLbSWMZuSFru7cOk1_qYlVV8sZU0Av0HBu3iXKR4/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/1OFm2sxFT9nSD4Oq9Z49sqE07HI4GzB55KvfsL11gFiI/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/1WTtIycmf_KpsTwG3cekjtwt20093RMgTpH1MqAaubUs/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/presentation/d/13fppFZa_ke4IVDC6ZDnaQVKG5ANGf428Q-59zBecWhM/edit",
-        maturityDiagnosticUrl: "/diagnostics/ai-maturity",
-        exampleMaterials: [
-          { label: "Adidas AI Innovation", url: "https://docs.google.com/presentation/d/1s-UP0wZ1LvItVCKqGaXaYdLSV0MD_l9nknGmRvKq9pQ/edit" },
-          { label: "Zoetis GenAI", url: "https://docs.google.com/presentation/d/1JQitZA2VO5dNF8Zej5YQhYV-r7dVnsSTVZp335jbdfE/edit" },
-        ],
-        description: "Enterprise-level AI business strategy spanning multiple functions, including AI ambition, enterprise use case prioritization, and AI adoption roadmaps; technical build coordinated with AI Services.",
-        subRows: [
-          {
-            service: "AI Core - Build AI Capability",
-            description: "Builds the foundational talent, data, technology, and operating model that AI governance and value realization depend on — so use cases scale instead of stalling in pilot.",
-            firstCallDeckUrl: "https://docs.google.com/presentation/d/1JmA7PYRXtgutiT-SC8NJjR2GBCTzDkf3pgsxairbCDQ/edit?usp=drive_link",
-            exampleMaterials: [
-              { label: "Spectrum Brands Tech, Data & AI Assessment", url: "https://docs.google.com/presentation/d/1_PQBvc4gvP6Jp2pMxfQtepcODqJguMBksHkWaM6SCuI/edit?usp=sharing" },
-            ],
-          },
-          {
-            service: "AI Value Realization",
-            description: "Builds the deterministic scaffolding — workflow baselines, control logic, and data context — that turns AI spend from a faith-based bet into provable, board-ready ROI.",
-            firstCallDeckUrl: "https://docs.google.com/presentation/d/1Lgz2mOezDzNNiuc_ZoxEyustQ_ZfhLh31CpwGzLKmcQ/edit?usp=sharing",
-          },
-        ],
-      },
-      {
-        service: "Enterprise Digital & Technology",
-        docUrl: "https://docs.google.com/presentation/d/10mMIU1IY84quOUxZbo71bryJDa6BdHYzPqVi0iVOfHc/edit?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/10ZxPCfgqQauZasgHDXjLz8GqQJfsQurkWCxBgjOdpN8/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/1b0Bk6P1RFbZ-txYmtDy1Fwk2lmbhyYR2wCgd1_WsKEc/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1wnDErTEgJPRuiTpccdHg8SuSMLBs9BZSku2nzACA074/edit",
-        description: "Enterprise-level advisory on how digital and technology investments enable corporate strategy, including enterprise technology strategy, digital roadmaps, and investment prioritization; technical delivery coordinated with Technology Services.",
       },
       { service: "Change Management", description: "Change management for enterprise, cross-functional transformations, including change strategy, change readiness assessments, stakeholder alignment, and communications and adoption." },
       { service: "Program & Portfolio Management", description: "Delivery and governance of enterprise programs, including enterprise PMO, program leadership, portfolio prioritization, Integration Management Offices, and benefits tracking." },
@@ -311,57 +344,24 @@ const gtmMaterials: GTMRow[] = [
       { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for supply chain and operations initiatives, including supply chain PMO, network program leadership, operations portfolio management, and benefits tracking." },
     ],
   },
-  // Customer & Growth
+  // Customer
   {
     isHub: true,
     seq: 4,
-    practice: "Customer & Growth",
-    service: "Customer & Growth",
+    practice: "Customer",
+    service: "Customer",
     keyBuyers: "Chief Revenue Officer; CMO; Chief Customer Officer",
     subRows: [
+      { service: "Pricing & Monetization Strategy", description: "Defines how the company prices and monetizes its offerings, including pricing strategy, packaging and value-based pricing, revenue and monetization model design, and pricing governance and execution." },
       {
-        service: "Growth Strategy",
-        docUrl: "https://docs.google.com/presentation/d/1lN6S_ESoqT3ZLkBr7w5MP6rsnp8_974nxLIJhenJutk/edit?usp=sharing",
-        pdfUrl: "https://drive.google.com/file/d/1Ilu2WNeBBXj-Y_yEDaipkIkV0cpXUbzh/view?usp=sharing",
-        battlecardUrl: "https://docs.google.com/presentation/d/1KQ4jH3CHvMQJ4xYRyBbqsMOBMHaUmznl_20J003HyZc/edit",
-        sellersSheetUrl: "https://docs.google.com/document/d/15j8g5YQ7bdnigvMeR1eAgU2K5W9_EZMLG8Xs3OQVySc/edit?usp=sharing",
-        maturityModelUrl: "https://docs.google.com/document/d/1N8J9ejIBZNJWDf8eYl8vwl1QZB2vLCcI2xCuClEkOsQ/edit",
-        maturityDiagnosticUrl: "/diagnostics/growth-strategy",
-        firstCallDeckUrl: "https://docs.google.com/presentation/d/1SUHNZn93BQNkLlyXAZZUBWOuvaPK5kDy1g-pPJ3mI0Y/edit?usp=sharing",
-        exampleMaterials: [
-          { label: "DFF Gaming Hub Proposal", url: "https://docs.google.com/presentation/d/1ScpPMjT73PCTxFGBaSMLLQxbKYFn5UnJasKZ_ltNbF4/edit" },
-        ],
-        description: "Defines commercial direction and go-to-market choices, including commercial strategy, go-to-market and channel strategy, pricing and revenue growth, and commercial market expansion.",
-        subRows: [
-          {
-            service: "Go-to-Market",
-            docUrl: "https://docs.google.com/presentation/d/1D3Ffyb--yMt82ypsaj4J3Yg68TrZYzraWTyzhYY7SRo/edit?usp=sharing",
-            maturityModelUrl: "https://docs.google.com/document/d/1BZFtld0jo68AGSexX8OyEWMgVh-6YrnHwAnrxwFt7LQ/edit?usp=sharing",
-            exampleMaterials: [
-              { label: "Oman Airports Loyalty Pgm", url: "https://docs.google.com/presentation/d/1X8w3PGoG7wk2aQwAGNYgAZobaOEvktDSx_WIys0KrfQ/edit" },
-            ],
-            description: "Designs and executes strategies to bring new offerings to market, encompassing channel strategy, pricing models, sales enablement, and launch sequencing. A direct enabler of Growth Strategy.",
-          },
-          {
-            service: "Product Strategy",
-            docUrl: "https://docs.google.com/presentation/d/1IBYMMdmUUoPtPC2JMkSaa5j4k_xDqsP0aUgw2_UBl74/edit?usp=sharing",
-            battlecardUrl: "https://docs.google.com/presentation/d/120aiWfiBDeNP-u6aK2Kwi_zzURbWOibt-hJwwC7PdWU/edit",
-            sellersSheetUrl: "https://docs.google.com/document/d/19AUSpdMRueIZR70q64dCo6U3IKKbkPHVod6D4t_bIbw/edit?usp=sharing",
-            maturityModelUrl: "https://docs.google.com/document/d/1Eog-BhkRgRion8wH4jtoFq0TY4XB0LzkYpAu-tBU0_k/edit",
-            description: "Embeds strategic rigor into the product development life cycle to minimize risk and maximize successful market entry. Helps businesses define (or revise) their product vision and roadmap to ensure successful product development, launch, and maintenance.",
-          },
-        ],
-      },
-      {
-        service: "Customer Experience",
+        service: "Customer Experience & Journey Design",
         docUrl: "https://docs.google.com/presentation/d/1DXkurtN5L74wXcpYM5RjcWHGyvM7kfOgzF6ZIboHKUc/edit?usp=drive_link",
         battlecardUrl: "https://docs.google.com/presentation/d/1318piklJqw05nvPrGhIKWF31hZvzGZMS1VPSS9Q_wKE/edit",
         maturityModelUrl: "https://docs.google.com/document/d/1fXDAZA5Wh0iPQksDPdtLe07SXSbz5khvvU32Wk45axI/edit",
         description: "Design and improvement of the end-to-end customer experience, including CX strategy, customer journey design, voice of customer, experience measurement, and loyalty experience design.",
       },
       { service: "Customer Service & Success", description: "Design and ongoing delivery of customer service and success, including service strategy, contact center operating model, service and success operations, and retention and renewal management." },
-      { service: "Customer & Growth Technology", description: "Advisory on commercial platforms, including CRM strategy and selection, marketing platform strategy, customer service platform advisory, and commercial systems roadmaps." },
-      { service: "Customer & Growth AI", description: "AI-specific strategy and solution design for commercial functions, including commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service." },
+      { service: "Customer Technology & AI", description: "Advisory on commercial platforms and AI for commercial functions, including CRM strategy and selection, marketing and customer service platform advisory, commercial systems roadmaps, commercial AI strategy, sales and marketing AI use cases, personalization strategy, and AI-enabled customer service." },
       { service: "Change Management", description: "Change management for commercial programs, including commercial change strategy, sales and marketing readiness, stakeholder communications, and commercial adoption and enablement." },
       { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for commercial initiatives, including customer transformation PMO, commercial program leadership, growth portfolio management, and benefits tracking." },
     ],
@@ -391,7 +391,6 @@ const gtmMaterials: GTMRow[] = [
         service: "Talent & Leadership",
         description: "Strategies and programs to attract, develop, and retain talent, including talent strategy, leadership and executive development, succession planning, and culture and leadership alignment.",
       },
-      { service: "Learning & Capability Development", description: "Design, improvement, and ongoing delivery of learning programs, including learning strategy, capability assessment, reskilling strategy, AI readiness and literacy, and learning operating model." },
       { service: "HR Operations & Services", description: "Design, improvement, and ongoing delivery of HR services, including HR service delivery design, employee lifecycle administration, HR shared services, and HR process improvement." },
       { service: "HR Technology", description: "Advisory on HR platforms, including HRIS strategy and selection, talent platform advisory, HR systems roadmaps, and people analytics design." },
       { service: "HR AI", description: "AI-specific strategy and solution design for HR, including HR AI strategy, use case prioritization, AI-enabled talent and learning processes, and HR AI adoption roadmaps." },
@@ -408,11 +407,11 @@ const gtmMaterials: GTMRow[] = [
       { service: "Program & Portfolio Management", description: "Project, program, and portfolio management for HR and people initiatives, including people transformation PMO, organization program leadership, HR portfolio management, and benefits tracking." },
     ],
   },
-  // Risk & Compliance
+  // Risk, Compliance & AI Governance
   {
     isHub: true,
     seq: 6,
-    practice: "Risk & Compliance",
+    practice: "Risk, Compliance & AI Governance",
     service: "Risk, Compliance & AI Governance",
     keyBuyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
     subRows: [
@@ -615,18 +614,18 @@ const pillarColors: Record<string, string> = {
 // Same brand colors used for these hubs in ConstellationDiagram and MCPlan's Hub
 // Offering cards.
 const HUB_OFFERING_COLORS: Record<Practice, { text: string; bg: string }> = {
-  "Strategy & Transformation": { text: "#2B44D4", bg: "#EEF2FF" },
+  "Strategy & AI Transformation": { text: "#2B44D4", bg: "#EEF2FF" },
   Finance: { text: "#0CA678", bg: "#ECFDF5" },
   "Supply Chain & Operations": { text: "#E86B4A", bg: "#FFF7ED" },
-  "Customer & Growth": { text: "#D6336C", bg: "#FDF2F8" },
+  Customer: { text: "#D6336C", bg: "#FDF2F8" },
   "People & Organization": { text: "#5C6BC0", bg: "#EDE9FE" },
-  "Risk & Compliance": { text: "#9C2B2B", bg: "#FEF2F2" },
+  "Risk, Compliance & AI Governance": { text: "#9C2B2B", bg: "#FEF2F2" },
 };
 
 interface MCDomain {
   name: string;
-  /** Heading shown on the card, where it differs from the catalog name above. */
-  title?: string;
+  /** Storefront service area id (src/data/mcStorefront.ts), used to list the area's client agendas. */
+  areaId: string;
   buyers: string;
   description: string;
   l3s: string[];
@@ -636,16 +635,17 @@ interface MCDomain {
 
 const mcDomains: MCDomain[] = [
   {
-    name: "Strategy & Transformation",
-    title: "Strategy & AI Transformation",
+    name: "Strategy & AI Transformation",
+    areaId: "strategy",
     buyers: "CEO; Chief Strategy Officer; Chief Transformation Officer; business unit presidents",
-    description: "Help executive leadership define enterprise strategy, prioritize transformation investments, design operating models, and coordinate cross-functional value creation.",
-    l3s: ["Corporate Strategy", "Operating Model", "M&A & Divestitures", "Performance Improvement", "Transformation Management", "Enterprise AI", "Enterprise Digital & Technology", "Change Management", "Program & Portfolio Management"],
+    description: "Help executive leadership define enterprise and growth strategy, prioritize transformation investments, design operating models, and coordinate cross-functional value creation.",
+    l3s: ["Corporate Strategy", "Growth Strategy", "Enterprise Digital & Technology", "Enterprise AI", "Operating Model", "M&A & Divestitures", "Performance Improvement", "Transformation Management", "Change Management", "Program & Portfolio Management"],
     color: "#2B44D4",
     bg: "#EEF2FF",
   },
   {
     name: "Finance",
+    areaId: "finance",
     buyers: "CFO; Chief Accounting Officer; Controller",
     description: "Improve how the finance function plans, operates, controls, and supports business decisions, including the business use of technology and AI.",
     l3s: ["Finance Strategy", "Finance Operating Model", "Finance Processes & Operations", "Financial Planning & Analysis", "Finance Technology", "Finance AI", "Change Management", "Program & Portfolio Management"],
@@ -654,6 +654,7 @@ const mcDomains: MCDomain[] = [
   },
   {
     name: "Supply Chain & Operations",
+    areaId: "supply-chain",
     buyers: "COO; Chief Supply Chain Officer; Chief Procurement Officer",
     description: "Improve end-to-end supply chain and operational performance across planning, procurement, manufacturing, service operations, and fulfillment.",
     l3s: ["Supply Chain Strategy", "Supply Chain Planning", "Procurement", "Manufacturing & Operations", "Logistics & Fulfillment", "Supply Chain & Operations Technology", "Supply Chain & Operations AI", "Change Management", "Program & Portfolio Management"],
@@ -661,24 +662,26 @@ const mcDomains: MCDomain[] = [
     bg: "#FFF7ED",
   },
   {
-    name: "Customer & Growth",
+    name: "Customer",
+    areaId: "customer-growth",
     buyers: "Chief Revenue Officer; CMO; Chief Customer Officer",
-    description: "Improve commercial performance across growth strategy, sales, marketing, customer experience, and the business use of commercial platforms and AI.",
-    l3s: ["Growth Strategy", "Customer Experience", "Customer Service & Success", "Customer & Growth Technology", "Customer & Growth AI", "Change Management", "Program & Portfolio Management"],
+    description: "Improve commercial performance across pricing and monetization, customer experience, customer service, and the business use of customer technology and AI.",
+    l3s: ["Pricing & Monetization Strategy", "Customer Experience & Journey Design", "Customer Service & Success", "Customer Technology & AI", "Change Management", "Program & Portfolio Management"],
     color: "#D6336C",
     bg: "#FDF2F8",
   },
   {
     name: "People & Organization",
+    areaId: "people",
     buyers: "CHRO; Chief People Officer",
-    description: "Help organizations align structure, talent, leadership, learning, and the HR function to business priorities and sustained performance.",
-    l3s: ["Organization Strategy", "Organization Design", "Talent & Leadership", "Learning & Capability Development", "HR Operations & Services", "HR Technology", "HR AI", "Change Management", "Program & Portfolio Management"],
+    description: "Help organizations align structure, talent, leadership, and the HR function to business priorities and sustained performance.",
+    l3s: ["Organization Strategy", "Organization Design", "Talent & Leadership", "HR Operations & Services", "HR Technology", "HR AI", "Change Management", "Program & Portfolio Management"],
     color: "#5C6BC0",
     bg: "#EDE9FE",
   },
   {
-    name: "Risk & Compliance",
-    title: "Risk, Compliance & AI Governance",
+    name: "Risk, Compliance & AI Governance",
+    areaId: "risk",
     buyers: "Chief Risk Officer; Chief Compliance Officer; Chief Audit Executive",
     description: "Improve enterprise risk management, governance, controls, compliance, and internal audit effectiveness, including risk technology and AI governance.",
     l3s: ["Enterprise Risk Management", "Third-Party Risk Management", "Operational Risk & Resilience", "Governance & Controls", "Compliance & Regulatory", "Internal Audit", "Risk Technology", "Risk AI", "Change Management", "Program & Portfolio Management"],
@@ -825,7 +828,7 @@ export default function MCServices() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {mcDomains.map((domain) => (
               <div key={domain.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
-                <h3 className="mb-1 text-xl font-bold" style={{ color: domain.color }}>{domain.title ?? domain.name}</h3>
+                <h3 className="mb-1 text-xl font-bold" style={{ color: domain.color }}>{domain.name}</h3>
                 <p className="mb-2 min-h-8 text-xs text-muted-foreground">
                   <span className="font-semibold">Key buyers: </span>{domain.buyers}
                 </p>
@@ -834,7 +837,7 @@ export default function MCServices() {
                 <div className="mb-4 min-h-[6.25rem]">
                   <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: domain.color }}>Client agendas</p>
                   <ul className="space-y-1">
-                    {AGENDAS.filter((a) => a.area === AREA_BY_CATALOG_L2.get(domain.name)?.id).map((a) => (
+                    {AGENDAS.filter((a) => a.area === domain.areaId).map((a) => (
                       <li key={a.id} className="flex items-start gap-2 text-sm leading-snug text-foreground">
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: domain.color }} aria-hidden />
                         {a.label}
