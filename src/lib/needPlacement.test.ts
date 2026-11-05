@@ -5,11 +5,11 @@ const need = (extra: { area?: string; agenda?: string; mcOffers?: string[] } = {
 
 describe("remapping a need", () => {
   it("keeps the primary when the new area contains it, and clears it when not", () => {
-    const n = need({ agenda: "modernize-finance", mcOffers: ["Finance > Finance AI", "Customer & Growth > Growth Strategy"] });
+    const n = need({ agenda: "modernize-finance", mcOffers: ["Finance > Finance AI", "Customer > Pricing & Monetization Strategy"] });
     expect(primaryOf(withArea(n, "finance"))).toBe("Finance > Finance AI");
     const moved = withArea(n, "risk");
     expect(primaryOf(moved)).toBe("");
-    expect(secondaryOf(moved)).toBe("Customer & Growth > Growth Strategy"); // the secondary is not tied to the area
+    expect(secondaryOf(moved)).toBe("Customer > Pricing & Monetization Strategy"); // the secondary is not tied to the area
   });
 
   it("drops an agenda that does not belong to the new area, keeps one that does", () => {
@@ -43,14 +43,14 @@ describe("remapping a need", () => {
 describe("placementErrors", () => {
   it("accepts a primary in the area with an optional secondary from any area", () => {
     expect(placementErrors(need({ agenda: "plan-forecast-ai", mcOffers: ["Finance > Financial Planning & Analysis"] }))).toEqual([]);
-    expect(placementErrors(need({ area: "finance", mcOffers: ["Finance > Finance AI", "Risk & Compliance > Risk AI"] }))).toEqual([]);
+    expect(placementErrors(need({ area: "finance", mcOffers: ["Finance > Finance AI", "Risk, Compliance & AI Governance > Risk AI"] }))).toEqual([]);
   });
 
   it("flags a missing area, a missing primary, a primary outside the area and bad secondaries", () => {
     expect(placementErrors(need({ mcOffers: ["Finance > Finance AI"] }))).toEqual([]); // the area follows the first catalog offering (older content)
     expect(placementErrors(need({ mcOffers: ["Not an offering"] }))).toEqual(expect.arrayContaining(["Choose a service area"]));
     expect(placementErrors(need({ area: "finance", mcOffers: [] }))).toEqual(["Choose a primary offering"]);
-    expect(placementErrors(need({ area: "finance", mcOffers: ["Risk & Compliance > Risk AI"] }))).toEqual(["The primary offering must be in Finance"]);
+    expect(placementErrors(need({ area: "finance", mcOffers: ["Risk, Compliance & AI Governance > Risk AI"] }))).toEqual(["The primary offering must be in Finance"]);
     expect(placementErrors(need({ area: "finance", mcOffers: ["Finance > Finance AI", "Nope"] }))).toEqual(["The secondary offering is not in the catalog"]);
     expect(placementErrors(need({ area: "finance", mcOffers: ["Finance > Finance AI", "Finance > Finance AI"] }))).toEqual(["The secondary offering must differ from the primary"]);
     expect(placementErrors(need({ area: "finance", mcOffers: ["Finance > Finance AI", "Finance > Finance Strategy", "Finance > Change Management"] }))).toContain("A need holds a primary and at most one secondary offering");

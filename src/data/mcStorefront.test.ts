@@ -8,7 +8,7 @@ describe("MC storefront", () => {
       "Finance",
       "People & Organization",
       "Supply Chain & Operations",
-      "Customer & Growth",
+      "Customer",
       "Risk, Compliance & AI Governance",
     ]);
     expect(AGENDAS).toHaveLength(18);
@@ -21,15 +21,18 @@ describe("MC storefront", () => {
     for (const a of AGENDAS) expect(AREA_BY_ID.has(a.area)).toBe(true);
   });
 
-  it("maps catalog offerings to their area, including the two areas named differently on the slides", () => {
+  it("maps catalog offerings to their area, under the area names used on the storefront", () => {
     expect(areaOfOffer("Finance > Finance AI")?.id).toBe("finance");
-    expect(areaOfOffer("Strategy & Transformation > Enterprise AI")?.name).toBe("Strategy & AI Transformation");
-    expect(areaOfOffer("Risk & Compliance > Risk AI")?.name).toBe("Risk, Compliance & AI Governance");
+    expect(areaOfOffer("Strategy & AI Transformation > Enterprise AI")?.name).toBe("Strategy & AI Transformation");
+    expect(areaOfOffer("Risk, Compliance & AI Governance > Risk AI")?.name).toBe("Risk, Compliance & AI Governance");
+    expect(areaOfOffer("Customer > Pricing & Monetization Strategy")?.id).toBe("customer-growth");
+    expect(areaOfOffer("Strategy & AI Transformation > Growth Strategy")?.id).toBe("strategy");
   });
 
   it("does not map legacy offering names or empty values", () => {
     expect(areaOfOffer("AI Consulting")).toBeUndefined();
     expect(areaOfOffer(undefined)).toBeUndefined();
     expect(areaOfOffer("Unknown Area > Something")).toBeUndefined();
+    expect(areaOfOffer("Customer & Growth > Growth Strategy")).toBeUndefined(); // retired area name
   });
 });

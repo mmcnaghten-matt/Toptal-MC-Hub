@@ -2,8 +2,8 @@
 // Industry needs are grouped area -> agenda -> need. Names and wording come from the storefront slides.
 //
 // `catalogL2` is the area's name in the offering catalog (supabase/functions/refresh-industry-insights/index.ts, CATALOG) and on the
-// MC Services page. Two areas are named differently on the slides ("Strategy & AI Transformation", "Risk, Compliance & AI
-// Governance"); the slide name is used for grouping headings, the catalog name is what offering strings ("L2 > L3") carry.
+// MC Services page. It is what offering strings ("L2 > L3") carry. It now equals the area's `name` for every area; the two fields
+// are kept apart because the L2 is stored inside offering strings, so renaming an area is a data migration.
 
 export interface ServiceArea {
   id: string;
@@ -26,7 +26,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
   {
     id: "strategy",
     name: "Strategy & AI Transformation",
-    catalogL2: "Strategy & Transformation",
+    catalogL2: "Strategy & AI Transformation",
     description: "Set direction, reshape the operating model and make big change stick",
     buyers: ["Chief Executive Officer", "Chief Strategy Officer", "Chief Operating Officer"],
     color: { text: "#2B44D4", bg: "#EEF2FF" },
@@ -57,8 +57,8 @@ export const SERVICE_AREAS: ServiceArea[] = [
   },
   {
     id: "customer-growth",
-    name: "Customer & Growth",
-    catalogL2: "Customer & Growth",
+    name: "Customer",
+    catalogL2: "Customer",
     description: "Grow revenue: pricing, sales, marketing and customer experience",
     buyers: ["Chief Revenue Officer", "Chief Marketing Officer"],
     color: { text: "#D6336C", bg: "#FDF2F8" },
@@ -66,7 +66,7 @@ export const SERVICE_AREAS: ServiceArea[] = [
   {
     id: "risk",
     name: "Risk, Compliance & AI Governance",
-    catalogL2: "Risk & Compliance",
+    catalogL2: "Risk, Compliance & AI Governance",
     description: "Govern AI, manage risk and stay ahead of regulation",
     buyers: ["General Counsel", "Chief Risk Officer", "Chief Audit Executive"],
     color: { text: "#9C2B2B", bg: "#FEF2F2" },

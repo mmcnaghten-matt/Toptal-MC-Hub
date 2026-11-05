@@ -33,7 +33,7 @@ describe("groupNeeds", () => {
   });
 
   it("falls back to the area of the first catalog-style offering", () => {
-    const g = groupNeeds([need("n", { mcOffers: ["Customer & Growth > Customer Experience", "Finance > Finance AI"] })]);
+    const g = groupNeeds([need("n", { mcOffers: ["Customer > Customer Experience & Journey Design", "Finance > Finance AI"] })]);
     expect(g.areas.map((x) => x.area.id)).toEqual(["customer-growth"]);
     expect(g.areas[0].agendas[0].agenda).toBeUndefined();
   });

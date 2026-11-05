@@ -1,4 +1,4 @@
-// The MC service offering catalog: 52 offerings across the six service areas (see mcStorefront.ts).
+// The MC service offering catalog: 51 offerings across the six service areas (see mcStorefront.ts).
 // An offering is stored on a need as "<catalog area name> > <offering>" (for example "Finance > Finance AI"), because Change Management and
 // Program & Portfolio Management exist under every area. supabase/functions/refresh-industry-insights/index.ts holds the same list with
 // descriptions; scripts/qc/pipeline/industry.test.mjs fails if the two differ.
@@ -12,6 +12,7 @@ export interface Offering {
 
 export const OFFERINGS: Offering[] = [
   { area: "strategy", l3: "Corporate Strategy" },
+  { area: "strategy", l3: "Growth Strategy" },
   { area: "strategy", l3: "Enterprise Digital & Technology" },
   { area: "strategy", l3: "Enterprise AI" },
   { area: "strategy", l3: "Operating Model" },
@@ -37,17 +38,15 @@ export const OFFERINGS: Offering[] = [
   { area: "supply-chain", l3: "Supply Chain & Operations AI" },
   { area: "supply-chain", l3: "Change Management" },
   { area: "supply-chain", l3: "Program & Portfolio Management" },
-  { area: "customer-growth", l3: "Growth Strategy" },
-  { area: "customer-growth", l3: "Customer Experience" },
+  { area: "customer-growth", l3: "Pricing & Monetization Strategy" },
+  { area: "customer-growth", l3: "Customer Experience & Journey Design" },
   { area: "customer-growth", l3: "Customer Service & Success" },
-  { area: "customer-growth", l3: "Customer & Growth Technology" },
-  { area: "customer-growth", l3: "Customer & Growth AI" },
+  { area: "customer-growth", l3: "Customer Technology & AI" },
   { area: "customer-growth", l3: "Change Management" },
   { area: "customer-growth", l3: "Program & Portfolio Management" },
   { area: "people", l3: "Organization Strategy" },
   { area: "people", l3: "Organization Design" },
   { area: "people", l3: "Talent & Leadership" },
-  { area: "people", l3: "Learning & Capability Development" },
   { area: "people", l3: "HR Operations & Services" },
   { area: "people", l3: "HR Technology" },
   { area: "people", l3: "HR AI" },
