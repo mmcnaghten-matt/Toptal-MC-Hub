@@ -1,3 +1,5 @@
+// NOTE: written for the catalog before the November 2026 rename (see scripts/offering-rename.mjs). Its input file and the L2 map below use
+// the old area and offering names, so it no longer validates against the current catalog; kept as the record of that review.
 // Turns scripts/data/live-needs-placement.txt (the needs saved in industry_content: placement and MC offering assignment) into the
 // review spreadsheet (with drop-downs and colour-coded confidence), a CSV and a JSON.
 //   node scripts/build-live-needs-placement.mjs <outDir>

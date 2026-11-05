@@ -104,7 +104,7 @@ dv = (
     f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" errorTitle="Service area" error="Pick a service area from the list." sqref="{AREA}2:{AREA}{last}"><formula1>Lists!$H$2:$H$7</formula1></dataValidation>'
     f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" errorTitle="Agenda" error="Pick an agenda from the list for the chosen service area." sqref="{AGENDA}2:{AGENDA}{last}"><formula1>OFFSET(Lists!$A$2,0,MATCH(${AREA}2,Lists!$A$1:$F$1,0)-1,4,1)</formula1></dataValidation>'
     f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" errorTitle="Primary offering" error="Pick a primary offering from the list for the chosen service area." sqref="{PRIMARY}2:{PRIMARY}{last}"><formula1>OFFSET(Lists!$L$2,0,MATCH(${AREA}2,Lists!$L$1:$Q$1,0)-1,COUNTA(OFFSET(Lists!$L$2,0,MATCH(${AREA}2,Lists!$L$1:$Q$1,0)-1,10,1)),1)</formula1></dataValidation>'
-    f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" errorTitle="Secondary offering" error="Pick a secondary offering from the list, or leave it empty." sqref="{SECOND}2:{SECOND}{last}"><formula1>Lists!$S$2:$S$53</formula1></dataValidation>'
+    f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" errorTitle="Secondary offering" error="Pick a secondary offering from the list, or leave it empty." sqref="{SECOND}2:{SECOND}{last}"><formula1>Lists!$S$2:$S${1 + sum(len(a["offerings"]) for a in areas)}</formula1></dataValidation>'
     f'<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="{PCONF}2:{PCONF}{last} {OCONF}2:{OCONF}{last}"><formula1>Lists!$J$2:$J$4</formula1></dataValidation>'
     '</dataValidations>')
 sheet1 = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
