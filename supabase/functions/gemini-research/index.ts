@@ -107,6 +107,37 @@ const CATALOG_PROMPT = L2_ORDER.map(
     CATALOG.filter((c) => c.l2 === l2).map((c) => `- "${offerKey(c)}": ${c.description}`).join("\n"),
 ).join("\n\n");
 
+// The storefront's client agendas: three per MC practice (same ids, areas and labels as src/data/mcStorefront.ts and the
+// refresh-industry-insights function; a QC test checks all three). Each MC opportunity is tagged with the agenda it falls under.
+const AGENDAS: { id: string; areaId: string; l2: string; label: string }[] = [
+  { id: "ai-into-pl-value", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Turn AI into P&L value" },
+  { id: "ai-first-operating-model", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Build an AI-first operating model" },
+  { id: "portfolio-through-ma", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Reshape the portfolio through M&A" },
+  { id: "modernize-finance", areaId: "finance", l2: "Finance", label: "Modernize finance with AI and automation" },
+  { id: "plan-forecast-ai", areaId: "finance", l2: "Finance", label: "Plan and forecast with AI" },
+  { id: "cost-margin-cash", areaId: "finance", l2: "Finance", label: "Improve cost, margin, cash and capital allocation" },
+  { id: "reshape-work-skills", areaId: "people", l2: "People & Organization", label: "Reshape work and skills for AI" },
+  { id: "ai-era-organization", areaId: "people", l2: "People & Organization", label: "Design the AI-era organization" },
+  { id: "leaders-and-change", areaId: "people", l2: "People & Organization", label: "Build leaders and lead change" },
+  { id: "modernize-planning", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Modernize operations and planning with AI and automation" },
+  { id: "resilient-sourcing-footprint", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Build resilient sourcing and footprint" },
+  { id: "cut-procurement-ops-cost", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Cut cost and lift productivity in procurement and operations" },
+  { id: "modernize-customer-service", areaId: "customer-growth", l2: "Customer", label: "Modernize customer service with AI" },
+  { id: "redesign-customer-experience", areaId: "customer-growth", l2: "Customer", label: "Redesign the customer experience end to end" },
+  { id: "grow-customer-value", areaId: "customer-growth", l2: "Customer", label: "Grow customer value: pricing, loyalty and retention" },
+  { id: "govern-ai-regulation", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Govern AI and data responsibly" },
+  { id: "modernize-risk-compliance", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Modernize risk and compliance with AI and automation" },
+  { id: "third-party-operational-resilience", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Strengthen third-party and operational resilience" },
+];
+const AGENDA_BY_ID = new Map(AGENDAS.map((a) => [a.id, a]));
+const NO_AGENDA = "none";
+const AGENDA_PROMPT = L2_ORDER.map(
+  (l2) => `${l2.toUpperCase()}\n` + AGENDAS.filter((a) => a.l2 === l2).map((a) => `- ${a.id}: ${a.label}`).join("\n"),
+).join("\n\n");
+/** The agenda is kept only when it exists and belongs to the same practice as the offering; the area then follows from it. */
+const agendaFor = (agenda: unknown, offering: string): string =>
+  typeof agenda === "string" && AGENDA_BY_ID.get(agenda)?.l2 === offering.split(" > ")[0] ? agenda : "";
+
 // ---------- Strategic initiative taxonomy (fixed groups so reports are consistent) ----------
 const INITIATIVE_GROUPS: { group: string; subs: { name: string; description: string }[] }[] = [
   {
@@ -854,7 +885,7 @@ const ANALYSIS_SCHEMA = obj({
     environmental: OPT_ITEM,
   }),
   recommendations: obj({ product: arr(ITEM), marketing: arr(ITEM), resourceAllocation: OPT_ITEM, roadmap: OPT_ITEM }),
-  mcOpportunities: arr(obj({ initiative: STR, need: STR, serviceOffering: STR, rationale: STR, basedOn: INTS })),
+  mcOpportunities: arr(obj({ initiative: STR, need: STR, agenda: { type: "STRING", format: "enum", enum: [...AGENDAS.map((a) => a.id), NO_AGENDA] }, serviceOffering: STR, rationale: STR, basedOn: INTS })),
 });
 
 // Analysis runs as two smaller calls (faster, and keeps each schema well within Gemini's limits).
@@ -934,12 +965,17 @@ Rules:
 3. recommendations: product, marketing and resource-allocation recommendations for ${e.name}, each tied to evidence. No numeric budgets, splits or targets.
 4. mcOpportunities: map evidenced initiatives and needs of ${e.name} to Toptal Management Consulting offerings from the catalog below ONLY. Do not propose a need the evidence does not show (e.g. fundraising support requires evidence of fundraising plans).
 
+CLIENT AGENDAS (three per MC practice): the priorities clients bring to us. For each mcOpportunities row choose the ONE agenda the need falls under most directly and put its id, exactly as written, in agenda. Use "${NO_AGENDA}" only when the need fits none of the 18.
+
+${AGENDA_PROMPT}
+
 MC SERVICE OFFERING CATALOG
 Offerings are listed as "Practice > Offering": description. Use the quoted string EXACTLY as written (including the "Practice > " prefix) in serviceOffering.
 
 ${CATALOG_PROMPT}
 
 Mapping rules for mcOpportunities:
+- Choose the agenda first. Then choose the offering from that agenda's own practice (the practice named above the agenda). If the best offering is in another practice, use agenda "${NO_AGENDA}".
 - Select the offering whose DESCRIPTION most directly covers the need. Do not choose on name alone.
 - Each row maps one initiative/need to exactly ONE offering. If an initiative needs more than one offering, add more rows.
 - Prefer the most specific offering. "Change Management" and "Program & Portfolio Management" appear under every practice; use them only as an add-on row to a more specific offering, under the practice that fits.
@@ -1575,6 +1611,7 @@ function validateAnalysis(raw: Any, ctx: Ctx) {
       return [{
         initiative: o.initiative.trim(),
         need: o.need.trim(),
+        agenda: typeof o.agenda === "string" ? o.agenda : "",
         serviceOffering: String(o.serviceOffering ?? ""),
         rationale: item.text,
         basedOn: item.basedOn,
@@ -1687,7 +1724,7 @@ async function normalizeOpportunities(apiKey: string, rows: Opportunity[], timeo
     const fixes = await repairOfferings(apiKey, rows, bad, timeoutMs);
     fixes.forEach((offer, i) => (rows[i] = { ...rows[i], serviceOffering: offer }));
   }
-  return rows.filter((r) => VALID_SET.has(r.serviceOffering));
+  return rows.filter((r) => VALID_SET.has(r.serviceOffering)).map((r) => ({ ...r, agenda: agendaFor(r.agenda, r.serviceOffering) }));
 }
 
 // Remove analysis items the verifier judged unsupported (flagged `rejected`).
@@ -2372,6 +2409,7 @@ function toLegacy(f: Facts, a: Analysis, mc: Opportunity[], ctx: Ctx, ph: Placeh
     mcOpportunities: mc.map((o) => ({
       initiative: o.initiative,
       need: o.need,
+      ...(o.agenda ? { agenda: o.agenda } : {}),
       serviceOffering: o.serviceOffering,
       rationale: o.rationale + cite(o.basedOn),
     })),
