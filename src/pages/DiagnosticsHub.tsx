@@ -117,15 +117,6 @@ const industryDiagnostics = [
     path: "/diagnostics/me-platform",
     password: "ME2026",
   },
-  {
-    slug: "cannes-me-fan-audience",
-    title: "M&E Fan/Audience Platform Diagnostic — Cannes Edition",
-    description:
-      "A focused assessment of your organization's maturity in building direct, data-driven fan and audience relationships — covering data foundations, personalization, DTC channels, monetization, real-time engagement, AI, and ecosystem integration.",
-    pillars: ["Fan Data", "Personalization", "DTC Channels", "Monetization", "Real-Time Engagement", "AI & Analytics", "Ecosystem", "Org Readiness"],
-    path: "/cannes-diagnostic",
-    password: "Cannes2026",
-  },
 ];
 
 function DiagnosticCard({ d }: { d: (typeof mcDiagnostics)[0] }) {
