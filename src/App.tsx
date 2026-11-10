@@ -7,6 +7,7 @@ import AuthGate from "./components/AuthGate";
 import Landing from "./pages/Landing";
 import MCServices from "./pages/MCServices";
 import WayOfWorking from "./pages/WayOfWorking";
+import TalentBench from "./pages/TalentBench";
 import AccountMarketIntel from "./pages/AccountMarketIntel";
 import PrivatePage from "./pages/PrivatePage";
 import Index from "./pages/Index";
@@ -52,6 +53,7 @@ const App = () => (
                 <Route path="/services" element={<MCServices />} />
                 <Route path="/services/web" element={<MCServicesWeb />} />
                 <Route path="/way-of-working" element={<WayOfWorking />} />
+                <Route path="/talent-bench" element={<TalentBench />} />
                 <Route path="/industry-insights" element={<Index />} />
                 <Route path="/account-market-intel" element={<AccountMarketIntel />} />
                 <Route path="/client-insights" element={<AccountMarketIntel />} />
