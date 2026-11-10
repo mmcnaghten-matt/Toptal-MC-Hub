@@ -9,9 +9,9 @@ export interface TalentRole {
 }
 
 export const TALENT_ROLES: TalentRole[] = [
-  { id: "engagement-leader", label: "Engagement Leader" },
-  { id: "manager", label: "Manager" },
-  { id: "specialist", label: "Specialist" },
+  { id: "engagement-leader", label: "Engagement Leader", note: "Senior expert who owns the client relationship and delivery; leads the team and SteerCo." },
+  { id: "manager", label: "Manager", note: "Mid-level consultant who runs the day-to-day work; frees the lead to focus on the client." },
+  { id: "specialist", label: "Specialist", note: "Deep subject-matter expert brought in for specific expertise; usually part-time, not leading the engagement." },
   // People the Service Line leaders know in the area who have not yet signed up for one of the three roles above.
   { id: "gm-member", label: "GM Talent Bench Members", note: "Known to the Service Line leaders; not yet signed up as an Engagement Leader, Manager or Specialist" },
 ];

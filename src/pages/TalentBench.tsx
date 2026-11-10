@@ -97,12 +97,12 @@ export default function TalentBench() {
                   return (
                     <div
                       key={role.id}
-                      className={`flex flex-col rounded-lg p-3 ${role.note ? "border border-dashed" : ""}`}
-                      style={{ backgroundColor: `${area.color.text}0d`, ...(role.note ? { borderColor: `${area.color.text}66` } : {}) }}
+                      className={`flex flex-col rounded-lg p-3 ${role.id === "gm-member" ? "border border-dashed" : ""}`}
+                      style={{ backgroundColor: `${area.color.text}0d`, ...(role.id === "gm-member" ? { borderColor: `${area.color.text}66` } : {}) }}
                       data-testid={`cell-${areaId}-${role.id}`}
                     >
                       <div className="mb-3 flex flex-col items-start gap-2">
-                        <div className="min-w-0">
+                        <div className="min-h-[4.25rem] min-w-0">
                           <h3 className="text-sm font-semibold text-foreground">
                             {role.label}
                             <span className="ml-2 text-xs font-medium text-muted-foreground">{list.length}</span>

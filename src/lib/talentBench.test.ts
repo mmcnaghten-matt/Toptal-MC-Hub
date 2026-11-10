@@ -11,6 +11,7 @@ describe("Talent Bench structure", () => {
     for (const id of TALENT_AREA_IDS) expect(AREA_BY_ID.has(id)).toBe(true);
     expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist", "GM Talent Bench Members"]);
     expect(TALENT_ROLES.map((r) => r.id)).toEqual(["engagement-leader", "manager", "specialist", "gm-member"]);
+    expect(TALENT_ROLES.every((r) => (r.note ?? "").length > 20)).toBe(true);
   });
 
   it("finds the last name, ignoring a trailing suffix", () => {
