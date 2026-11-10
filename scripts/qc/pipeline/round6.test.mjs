@@ -210,7 +210,11 @@ globalThis.fetch = async (url, init) => {
     const n = [...prompt.matchAll(/^CLAIM (\d+):/gm)].length;
     return gem(JSON.stringify(Array.from({ length: n }, (_, i) => ({ index: i, verdict: "supported" }))));
   }
-  if (prompt.includes("mcOpportunities:")) return gem(JSON.stringify({ recommendations: { product: [{ text: "Amplify the Shingle Color of the Year campaign.", basedOn: [id("Evergreen Mist") || 1] }, { text: "Expand installer training to protect warranty outcomes.", basedOn: [id("Trustpilot") || 1] }], marketing: [], resourceAllocation: null, roadmap: null }, mcOpportunities: [] }));
+  if (prompt.includes("mcOpportunities:")) return gem(JSON.stringify({ recommendations: { product: [{ text: "Amplify the Shingle Color of the Year campaign.", basedOn: [id("Evergreen Mist") || 1] }, { text: "Expand installer training to protect warranty outcomes.", basedOn: [id("Trustpilot") || 1] }], marketing: [], resourceAllocation: null, roadmap: null }, mcOpportunities: F.agendas ? [
+    { initiative: "Installer training programme", need: "Consistent installer quality behind warranty outcomes", agenda: "modernize-customer-service", serviceOffering: "Customer > Customer Service & Success", rationale: "Customer Service & Success supports the installer quality that Trustpilot reviewers raise.", basedOn: [id("Trustpilot") || 1] },
+    { initiative: "Pricing review", need: "Pricing that holds up against the lowest-cost rivals", agenda: "modernize-finance", serviceOffering: "Customer > Pricing & Monetization Strategy", rationale: "Pricing & Monetization Strategy covers the pricing pressure Trustpilot reviewers raise.", basedOn: [id("Trustpilot") || 1] },
+    { initiative: "Journey redesign", need: "A smoother experience from order to installation", agenda: "none", serviceOffering: "Customer > Customer Experience & Journey Design", rationale: "Customer Experience & Journey Design addresses the installation experience Trustpilot reviewers describe.", basedOn: [id("Trustpilot") || 1] },
+  ] : [] }));
   if (prompt.includes("3. swot:")) {
     seen.frameworkPrompt = prompt;
     return gem(JSON.stringify({
@@ -307,6 +311,18 @@ check("a business the company owns (Masonite) is never a competitor", !q.competi
 check("a candidate the classifier did not cover is not kept by default", q.competitorFilter.some((c) => c.name === "Pella" && !c.kept && c.classification === "unclassified") && !JSON.stringify(rep.competitiveLandscape).includes("Pella"), JSON.stringify(q.competitorFilter.filter((c) => /Pella/.test(c.name))));
 check("sold-business terms do not remove evidence that merely mentions a place (London, Ontario)", seen.stratEv.some((e) => /London, Ontario/.test(e.text)) && !dc.dropped.some((d) => /London, Ontario/.test(d.text)), JSON.stringify(dc.dropped.map((d) => d.text.slice(0, 50))));
 check("a brand of a sold business (Norandex) is still removed", dc.dropped.some((d) => /refers to a business the company has sold/.test(d.reason) && /Norandex stores/.test(d.text)), JSON.stringify(dc.dropped.map((d) => d.text.slice(0, 50))));
+
+// client agendas on MC opportunities: tagged by the model, kept only when they sit in the same practice as the offering
+{
+  const withAgendas = await go2({ agendas: true });
+  const opp = (name) => withAgendas.mcOpportunities.find((o) => o.initiative === name);
+  const agendaPrompt = seen.prompts.find((t) => /CLIENT AGENDAS/.test(t) && t.includes("mcOpportunities:")) ?? "";
+  check("the opportunities prompt lists the 18 agendas and asks for the agenda first", (agendaPrompt.match(/^- [a-z-]+: /gm) ?? []).length === 18 && /Choose the agenda first/.test(agendaPrompt) && /redesign-customer-experience: Redesign the customer experience end to end/.test(agendaPrompt), agendaPrompt.slice(0, 200));
+  check("an agenda in the same practice as the offering is kept", opp("Installer training programme")?.agenda === "modernize-customer-service", JSON.stringify(withAgendas.mcOpportunities));
+  check("an agenda from another practice is dropped and the row is kept", opp("Pricing review") && !("agenda" in opp("Pricing review")) && opp("Pricing review").serviceOffering === "Customer > Pricing & Monetization Strategy", JSON.stringify(opp("Pricing review")));
+  check("an agenda of none leaves the row untagged", opp("Journey redesign") && !("agenda" in opp("Journey redesign")), JSON.stringify(opp("Journey redesign")));
+  check("a report without agendas (the base run) has none on its opportunities", rep.mcOpportunities.every((o) => !("agenda" in o)));
+}
 
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);

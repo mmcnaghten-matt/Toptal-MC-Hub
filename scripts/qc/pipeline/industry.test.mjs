@@ -265,6 +265,10 @@ check("every need carries its agenda, and the area follows from the agenda (a mo
     const other = readFileSync(new URL(`../../../${f}`, import.meta.url), "utf8");
     check(`${f} has the same catalog as the refresh function`, catalogBlock(other) === catalogBlock(src), f);
   }
+  // The Client Insights function tags opportunities with the same 18 agendas (ids, areas, labels), so the AI-led ones are the app's.
+  const agendaBlock = (t) => t.slice(t.indexOf("const AGENDAS:"), t.indexOf("];", t.indexOf("const AGENDAS:")));
+  const research = readFileSync(new URL("../../../supabase/functions/gemini-research/index.ts", import.meta.url), "utf8");
+  check("the Client Insights function has the same 18 agendas as the refresh function", (agendaBlock(research).match(/id: "/g) ?? []).length === 18 && agendaBlock(research) === agendaBlock(src));
   const services = readFileSync(new URL("../../../src/pages/MCServices.tsx", import.meta.url), "utf8");
   const missing = OFFER_KEYS.map((k) => k.split(" > ")[1]).filter((l3) => !services.includes(`"${l3}"`));
   check("every offering is also named on the MC Services page", missing.length === 0, JSON.stringify(missing));
