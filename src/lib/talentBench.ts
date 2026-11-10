@@ -72,7 +72,20 @@ export function initialsOf(name: string): string {
   return (first + last).toUpperCase();
 }
 
-/** Talent by service area, then role; people in a cell are sorted by name. Unknown areas or roles are left out. */
+const SUFFIX = /^(jr|sr|ii|iii|iv|phd|mba|cpa|cfa)\.?$/i;
+
+/** The surname used to sort people: the last word of the name, ignoring a trailing suffix such as "Jr." or "III". */
+export function lastNameOf(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  while (words.length > 1 && SUFFIX.test(words[words.length - 1])) words.pop();
+  return words[words.length - 1] ?? "";
+}
+
+/** Alphabetical by last name, then by the full name. */
+export const byLastName = (a: { name: string }, b: { name: string }) =>
+  lastNameOf(a.name).localeCompare(lastNameOf(b.name), undefined, { sensitivity: "base" }) || a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+
+/** Talent by service area, then role; people in a cell are sorted by last name. Unknown areas or roles are left out. */
 export function groupTalent<T extends { service_area: string; role: string; name: string }>(people: T[]): Record<string, Record<string, T[]>> {
   const out: Record<string, Record<string, T[]>> = {};
   for (const area of TALENT_AREA_IDS) {
@@ -80,7 +93,7 @@ export function groupTalent<T extends { service_area: string; role: string; name
     for (const role of TALENT_ROLES) out[area][role.id] = [];
   }
   for (const p of people) out[p.service_area]?.[p.role]?.push(p);
-  for (const area of Object.values(out)) for (const list of Object.values(area)) list.sort((a, b) => a.name.localeCompare(b.name));
+  for (const area of Object.values(out)) for (const list of Object.values(area)) list.sort(byLastName);
   return out;
 }
 

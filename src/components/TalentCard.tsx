@@ -9,9 +9,9 @@ export function TalentCard({ person, color, onEdit, onRemove }: { person: Talent
   const [open, setOpen] = useState(false);
   const more = person.headline || person.highlights.length > 0;
   return (
-    <article className="rounded-lg border border-border bg-card p-3" data-testid={`talent-${person.id}`}>
+    <article className="rounded-lg border border-border bg-card p-2.5" data-testid={`talent-${person.id}`}>
       <div className="flex items-start gap-3">
-        <TalentAvatar name={person.name} photo={person.photo} color={color} />
+        <TalentAvatar name={person.name} photo={person.photo} color={color} size={40} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <a
@@ -42,20 +42,20 @@ export function TalentCard({ person, color, onEdit, onRemove }: { person: Talent
           )}
         </div>
       </div>
-      {person.summary && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{person.summary}</p>}
+      {person.summary && <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">{person.summary}</p>}
       {more && (
         <>
-          <button type="button" onClick={() => setOpen(!open)} className="mt-2 inline-flex items-center gap-1 text-xs font-medium" style={{ color: color.text }} aria-expanded={open}>
+          <button type="button" onClick={() => setOpen(!open)} className="mt-1 inline-flex items-center gap-1 text-[11px] font-medium" style={{ color: color.text }} aria-expanded={open}>
             {open ? "Less" : "More"}
             <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
           {open && (
-            <div className="mt-2 space-y-1.5 border-t border-border pt-2">
-              {person.headline && <p className="text-xs font-medium text-foreground">{person.headline}</p>}
+            <div className="mt-1.5 space-y-1 border-t border-border pt-1.5">
+              {person.headline && <p className="text-[11px] font-medium text-foreground">{person.headline}</p>}
               {person.highlights.length > 0 && (
                 <ul className="space-y-1">
                   {person.highlights.map((h, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs leading-snug text-muted-foreground">
+                    <li key={i} className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground">
                       <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ backgroundColor: color.text }} aria-hidden />
                       {h}
                     </li>

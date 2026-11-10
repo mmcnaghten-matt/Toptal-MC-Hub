@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TALENT_AREA_IDS, TALENT_ROLES, fitWithin, groupTalent, initialsOf, isToptalProfileUrl, nameFromProfileUrl, normalizeProfileUrl, profileErrors } from "./talentBench";
+import { TALENT_AREA_IDS, TALENT_ROLES, fitWithin, groupTalent, initialsOf, isToptalProfileUrl, lastNameOf, nameFromProfileUrl, normalizeProfileUrl, profileErrors } from "./talentBench";
 import { AREA_BY_ID } from "@/data/mcStorefront";
 
 // Synthetic people only: the repository is public and holds no candidate data.
@@ -12,7 +12,15 @@ describe("Talent Bench structure", () => {
     expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist"]);
   });
 
-  it("groups people by area then role, sorted by name, with every cell present", () => {
+  it("finds the last name, ignoring a trailing suffix", () => {
+    expect(lastNameOf("Syed Abdullah Mujahid")).toBe("Mujahid");
+    expect(lastNameOf("Pat Example Jr.")).toBe("Example");
+    expect(lastNameOf("Lee Example III")).toBe("Example");
+    expect(lastNameOf("Cher")).toBe("Cher");
+    expect(lastNameOf("  ")).toBe("");
+  });
+
+  it("groups people by area then role, sorted by last name, with every cell present", () => {
     const g = groupTalent([
       person("Zed Example", "finance", "manager"),
       person("Ann Example", "finance", "manager"),
@@ -22,6 +30,8 @@ describe("Talent Bench structure", () => {
     ]);
     expect(Object.keys(g)).toEqual(["strategy", "finance", "people"]);
     expect(g.finance.manager.map((p) => p.name)).toEqual(["Ann Example", "Zed Example"]);
+    const sorted = groupTalent([person("Zoe Adams", "finance", "manager"), person("Adam Zimmer", "finance", "manager"), person("Maria de Souza Baker", "finance", "manager"), person("Al Baker", "finance", "manager")]);
+    expect(sorted.finance.manager.map((p) => p.name)).toEqual(["Zoe Adams", "Al Baker", "Maria de Souza Baker", "Adam Zimmer"]);
     expect(g.people.specialist).toHaveLength(1);
     expect(g.strategy["engagement-leader"]).toEqual([]);
     expect(Object.values(g).flatMap((a) => Object.values(a)).flat()).toHaveLength(3);

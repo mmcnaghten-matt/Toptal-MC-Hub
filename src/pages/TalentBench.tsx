@@ -106,7 +106,7 @@ export default function TalentBench() {
                           Add profile
                         </Button>
                       </div>
-                      <div className="space-y-2">
+                      <div className="max-h-[36rem] space-y-2 overflow-y-auto pr-1" tabIndex={list.length > 3 ? 0 : undefined} aria-label={`${role.label} profiles`} data-testid={`list-${areaId}-${role.id}`}>
                         {list.map((p) => (
                           <TalentCard key={p.id} person={p} color={area.color} onEdit={() => setDialog({ cell: { service_area: p.service_area, role: p.role }, editing: p })} onRemove={() => setRemoving(p)} />
                         ))}
