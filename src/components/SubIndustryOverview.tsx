@@ -126,6 +126,10 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
             {subIndustry.needs.length}
           </span>
         </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          <span className="mr-1.5 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-primary-foreground">AI-LED</span>
+          We lead with the AI-led agenda in each area first; the others follow.
+        </p>
         <div className="space-y-6">
           {grouped.areas.map(({ area, agendas, count }) => (
             <div key={area.id} className="rounded-lg border border-border bg-card" data-testid={`needs-area-${area.id}`}>
@@ -154,10 +158,15 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div>
                         <p
-                          className={agenda ? "text-[10px] font-semibold uppercase tracking-widest" : "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"}
+                          className={agenda ? "flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest" : "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"}
                           style={agenda ? { color: area.color.text } : undefined}
                         >
                           {agenda ? "Client agenda" : "Not tied to an agenda"}
+                          {agenda?.aiLed && (
+                            <span className="rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white" style={{ backgroundColor: area.color.text }} data-testid="ai-led-chip">
+                              AI-LED
+                            </span>
+                          )}
                         </p>
                         <h5
                           className={agenda ? "text-base font-bold leading-snug" : "text-base font-semibold leading-snug text-muted-foreground"}

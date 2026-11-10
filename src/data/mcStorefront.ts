@@ -1,5 +1,8 @@
 // The MC storefront: six service areas, each with three client agendas ("we lead with their agendas, not our catalogue").
 // Industry needs are grouped area -> agenda -> need. Names and wording come from the storefront slides.
+// The first agenda of each area is AI-led ("we lead with it first; the others follow"). An agenda's id is stored with saved needs, so a
+// reworded agenda keeps its id (cost-margin-cash, modernize-planning, cut-procurement-ops-cost, govern-ai-regulation); a replaced one
+// gets a new id and the old id is retired (pricing-commercial-excellence, marketing-sales-effectiveness: see scripts/agenda-update.mjs).
 //
 // `catalogL2` is the area's name in the offering catalog (supabase/functions/refresh-industry-insights/index.ts, CATALOG) and on the
 // MC Services page. It is what offering strings ("L2 > L3") carry. It now equals the area's `name` for every area; the two fields
@@ -20,6 +23,8 @@ export interface Agenda {
   id: string;
   area: string;
   label: string;
+  /** The AI-led agenda: the one we lead with in its area first (the first agenda of each area on the storefront slide). */
+  aiLed?: boolean;
 }
 
 export const SERVICE_AREAS: ServiceArea[] = [
@@ -74,22 +79,22 @@ export const SERVICE_AREAS: ServiceArea[] = [
 ];
 
 export const AGENDAS: Agenda[] = [
-  { id: "ai-into-pl-value", area: "strategy", label: "Turn AI into P&L value" },
+  { id: "ai-into-pl-value", area: "strategy", label: "Turn AI into P&L value", aiLed: true },
   { id: "ai-first-operating-model", area: "strategy", label: "Build an AI-first operating model" },
   { id: "portfolio-through-ma", area: "strategy", label: "Reshape the portfolio through M&A" },
-  { id: "modernize-finance", area: "finance", label: "Modernize finance with AI and automation" },
+  { id: "modernize-finance", area: "finance", label: "Modernize finance with AI and automation", aiLed: true },
   { id: "plan-forecast-ai", area: "finance", label: "Plan and forecast with AI" },
-  { id: "cost-margin-cash", area: "finance", label: "Improve cost, margin and cash" },
-  { id: "reshape-work-skills", area: "people", label: "Reshape work and skills for AI" },
+  { id: "cost-margin-cash", area: "finance", label: "Improve cost, margin, cash and capital allocation" },
+  { id: "reshape-work-skills", area: "people", label: "Reshape work and skills for AI", aiLed: true },
   { id: "ai-era-organization", area: "people", label: "Design the AI-era organization" },
   { id: "leaders-and-change", area: "people", label: "Build leaders and lead change" },
-  { id: "modernize-planning", area: "supply-chain", label: "Modernize planning with AI and automation" },
+  { id: "modernize-planning", area: "supply-chain", label: "Modernize operations and planning with AI and automation", aiLed: true },
   { id: "resilient-sourcing-footprint", area: "supply-chain", label: "Build resilient sourcing and footprint" },
-  { id: "cut-procurement-ops-cost", area: "supply-chain", label: "Cut procurement and operations cost" },
-  { id: "modernize-customer-service", area: "customer-growth", label: "Modernize customer service with AI" },
-  { id: "pricing-commercial-excellence", area: "customer-growth", label: "Sharpen pricing and commercial excellence" },
-  { id: "marketing-sales-effectiveness", area: "customer-growth", label: "Lift marketing and sales effectiveness" },
-  { id: "govern-ai-regulation", area: "risk", label: "Govern AI and meet new regulation" },
+  { id: "cut-procurement-ops-cost", area: "supply-chain", label: "Cut cost and lift productivity in procurement and operations" },
+  { id: "modernize-customer-service", area: "customer-growth", label: "Modernize customer service with AI", aiLed: true },
+  { id: "redesign-customer-experience", area: "customer-growth", label: "Redesign the customer experience end to end" },
+  { id: "grow-customer-value", area: "customer-growth", label: "Grow customer value: pricing, loyalty and retention" },
+  { id: "govern-ai-regulation", area: "risk", label: "Govern AI and data responsibly", aiLed: true },
   { id: "modernize-risk-compliance", area: "risk", label: "Modernize risk and compliance with AI and automation" },
   { id: "third-party-operational-resilience", area: "risk", label: "Strengthen third-party and operational resilience" },
 ];
