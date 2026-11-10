@@ -78,7 +78,7 @@ import { AI_CAVEAT, AI_CAVEAT_SHORT, ResearchMethod, SectionNote } from "@/compo
 import { cn } from "@/lib/utils";
 import { normalizeWebsite } from "@/lib/website";
 import { SubmitChoiceDialog } from "@/components/SubmitChoiceDialog";
-import { OfferingPill } from "@/components/OfferingPill";
+import { McOpportunityTable } from "@/components/McOpportunityTable";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1301,30 +1301,7 @@ export default function AccountMarketIntel() {
                     <SectionNote k="mc" />
                   </div>
                   <div className="p-8">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="py-4 px-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Initiative</th>
-                            <th className="py-4 px-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Need</th>
-                            <th className="py-4 px-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Service Offering</th>
-                            <th className="py-4 px-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Rationale</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {result.mcOpportunities.map((opp, i) => (
-                            <tr key={i} className="hover:bg-secondary/30 transition-colors">
-                              <td className="py-4 px-4 text-sm font-bold text-foreground">{opp.initiative}</td>
-                              <td className="py-4 px-4 text-sm text-foreground">{opp.need}</td>
-                              <td className="py-4 px-4">
-                                <OfferingPill value={opp.serviceOffering} />
-                              </td>
-                              <td className="py-4 px-4 text-sm text-muted-foreground italic break-words">"<Rich>{opp.rationale}</Rich>"</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                    <McOpportunityTable opportunities={result.mcOpportunities} />
                   </div>
                 </section>
 

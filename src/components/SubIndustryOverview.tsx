@@ -3,6 +3,7 @@ import { AlertTriangle, Rocket, ArrowRight, Target } from "lucide-react";
 import { Rich, SourcesList, SourcesProvider } from "@/components/Cited";
 import { AiResearchNote } from "@/components/AiResearchNote";
 import { groupNeeds } from "@/lib/needGrouping";
+import { AiLedChip } from "@/components/AiLedChip";
 
 interface Props {
   subIndustry: SubIndustry & { updatedAt?: string };
@@ -162,11 +163,7 @@ export function SubIndustryOverview({ subIndustry, onSelectNeed }: Props) {
                           style={agenda ? { color: area.color.text } : undefined}
                         >
                           {agenda ? "Client agenda" : "Not tied to an agenda"}
-                          {agenda?.aiLed && (
-                            <span className="rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white" style={{ backgroundColor: area.color.text }} data-testid="ai-led-chip">
-                              AI-LED
-                            </span>
-                          )}
+                          {agenda?.aiLed && <AiLedChip color={area.color.text} />}
                         </p>
                         <h5
                           className={agenda ? "text-base font-bold leading-snug" : "text-base font-semibold leading-snug text-muted-foreground"}

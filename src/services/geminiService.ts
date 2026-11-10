@@ -89,6 +89,8 @@ export interface ResearchResult {
   mcOpportunities: {
     initiative: string;
     need: string;
+    /** Storefront agenda id (src/data/mcStorefront.ts); absent on reports made before agendas were added. */
+    agenda?: string;
     serviceOffering: string;
     rationale: string;
   }[];
