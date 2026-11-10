@@ -91,16 +91,24 @@ export default function TalentBench() {
                 <h2 className="text-lg font-bold" style={{ color: area.color.text }}>{area.name}</h2>
                 <span className="rounded-full px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: area.color.bg, color: area.color.text }}>{total}</span>
               </div>
-              <div className="grid gap-4 p-5 md:grid-cols-3">
+              <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-4">
                 {TALENT_ROLES.map((role) => {
                   const list = grouped[areaId][role.id];
                   return (
-                    <div key={role.id} className="flex flex-col rounded-lg p-3" style={{ backgroundColor: `${area.color.text}0d` }} data-testid={`cell-${areaId}-${role.id}`}>
-                      <div className="mb-3 flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold text-foreground">
-                          {role.label}
-                          <span className="ml-2 text-xs font-medium text-muted-foreground">{list.length}</span>
-                        </h3>
+                    <div
+                      key={role.id}
+                      className={`flex flex-col rounded-lg p-3 ${role.note ? "border border-dashed" : ""}`}
+                      style={{ backgroundColor: `${area.color.text}0d`, ...(role.note ? { borderColor: `${area.color.text}66` } : {}) }}
+                      data-testid={`cell-${areaId}-${role.id}`}
+                    >
+                      <div className="mb-3 flex flex-col items-start gap-2">
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-semibold text-foreground">
+                            {role.label}
+                            <span className="ml-2 text-xs font-medium text-muted-foreground">{list.length}</span>
+                          </h3>
+                          {role.note && <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{role.note}</p>}
+                        </div>
                         <Button type="button" size="sm" variant="outline" className="h-7 bg-card px-2 text-xs" onClick={() => setDialog({ cell: { service_area: areaId, role: role.id }, editing: null })} aria-label={`Add a profile to ${area.name}, ${role.label}`}>
                           <Plus className="mr-1 h-3 w-3" />
                           Add profile

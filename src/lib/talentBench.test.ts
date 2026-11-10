@@ -6,10 +6,11 @@ import { AREA_BY_ID } from "@/data/mcStorefront";
 const person = (name: string, service_area: string, role: string) => ({ name, service_area, role });
 
 describe("Talent Bench structure", () => {
-  it("covers three service areas that exist in the storefront, and three roles", () => {
+  it("covers three service areas that exist in the storefront, and three roles plus the GM Talent Bench Members column", () => {
     expect(TALENT_AREA_IDS).toEqual(["strategy", "finance", "people"]);
     for (const id of TALENT_AREA_IDS) expect(AREA_BY_ID.has(id)).toBe(true);
-    expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist"]);
+    expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist", "GM Talent Bench Members"]);
+    expect(TALENT_ROLES.map((r) => r.id)).toEqual(["engagement-leader", "manager", "specialist", "gm-member"]);
   });
 
   it("finds the last name, ignoring a trailing suffix", () => {
@@ -34,6 +35,8 @@ describe("Talent Bench structure", () => {
     expect(sorted.finance.manager.map((p) => p.name)).toEqual(["Zoe Adams", "Al Baker", "Maria de Souza Baker", "Adam Zimmer"]);
     expect(g.people.specialist).toHaveLength(1);
     expect(g.strategy["engagement-leader"]).toEqual([]);
+    expect(g.finance["gm-member"]).toEqual([]);
+    expect(groupTalent([person("Gem Example", "people", "gm-member")]).people["gm-member"]).toHaveLength(1);
     expect(Object.values(g).flatMap((a) => Object.values(a)).flat()).toHaveLength(3);
   });
 });
@@ -81,6 +84,7 @@ describe("saving a profile", () => {
   const ok = { name: "Jane Example", summary: "Short summary.", profile_url: "https://www.toptal.com/management-consultants/resume/jane-example", service_area: "finance", role: "manager" };
   it("is fine with a name, a Toptal link, an area and a role", () => {
     expect(profileErrors(ok)).toEqual([]);
+    expect(profileErrors({ ...ok, role: "gm-member" })).toEqual([]);
   });
   it("lists what is missing", () => {
     expect(profileErrors({ ...ok, name: " " })).toEqual(["Add a name"]);

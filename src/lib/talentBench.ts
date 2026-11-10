@@ -4,12 +4,16 @@
 export interface TalentRole {
   id: string;
   label: string;
+  /** Shown under the column heading. */
+  note?: string;
 }
 
 export const TALENT_ROLES: TalentRole[] = [
   { id: "engagement-leader", label: "Engagement Leader" },
   { id: "manager", label: "Manager" },
   { id: "specialist", label: "Specialist" },
+  // People the Service Line leaders know in the area who have not yet signed up for one of the three roles above.
+  { id: "gm-member", label: "GM Talent Bench Members", note: "Known to the Service Line leaders; not yet signed up as an Engagement Leader, Manager or Specialist" },
 ];
 
 /** The service areas the program covers, by id (names and colours come from src/data/mcStorefront.ts). */
