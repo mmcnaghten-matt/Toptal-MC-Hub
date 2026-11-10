@@ -66,7 +66,8 @@ const VALID_OFFERS: string[] = CATALOG.map(offerKey);
 const VALID_SET = new Set(VALID_OFFERS);
 const L2_ORDER = [...new Set(CATALOG.map((c) => c.l2))];
 
-// The storefront's client agendas: three per MC service area. A need is placed under one agenda (and so one area).
+// The storefront's client agendas: three per MC service area (same ids, areas and labels as src/data/mcStorefront.ts; a QC test checks it).
+// A need is placed under one agenda (and so one area).
 // `l2` is the area's name in the CATALOG; `areaId` is the id the app groups by (src/data/mcStorefront.ts holds the same list;
 // scripts/qc/pipeline/industry.test.mjs fails if the two differ).
 const AGENDAS: { id: string; areaId: string; l2: string; label: string }[] = [
@@ -75,17 +76,17 @@ const AGENDAS: { id: string; areaId: string; l2: string; label: string }[] = [
   { id: "portfolio-through-ma", areaId: "strategy", l2: "Strategy & AI Transformation", label: "Reshape the portfolio through M&A" },
   { id: "modernize-finance", areaId: "finance", l2: "Finance", label: "Modernize finance with AI and automation" },
   { id: "plan-forecast-ai", areaId: "finance", l2: "Finance", label: "Plan and forecast with AI" },
-  { id: "cost-margin-cash", areaId: "finance", l2: "Finance", label: "Improve cost, margin and cash" },
+  { id: "cost-margin-cash", areaId: "finance", l2: "Finance", label: "Improve cost, margin, cash and capital allocation" },
   { id: "reshape-work-skills", areaId: "people", l2: "People & Organization", label: "Reshape work and skills for AI" },
   { id: "ai-era-organization", areaId: "people", l2: "People & Organization", label: "Design the AI-era organization" },
   { id: "leaders-and-change", areaId: "people", l2: "People & Organization", label: "Build leaders and lead change" },
-  { id: "modernize-planning", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Modernize planning with AI and automation" },
+  { id: "modernize-planning", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Modernize operations and planning with AI and automation" },
   { id: "resilient-sourcing-footprint", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Build resilient sourcing and footprint" },
-  { id: "cut-procurement-ops-cost", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Cut procurement and operations cost" },
+  { id: "cut-procurement-ops-cost", areaId: "supply-chain", l2: "Supply Chain & Operations", label: "Cut cost and lift productivity in procurement and operations" },
   { id: "modernize-customer-service", areaId: "customer-growth", l2: "Customer", label: "Modernize customer service with AI" },
-  { id: "pricing-commercial-excellence", areaId: "customer-growth", l2: "Customer", label: "Sharpen pricing and commercial excellence" },
-  { id: "marketing-sales-effectiveness", areaId: "customer-growth", l2: "Customer", label: "Lift marketing and sales effectiveness" },
-  { id: "govern-ai-regulation", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Govern AI and meet new regulation" },
+  { id: "redesign-customer-experience", areaId: "customer-growth", l2: "Customer", label: "Redesign the customer experience end to end" },
+  { id: "grow-customer-value", areaId: "customer-growth", l2: "Customer", label: "Grow customer value: pricing, loyalty and retention" },
+  { id: "govern-ai-regulation", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Govern AI and data responsibly" },
   { id: "modernize-risk-compliance", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Modernize risk and compliance with AI and automation" },
   { id: "third-party-operational-resilience", areaId: "risk", l2: "Risk, Compliance & AI Governance", label: "Strengthen third-party and operational resilience" },
 ];
@@ -111,6 +112,18 @@ const RETIRED_L2: Record<string, string> = {
   "Customer & Growth": "Customer",
   "Risk & Compliance": "Risk, Compliance & AI Governance",
 };
+// Agendas retired when two Customer agendas were replaced (Sharpen pricing and commercial excellence; Lift marketing and sales
+// effectiveness). Stored corrections that name one are read through this by the correction's primary offering, the same rule as the data
+// migration (scripts/agenda-update.mjs); an unmatched one counts as no agenda in the area.
+const RETIRED_AGENDAS = new Set(["pricing-commercial-excellence", "marketing-sales-effectiveness"]);
+const AGENDA_BY_RETIRED_PRIMARY: Record<string, string> = {
+  "Customer > Customer Experience & Journey Design": "redesign-customer-experience",
+  "Customer > Pricing & Monetization Strategy": "grow-customer-value",
+};
+function currentAgendaId(id: unknown, primary: string): string | undefined {
+  if (typeof id !== "string") return undefined;
+  return RETIRED_AGENDAS.has(id) ? AGENDA_BY_RETIRED_PRIMARY[primary] : id;
+}
 function currentOffer(o: string): string {
   if (RETIRED_OFFERS[o]) return RETIRED_OFFERS[o];
   const [l2, l3] = o.split(" > ");
@@ -147,7 +160,9 @@ function placeNeed(offers: string[], agendaId: unknown): { mcOffers: string[]; a
 const PLACEMENT_GUIDANCE = `PLACEMENT GUIDANCE (from the MC team's corrections to earlier placements):
 - Cybersecurity, data-security and cyber-defence needs go under third-party-operational-resilience (modernize-risk-compliance when the need is about deploying technology against fraud).
 - Workforce, talent, skills and retention needs go under reshape-work-skills, even when they do not mention AI; use ai-era-organization when the need is about redesigning the organization or the work itself.
-- Customer journey, customer experience and service-delivery needs go under modernize-customer-service.
+- Customer journey and end-to-end customer experience needs go under redesign-customer-experience; contact-centre, customer-service and service-delivery needs go under modernize-customer-service.
+- Pricing, monetization, loyalty and retention needs, and growing the value of existing customers (including sales and marketing effectiveness aimed at that), go under grow-customer-value.
+- Responsible-AI, AI-regulation and data-governance or data-privacy needs go under govern-ai-regulation.
 - Growth Strategy is a Strategy & AI Transformation offering: use it as the primary for enterprise growth and market-expansion needs placed in that practice (under an agenda there, or "${NO_AGENDA}" in that practice). When such a need sits under a Customer agenda, use it only as the secondary. Pricing, monetization, customer experience, customer service and customer technology needs belong to Customer. Technology, infrastructure and platform modernization needs belong to Strategy & AI Transformation.
 - "Portfolio" is portfolio-through-ma only when the need is about transactions (acquisitions, divestitures, mergers). Store-footprint, brand-portfolio and asset-portfolio reviews are "${NO_AGENDA}".
 - Financial-crime regulation needs are "${NO_AGENDA}", not govern-ai-regulation. R&D productivity needs are "${NO_AGENDA}". Cost-control needs about networks and partners belong under cut-procurement-ops-cost; value-based care and reimbursement models are ai-first-operating-model.`;
@@ -160,7 +175,8 @@ function cleanExamples(raw: unknown): string[] {
     if (out.length >= 12) break;
     const primary = typeof e?.primary === "string" ? currentOffer(e.primary) : "";
     if (!VALID_SET.has(primary)) continue;
-    const agenda = typeof e?.agenda === "string" ? AGENDA_BY_ID.get(e.agenda) : undefined;
+    const agendaId = currentAgendaId(e?.agenda, primary);
+    const agenda = agendaId ? AGENDA_BY_ID.get(agendaId) : undefined;
     const areaL2 = AGENDAS.find((a) => a.areaId === e?.area)?.l2;
     if (!agenda && !areaL2) continue;
     const secondaryRaw = typeof e?.secondary === "string" ? currentOffer(e.secondary) : "";
