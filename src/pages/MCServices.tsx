@@ -4,6 +4,7 @@ import { ChevronLeft, Presentation, BookOpen, Network } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
 import ServiceFinder from "@/components/ServiceFinder";
 import { AGENDAS } from "@/data/mcStorefront";
+import { AiLedChip } from "@/components/AiLedChip";
 
 interface ServiceCategory {
   pillar: string;
@@ -825,6 +826,10 @@ export default function MCServices() {
             <span className="font-semibold">Practices and Service Offerings: </span>Toptal's core Management Consulting Practice areas and service offerings are designed to align with the interests and needs of the different leaders and buying centers within the typical client organization.
           </p>
 
+          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-foreground">A transformation agenda</span> is a client priority we lead with. It pulls in whatever the client needs, across MC and Toptal.
+          </p>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {mcDomains.map((domain) => (
               <div key={domain.name} className="flex flex-col rounded-lg border border-border bg-background p-4">
@@ -834,13 +839,16 @@ export default function MCServices() {
                 </p>
                 <p className="mb-3 min-h-24 text-sm leading-relaxed text-muted-foreground">{domain.description}</p>
                 {/* The client agendas this practice leads with (the storefront), before the offerings that deliver them */}
-                <div className="mb-4 min-h-[6.25rem]">
+                <div className="mb-4 min-h-[8.5rem]">
                   <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: domain.color }}>Client agendas</p>
                   <ul className="space-y-1">
                     {AGENDAS.filter((a) => a.area === domain.areaId).map((a) => (
                       <li key={a.id} className="flex items-start gap-2 text-sm leading-snug text-foreground">
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: domain.color }} aria-hidden />
-                        {a.label}
+                        <span>
+                          {a.label}
+                          {a.aiLed && <span className="ml-1.5 inline-block align-middle"><AiLedChip color={domain.color} /></span>}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -859,6 +867,10 @@ export default function MCServices() {
               </div>
             ))}
           </div>
+          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-primary-foreground">AI-LED</span>
+            We lead with the AI-led agenda in each area first; the others follow.
+          </p>
         </section>
 
         {/* MC Service Offering Finder */}
