@@ -75,7 +75,7 @@ export default function TalentGuild() {
         <div className="fade-in max-w-3xl">
           <h1 className="text-2xl font-bold text-foreground">Talent Guild</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Talent identified in advance and ready to serve as an Engagement Leader, Manager or Specialist in each of three service areas. Add a profile to a cell by pasting its Toptal link.
+            Talent identified in advance and ready to serve as an Engagement Leader, Manager or Specialist in each of four service areas. Add a profile to a cell by pasting its Toptal link.
           </p>
         </div>
 

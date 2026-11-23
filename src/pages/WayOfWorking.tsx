@@ -357,7 +357,7 @@ export default function WayOfWorking() {
         {hasTalentGuild && (
           <section className="fade-in rounded-lg border border-border bg-card p-6">
             <h2 className="text-lg font-bold text-foreground">Talent Guild</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Talent identified in advance for Engagement Leader, Manager and Specialist roles in Strategy &amp; AI Transformation, Finance, and People &amp; Organization.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Talent identified in advance for Engagement Leader, Manager and Specialist roles in Strategy &amp; AI Transformation, Finance, People &amp; Organization, and Supply Chain &amp; Operations.</p>
             <Link
               to="/talent-guild"
               className="mt-4 flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 px-4 py-3 hover:bg-primary/10 transition-colors"

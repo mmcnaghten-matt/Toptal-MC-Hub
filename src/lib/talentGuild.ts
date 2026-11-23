@@ -17,7 +17,7 @@ export const TALENT_ROLES: TalentRole[] = [
 ];
 
 /** The service areas the program covers, by id (names and colours come from src/data/mcStorefront.ts). */
-export const TALENT_AREA_IDS = ["strategy", "finance", "people"] as const;
+export const TALENT_AREA_IDS = ["strategy", "finance", "people", "supply-chain"] as const;
 
 export interface TalentProfile {
   id: string;

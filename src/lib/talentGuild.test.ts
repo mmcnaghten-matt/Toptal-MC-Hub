@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { TALENT_AREA_IDS, TALENT_ROLES, fitWithin, groupTalent, initialsOf, isToptalProfileUrl, lastNameOf, nameFromProfileUrl, normalizeProfileUrl, profileErrors } from "./talentGuild";
 import { AREA_BY_ID } from "@/data/mcStorefront";
@@ -6,12 +7,18 @@ import { AREA_BY_ID } from "@/data/mcStorefront";
 const person = (name: string, service_area: string, role: string) => ({ name, service_area, role });
 
 describe("Talent Guild structure", () => {
-  it("covers three service areas that exist in the storefront, and three roles plus the GM Talent Guild Members column", () => {
-    expect(TALENT_AREA_IDS).toEqual(["strategy", "finance", "people"]);
+  it("covers four service areas that exist in the storefront, and three roles plus the GM Talent Guild Members column", () => {
+    expect(TALENT_AREA_IDS).toEqual(["strategy", "finance", "people", "supply-chain"]);
+    expect(AREA_BY_ID.get("supply-chain")?.name).toBe("Supply Chain & Operations");
     for (const id of TALENT_AREA_IDS) expect(AREA_BY_ID.has(id)).toBe(true);
     expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist", "GM Talent Guild Members"]);
     expect(TALENT_ROLES.map((r) => r.id)).toEqual(["engagement-leader", "manager", "specialist", "gm-member"]);
     expect(TALENT_ROLES.every((r) => (r.note ?? "").length > 20)).toBe(true);
+  });
+
+  it("has a migration that lets the database accept every service area on the page", () => {
+    const sql = readFileSync("supabase/migrations/20261123000000_talent_guild_supply_chain.sql", "utf8");
+    for (const id of TALENT_AREA_IDS) expect(sql).toContain(`'${id}'`);
   });
 
   it("finds the last name, ignoring a trailing suffix", () => {
@@ -30,13 +37,15 @@ describe("Talent Guild structure", () => {
       person("Nobody", "legal", "manager"),
       person("Nobody Either", "finance", "director"),
     ]);
-    expect(Object.keys(g)).toEqual(["strategy", "finance", "people"]);
+    expect(Object.keys(g)).toEqual(["strategy", "finance", "people", "supply-chain"]);
     expect(g.finance.manager.map((p) => p.name)).toEqual(["Ann Example", "Zed Example"]);
     const sorted = groupTalent([person("Zoe Adams", "finance", "manager"), person("Adam Zimmer", "finance", "manager"), person("Maria de Souza Baker", "finance", "manager"), person("Al Baker", "finance", "manager")]);
     expect(sorted.finance.manager.map((p) => p.name)).toEqual(["Zoe Adams", "Al Baker", "Maria de Souza Baker", "Adam Zimmer"]);
     expect(g.people.specialist).toHaveLength(1);
     expect(g.strategy["engagement-leader"]).toEqual([]);
     expect(g.finance["gm-member"]).toEqual([]);
+    expect(Object.keys(g["supply-chain"])).toEqual(["engagement-leader", "manager", "specialist", "gm-member"]);
+    expect(groupTalent([person("Sam Example", "supply-chain", "specialist")])["supply-chain"].specialist).toHaveLength(1);
     expect(groupTalent([person("Gem Example", "people", "gm-member")]).people["gm-member"]).toHaveLength(1);
     expect(Object.values(g).flatMap((a) => Object.values(a)).flat()).toHaveLength(3);
   });
