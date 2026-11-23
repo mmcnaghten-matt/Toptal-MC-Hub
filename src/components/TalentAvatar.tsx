@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { initialsOf } from "@/lib/talentBench";
+import { initialsOf } from "@/lib/talentGuild";
 
 /** A talent thumbnail: the photo, or initials when there is none or it does not load. */
 export function TalentAvatar({ name, photo, color, size = 48 }: { name: string; photo?: string | null; color: { text: string; bg: string }; size?: number }) {

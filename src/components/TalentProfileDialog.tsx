@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { TalentAvatar } from "@/components/TalentAvatar";
 import { AREA_BY_ID } from "@/data/mcStorefront";
-import { readTalentProfile, useSaveTalent, type TalentInput } from "@/hooks/useTalentBench";
+import { readTalentProfile, useSaveTalent, type TalentInput } from "@/hooks/useTalentGuild";
 import { fileToThumbnail, toThumbnail } from "@/lib/imageResize";
-import { TALENT_AREA_IDS, TALENT_ROLES, isToptalProfileUrl, nameFromProfileUrl, profileErrors, type TalentProfile } from "@/lib/talentBench";
+import { TALENT_AREA_IDS, TALENT_ROLES, isToptalProfileUrl, nameFromProfileUrl, profileErrors, type TalentProfile } from "@/lib/talentGuild";
 
 interface Draft {
   service_area: string;
@@ -123,7 +123,7 @@ export function TalentProfileDialog({ open, onOpenChange, cell, editing }: { ope
     }
     try {
       await save.mutateAsync({ id: editing?.id, input: toInput(draft) });
-      toast.success(editing ? "Saved" : `${draft.name.trim()} added to the Talent Bench`);
+      toast.success(editing ? "Saved" : `${draft.name.trim()} added to the Talent Guild`);
       onOpenChange(false);
     } catch (e) {
       setProblem((e as Error).message);
@@ -219,7 +219,7 @@ export function TalentProfileDialog({ open, onOpenChange, cell, editing }: { ope
               {!editing && <Button type="button" variant="ghost" onClick={() => { setProblem(""); setStep("link"); }} disabled={save.isPending}>Back</Button>}
               <Button type="button" onClick={submit} disabled={save.isPending}>
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {editing ? "Save changes" : "Add to Talent Bench"}
+                {editing ? "Save changes" : "Add to Talent Guild"}
               </Button>
             </DialogFooter>
           </div>

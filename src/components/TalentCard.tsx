@@ -2,9 +2,9 @@ import { useState } from "react";
 import { ChevronDown, ExternalLink, MapPin, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TalentAvatar } from "@/components/TalentAvatar";
-import type { TalentProfile } from "@/lib/talentBench";
+import type { TalentProfile } from "@/lib/talentGuild";
 
-/** One person on the Talent Bench: thumbnail, name (a link to the Toptal profile), location, short summary; highlights on request. */
+/** One person on the Talent Guild: thumbnail, name (a link to the Toptal profile), location, short summary; highlights on request. */
 export function TalentCard({ person, color, onEdit, onRemove }: { person: TalentProfile; color: { text: string; bg: string }; onEdit: () => void; onRemove: () => void }) {
   const [open, setOpen] = useState(false);
   const more = person.headline || person.highlights.length > 0;

@@ -1,5 +1,5 @@
-// Talent Bench: reads a Toptal expert profile and returns the fields for a talent card (name, location, headline, a short summary,
-// highlights) plus the profile photo as a small data URL. Only people on the Talent Bench list may call it
+// Talent Guild: reads a Toptal expert profile and returns the fields for a talent card (name, location, headline, a short summary,
+// highlights) plus the profile photo as a small data URL. Only people on the Talent Guild list may call it
 // (public.has_talent_bench_access, checked with the caller's own sign-in). The profile address must be a Toptal resume page and the
 // photo must come from a Toptal host; anything else is refused, so the function cannot be used to fetch arbitrary addresses.
 //   body: { profileUrl: "https://www.toptal.com/<vertical>/resume/<name>", text?: "<the pasted profile>" }
@@ -46,9 +46,9 @@ async function authorize(req: Request): Promise<Response | null> {
     });
     if (!res.ok) {
       await res.body?.cancel();
-      return json({ error: "Could not check your Talent Bench access. Try again in a moment." }, 503);
+      return json({ error: "Could not check your Talent Guild access. Try again in a moment." }, 503);
     }
-    if ((await res.json()) !== true) return json({ error: "The Talent Bench is limited to a few people." }, 403);
+    if ((await res.json()) !== true) return json({ error: "The Talent Guild is limited to a few people." }, 403);
     return null;
   } catch {
     return json({ error: "Could not verify your sign-in. Try again in a moment." }, 503);

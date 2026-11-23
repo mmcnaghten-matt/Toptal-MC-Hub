@@ -1,4 +1,4 @@
-// Talent Bench: pre-identified talent by service area and role. Pure helpers (no network); the page and hooks build on these.
+// Talent Guild (called the Talent Bench until November 2026; its database objects keep the old names): pre-identified talent by service area and role. Pure helpers (no network); the page and hooks build on these.
 // Candidate data is never kept in the code repository (it is public); see supabase/migrations/20261110000000_talent_bench.sql.
 
 export interface TalentRole {
@@ -13,7 +13,7 @@ export const TALENT_ROLES: TalentRole[] = [
   { id: "manager", label: "Manager", note: "Mid-level consultant who runs the day-to-day work; frees the lead to focus on the client." },
   { id: "specialist", label: "Specialist", note: "Deep subject-matter expert brought in for specific expertise; usually part-time, not leading the engagement." },
   // People the Service Line leaders know in the area who have not yet signed up for one of the three roles above.
-  { id: "gm-member", label: "GM Talent Bench Members", note: "Known to the Service Line leaders; not yet signed up as an Engagement Leader, Manager or Specialist" },
+  { id: "gm-member", label: "GM Talent Guild Members", note: "Known to the Service Line leaders; not yet signed up as an Engagement Leader, Manager or Specialist" },
 ];
 
 /** The service areas the program covers, by id (names and colours come from src/data/mcStorefront.ts). */

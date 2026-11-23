@@ -8,15 +8,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { TalentCard } from "@/components/TalentCard";
 import { TalentProfileDialog } from "@/components/TalentProfileDialog";
 import { AREA_BY_ID } from "@/data/mcStorefront";
-import { useRemoveTalent, useTalentBenchAccess, useTalentProfiles } from "@/hooks/useTalentBench";
-import { TALENT_AREA_IDS, TALENT_ROLES, groupTalent, type TalentProfile } from "@/lib/talentBench";
+import { useRemoveTalent, useTalentGuildAccess, useTalentProfiles } from "@/hooks/useTalentGuild";
+import { TALENT_AREA_IDS, TALENT_ROLES, groupTalent, type TalentProfile } from "@/lib/talentGuild";
 
-// Talent Bench: pre-identified talent ready to serve as Engagement Leader, Manager or Specialist, by service area. Restricted to the
+// Talent Guild: pre-identified talent ready to serve as Engagement Leader, Manager or Specialist, by service area. Restricted to the
 // people on the access list (the database enforces it; this page also hides itself). Reached from Way of Working.
 
-export default function TalentBench() {
+export default function TalentGuild() {
   const navigate = useNavigate();
-  const { hasAccess, loading } = useTalentBenchAccess();
+  const { hasAccess, loading } = useTalentGuildAccess();
   const { data: people = [], isLoading, error } = useTalentProfiles(hasAccess);
   const remove = useRemoveTalent();
   const [dialog, setDialog] = useState<{ cell: { service_area: string; role: string }; editing: TalentProfile | null } | null>(null);
@@ -37,7 +37,7 @@ export default function TalentBench() {
         <div className="w-full max-w-sm space-y-4 p-6 text-center">
           <ShieldX className="mx-auto h-12 w-12 text-destructive" />
           <h1 className="text-xl font-bold text-foreground">Access Denied</h1>
-          <p className="text-sm text-muted-foreground">The Talent Bench is limited to a few people. Contact the Management Consulting team to request access.</p>
+          <p className="text-sm text-muted-foreground">The Talent Guild is limited to a few people. Contact the Management Consulting team to request access.</p>
           <Button variant="outline" onClick={() => navigate("/way-of-working")}>Back to Way of Working</Button>
         </div>
       </div>
@@ -73,13 +73,13 @@ export default function TalentBench() {
 
       <main className="mx-auto max-w-7xl space-y-8 px-6 py-8">
         <div className="fade-in max-w-3xl">
-          <h1 className="text-2xl font-bold text-foreground">Talent Bench</h1>
+          <h1 className="text-2xl font-bold text-foreground">Talent Guild</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Talent identified in advance and ready to serve as an Engagement Leader, Manager or Specialist in each of three service areas. Add a profile to a cell by pasting its Toptal link.
           </p>
         </div>
 
-        {error && <p className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">The Talent Bench could not be loaded: {(error as Error).message}</p>}
+        {error && <p className="rounded-md bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">The Talent Guild could not be loaded: {(error as Error).message}</p>}
         {isLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-label="Loading talent" />}
 
         {TALENT_AREA_IDS.map((areaId) => {
@@ -135,7 +135,7 @@ export default function TalentBench() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {removing?.name}?</AlertDialogTitle>
-            <AlertDialogDescription>They will be taken off the Talent Bench. Their Toptal profile is not affected. You can add them again from their link.</AlertDialogDescription>
+            <AlertDialogDescription>They will be taken off the Talent Guild. Their Toptal profile is not affected. You can add them again from their link.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

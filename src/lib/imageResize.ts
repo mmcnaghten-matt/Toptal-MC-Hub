@@ -1,4 +1,4 @@
-import { fitWithin } from "@/lib/talentBench";
+import { fitWithin } from "@/lib/talentGuild";
 
 /** Longer side, in pixels, of a stored thumbnail: sharp at the card's size and on high-density screens, and small enough to keep in a table row. */
 export const THUMBNAIL_PX = 160;

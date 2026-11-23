@@ -1,19 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeProfileUrl, type ReadProfile, type TalentProfile } from "@/lib/talentBench";
+import { normalizeProfileUrl, type ReadProfile, type TalentProfile } from "@/lib/talentGuild";
 
-// Talent Bench data. Every read and write is checked by row-level security (public.has_talent_bench_access), so these calls return
+// Talent Guild data (called the Talent Bench until November 2026; the database objects keep the old names: talent_profiles,
+// talent_bench_access, has_talent_bench_access). Every read and write is checked by row-level security (public.has_talent_bench_access), so these calls return
 // nothing, or an error, for anyone who is not on the list; the page also hides itself.
 
 // The new tables are not in the generated database types, so use an untyped handle for them.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tables = () => supabase as unknown as { from: (table: string) => any; rpc: (fn: string) => Promise<{ data: unknown; error: { message: string } | null }> };
 
-const ACCESS_KEY = ["talent-bench-access"];
+const ACCESS_KEY = ["talent-guild-access"];
 const PROFILES_KEY = ["talent-profiles"];
 
-/** Whether the signed-in person may use the Talent Bench. `loading` is true until the answer is known. */
-export function useTalentBenchAccess() {
+/** Whether the signed-in person may use the Talent Guild. `loading` is true until the answer is known. */
+export function useTalentGuildAccess() {
   const q = useQuery({
     queryKey: ACCESS_KEY,
     queryFn: async (): Promise<boolean> => {
@@ -39,7 +40,7 @@ export function useTalentProfiles(enabled: boolean) {
 
 export type TalentInput = Pick<TalentProfile, "service_area" | "role" | "name" | "location" | "headline" | "summary" | "highlights" | "profile_url" | "photo">;
 
-const duplicateMessage = "That profile is already on the Talent Bench.";
+const duplicateMessage = "That profile is already on the Talent Guild.";
 
 export function useSaveTalent() {
   const qc = useQueryClient();

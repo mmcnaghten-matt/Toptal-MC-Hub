@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { TALENT_AREA_IDS, TALENT_ROLES, fitWithin, groupTalent, initialsOf, isToptalProfileUrl, lastNameOf, nameFromProfileUrl, normalizeProfileUrl, profileErrors } from "./talentBench";
+import { TALENT_AREA_IDS, TALENT_ROLES, fitWithin, groupTalent, initialsOf, isToptalProfileUrl, lastNameOf, nameFromProfileUrl, normalizeProfileUrl, profileErrors } from "./talentGuild";
 import { AREA_BY_ID } from "@/data/mcStorefront";
 
 // Synthetic people only: the repository is public and holds no candidate data.
 const person = (name: string, service_area: string, role: string) => ({ name, service_area, role });
 
-describe("Talent Bench structure", () => {
-  it("covers three service areas that exist in the storefront, and three roles plus the GM Talent Bench Members column", () => {
+describe("Talent Guild structure", () => {
+  it("covers three service areas that exist in the storefront, and three roles plus the GM Talent Guild Members column", () => {
     expect(TALENT_AREA_IDS).toEqual(["strategy", "finance", "people"]);
     for (const id of TALENT_AREA_IDS) expect(AREA_BY_ID.has(id)).toBe(true);
-    expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist", "GM Talent Bench Members"]);
+    expect(TALENT_ROLES.map((r) => r.label)).toEqual(["Engagement Leader", "Manager", "Specialist", "GM Talent Guild Members"]);
     expect(TALENT_ROLES.map((r) => r.id)).toEqual(["engagement-leader", "manager", "specialist", "gm-member"]);
     expect(TALENT_ROLES.every((r) => (r.note ?? "").length > 20)).toBe(true);
   });

@@ -1,7 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import { ChevronLeft, Layers, ClipboardCheck, ArrowRight, FileText, Users } from "lucide-react";
 import ToptalLogo from "@/components/ToptalLogo";
-import { useTalentBenchAccess } from "@/hooks/useTalentBench";
+import { useTalentGuildAccess } from "@/hooks/useTalentGuild";
 
 const phases = [
   {
@@ -161,7 +161,7 @@ const deliverableStandards: DeliverableCategory[] = [
 
 export default function WayOfWorking() {
   const navigate = useNavigate();
-  const { hasAccess: hasTalentBench } = useTalentBenchAccess();
+  const { hasAccess: hasTalentGuild } = useTalentGuildAccess();
 
   return (
     <div className="min-h-screen bg-background">
@@ -354,17 +354,17 @@ export default function WayOfWorking() {
           </Link>
         </section>
 
-        {hasTalentBench && (
+        {hasTalentGuild && (
           <section className="fade-in rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg font-bold text-foreground">Talent Bench</h2>
+            <h2 className="text-lg font-bold text-foreground">Talent Guild</h2>
             <p className="mt-1 text-sm text-muted-foreground">Talent identified in advance for Engagement Leader, Manager and Specialist roles in Strategy &amp; AI Transformation, Finance, and People &amp; Organization.</p>
             <Link
-              to="/talent-bench"
+              to="/talent-guild"
               className="mt-4 flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 px-4 py-3 hover:bg-primary/10 transition-colors"
             >
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Open the Talent Bench</span>
+                <span className="text-sm font-medium text-foreground">Open the Talent Guild</span>
               </div>
               <ArrowRight className="h-4 w-4 text-primary" />
             </Link>

@@ -1,4 +1,4 @@
-// Talent Bench: the talent-profile function. Who may call it, which addresses it will fetch, what it returns, and that profile text
+// Talent Guild: the talent-profile function. Who may call it, which addresses it will fetch, what it returns, and that profile text
 // cannot change the shape of the answer. Gemini and every fetch are mocked; the people here are invented (the repository is public).
 let failures = 0;
 const check = (name, ok, extra = "") => { console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  -> " + extra}`); if (!ok) failures++; };
@@ -55,7 +55,7 @@ check("a request with no sign-in is refused", (await call({ profileUrl: PAGE }, 
 check("an expired sign-in is refused", (await call({ profileUrl: PAGE }, "expired")).status === 401);
 reset();
 let r = await call({ profileUrl: PAGE }, "other");
-check("someone who is not on the Talent Bench list is refused before anything is fetched or sent to Gemini", r.status === 403 && !touched("www.toptal.com") && geminiPrompts.length === 0, `${r.status} ${fetched.join(",")}`);
+check("someone who is not on the Talent Guild list is refused before anything is fetched or sent to Gemini", r.status === 403 && !touched("www.toptal.com") && geminiPrompts.length === 0, `${r.status} ${fetched.join(",")}`);
 reset();
 r = await call({ profileUrl: PAGE }, "rpcdown");
 check("if the access check cannot run, the request is refused (503), not allowed", r.status === 503 && geminiPrompts.length === 0, String(r.status));
